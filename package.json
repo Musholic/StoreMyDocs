@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "build:prod": "ng build --configuration production --base-href https://musholic.github.io/StoreMyDocs/",
     "test": "ng test",
-    "test:headless": "ng test --watch=false --browsers=ChromeHeadless"
+    "test:headless": "ng test --watch=false --browsers=ChromeHeadless --code-coverage"
   },
   "private": true,
   "dependencies": {
