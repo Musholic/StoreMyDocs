@@ -1,9 +1,10 @@
-name: GitHub Pages
+name: Test
 
 on:
   push:
-    branches:
-      - master
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   deploy:
@@ -23,14 +24,3 @@ jobs:
 
       - name: Run tests
         run: npm run test:headless
-
-      - name: Build
-        run: npm run build:prod
-
-      - name: Deploy
-        if: success()
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: dist/storemydocs
-          enable_jekyll: true
