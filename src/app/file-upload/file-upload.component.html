@@ -1,1 +1,3 @@
-<button mat-raised-button color="primary">Upload file...</button>
+<input type="file" multiple class="file-input" (change)="onFileSelected($event)" #fileUpload>
+<button mat-raised-button color="primary" (click)="fileUpload.click()"><mat-icon fontIcon="upload"></mat-icon>Upload files...</button>
+<span *ngIf="fileName"> Uploading {{fileName}}...</span>

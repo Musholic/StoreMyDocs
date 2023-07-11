@@ -8,6 +8,7 @@ import {MatToolbarModule} from "@angular/material/toolbar";
 import { FileUploadComponent } from './file-upload/file-upload.component';
 import {MatButtonModule} from "@angular/material/button";
 import { HomepageComponent } from './homepage/homepage.component';
+import {MatIconModule} from "@angular/material/icon";
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { HomepageComponent } from './homepage/homepage.component';
     AppRoutingModule,
     BrowserAnimationsModule,
     MatToolbarModule,
-    MatButtonModule
+    MatButtonModule,
+    MatIconModule
   ],
   providers: [],
   bootstrap: [AppComponent]
