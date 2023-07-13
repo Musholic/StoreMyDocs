@@ -1,4 +1,5 @@
 import {Component} from '@angular/core';
+import {FileUploadService} from "./file-upload.service";
 
 @Component({
   selector: 'app-file-upload',
@@ -7,6 +8,8 @@ import {Component} from '@angular/core';
 })
 export class FileUploadComponent {
   fileName = '';
+  constructor(private fileUploadService: FileUploadService) {
+  }
 
   onFileSelected(event: Event) {
     let file: File;
@@ -15,7 +18,10 @@ export class FileUploadComponent {
       if(target.files) {
         file = target.files[0];
         this.fileName = file.name;
+        this.fileUploadService.upload(file);
+        return;
       }
     }
+    console.error('No file chosen.');
   }
 }
