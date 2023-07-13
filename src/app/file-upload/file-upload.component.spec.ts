@@ -1,30 +1,31 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {FileUploadComponent} from './file-upload.component';
 import {MatIconModule} from "@angular/material/icon";
+import {MockBuilder, MockRender} from "ng-mocks";
+import {AppModule} from "../app.module";
 
 describe('FileUploadComponent', () => {
-  let component: FileUploadComponent;
-  let fixture: ComponentFixture<FileUploadComponent>;
-  let page: Page;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [MatIconModule],
-      declarations: [FileUploadComponent]
-    });
-    fixture = TestBed.createComponent(FileUploadComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-
-    page = new Page(fixture);
+    return MockBuilder(FileUploadComponent, AppModule)
+      .keep(MatIconModule);
   });
 
   it('should create', () => {
+    // Arrange
+    const fixture = MockRender(FileUploadComponent);
+    const component = fixture.point.componentInstance;
+
+    // Assert
     expect(component).toBeTruthy();
   });
 
   describe('When selecting a file to upload', () => {
     it('Should shows the file as being uploaded', () => {
+      // Arrange
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
+
       // Act
       page.uploadFile('TestFile.txt');
 

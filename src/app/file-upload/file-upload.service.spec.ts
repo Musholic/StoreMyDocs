@@ -1,16 +1,20 @@
-import { TestBed } from '@angular/core/testing';
-
-import { FileUploadService } from './file-upload.service';
+import {FileUploadService} from './file-upload.service';
+import {MockBuilder, MockRender} from "ng-mocks";
+import {AppModule} from "../app.module";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {HttpClientModule} from "@angular/common/http";
 
 describe('FileUploadService', () => {
-  let service: FileUploadService;
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(FileUploadService);
-  });
+  beforeEach(() =>
+    MockBuilder(FileUploadService, AppModule)
+      .replace(HttpClientModule, HttpClientTestingModule)
+  );
 
   it('should be created', () => {
+    // Arrange
+    const service = MockRender(FileUploadService).point.componentInstance;
+
+    // Assert
     expect(service).toBeTruthy();
   });
 });

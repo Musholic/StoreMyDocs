@@ -9,6 +9,7 @@ import { FileUploadComponent } from './file-upload/file-upload.component';
 import {MatButtonModule} from "@angular/material/button";
 import { HomepageComponent } from './homepage/homepage.component';
 import {MatIconModule} from "@angular/material/icon";
+import {HttpClientModule} from "@angular/common/http";
 
 @NgModule({
   declarations: [
@@ -20,6 +21,8 @@ import {MatIconModule} from "@angular/material/icon";
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
+    HttpClientModule,
+
     MatToolbarModule,
     MatButtonModule,
     MatIconModule
