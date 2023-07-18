@@ -35,6 +35,14 @@ describe('GoogleDriveAuthService', () => {
                     }
                 }
             }
+            let localStorageMock = mock<Storage>();
+            Object.defineProperty(window, 'localStorage', {
+                value: localStorageMock
+            });
+            when(() => localStorageMock.getItem('google_auth_token')).thenReturn('');
+            when(() => localStorageMock.setItem('google_auth_token', 'at8765465')).thenReturn();
+            when(() => localStorageMock.setItem('google_auth_token_expires_at', It.isString())).thenReturn();
+
             let tokenClientMock = mock<TokenClient>();
             let initTokenClientCallback = It.willCapture<initTokenClientCallbackType>();
             when(() => initTokenClientMock(It.isObject({
@@ -58,6 +66,25 @@ describe('GoogleDriveAuthService', () => {
 
             // Assert
             expect(accessToken).toEqual('at8765465');
+        });
+    })
+    describe('When there is an existing token', () => {
+        it('Should get existing token', async () => {
+            // Arrange
+            let localStorageMock = mock<Storage>();
+            Object.defineProperty(window, 'localStorage', {
+                value: localStorageMock
+            });
+            when(() => localStorageMock.getItem('google_auth_token')).thenReturn('at54613');
+
+            // @ts-ignore
+            const service = MockRender(GoogleDriveAuthService).point.componentInstance;
+
+            // Act
+            const accessToken = await service.getAccessToken();
+
+            // Assert
+            expect(accessToken).toEqual('at54613');
         });
     })
     afterEach(() => {
