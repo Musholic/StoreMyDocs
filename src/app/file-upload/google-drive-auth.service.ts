@@ -6,12 +6,8 @@ import {Injectable} from '@angular/core';
 })
 export class GoogleDriveAuthService {
   private SCOPE = 'https://www.googleapis.com/auth/drive.file';
-  private DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
   private CLIENT_ID = '99873064994-bn94ep45ugmo6u1s3fl3li84fr3olvnv.apps.googleusercontent.com';
   private accessToken = '';
-
-  constructor() {
-  }
 
   private async auth() {
     // @ts-ignore
@@ -24,7 +20,6 @@ export class GoogleDriveAuthService {
           prompt: 'consent',
           callback: resolve,
         });
-        // TODO: only if token not valid
         tokenClient.requestAccessToken();
       } catch (err) {
         reject(err);
