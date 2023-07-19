@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {GoogleDriveAuthService} from "./google-drive-auth.service";
-import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {catchError, from, mergeMap, Observable, of} from "rxjs";
+import {HttpClient, HttpEvent, HttpEventType, HttpHeaders, HttpProgressEvent, HttpRequest} from "@angular/common/http";
+import {catchError, filter, from, mergeMap, Observable, of} from "rxjs";
 
 @Injectable({
     providedIn: 'root'
@@ -11,7 +11,7 @@ export class FileUploadService {
     constructor(private authService: GoogleDriveAuthService, private http: HttpClient) {
     }
 
-    upload(file: File): Observable<void> {
+    upload(file: File): Observable<HttpProgressEvent> {
         console.log('Uploading ' + file.name)
         const contentType = file.type || 'application/octet-stream';
 
@@ -46,10 +46,12 @@ export class FileUploadService {
                     'Content-Type': contentType,
                     'X-Upload-Content-Type': contentType
                 };
-                const uploadOptions = {headers: new HttpHeaders(uploadHeaders)};
-
-                return this.http.put<void>(locationUrl, file, uploadOptions)
+                return this.http.request(new HttpRequest('PUT', locationUrl, file, {
+                    headers: new HttpHeaders(uploadHeaders),
+                    reportProgress: true
+                }))
             }),
+            filter((e: HttpEvent<any>): e is HttpProgressEvent => e.type === HttpEventType.UploadProgress),
             catchError(err => {
                 console.log(err)
                 return of();

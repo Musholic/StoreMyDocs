@@ -1,11 +1,12 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {FileUploadComponent} from './file-upload.component';
 import {MatIconModule} from "@angular/material/icon";
-import {MockBuilder, MockRender} from "ng-mocks";
+import {MockBuilder, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {FileUploadService} from "./file-upload.service";
 import {mock, when} from "strong-mock";
 import {Observable} from "rxjs";
+import {FileUploadElementComponent} from "./file-upload-element/file-upload-element.component";
 
 describe('FileUploadComponent', () => {
 
@@ -39,7 +40,8 @@ describe('FileUploadComponent', () => {
             page.uploadFile(file);
 
             // Assert
-            expect(page.uploadedFiles).toEqual('Uploading TestFile.txt...')
+            expect(page.uploadedFiles.map(v => v.fileProgress.fileName))
+                .toEqual(['TestFile.txt']);
         });
     })
 });
@@ -64,10 +66,8 @@ class Page {
         this.fixture.detectChanges();
     }
 
-    get uploadedFiles(): string | undefined {
-        const element = this.query<HTMLElement>('span') || undefined;
-
-        return element?.textContent?.trim();
+    get uploadedFiles(): FileUploadElementComponent[] {
+        return ngMocks.findInstances(FileUploadElementComponent);
     }
 
     private get uploadInput(): HTMLInputElement {

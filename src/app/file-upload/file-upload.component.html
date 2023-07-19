@@ -1,3 +1,12 @@
 <input type="file" multiple class="file-input" (change)="onFileSelected($event)" #fileUpload>
-<button mat-raised-button color="primary" (click)="fileUpload.click()"><mat-icon fontIcon="upload"></mat-icon>Upload files...</button>
-<span *ngIf="fileName"> Uploading {{fileName}}...</span>
+<button mat-raised-button color="primary" (click)="fileUpload.click()">
+    <mat-icon fontIcon="upload"></mat-icon>
+    Upload files...
+</button>
+<br>
+<div *ngFor="let file of files">
+    <br>
+    <app-file-upload-element [fileProgress]="file">
+
+    </app-file-upload-element>
+</div>

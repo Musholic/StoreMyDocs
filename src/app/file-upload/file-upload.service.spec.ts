@@ -2,7 +2,7 @@ import {FileUploadService} from './file-upload.service';
 import {MockBuilder, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
-import {HttpClientModule} from "@angular/common/http";
+import {HttpClientModule, HttpEventType} from "@angular/common/http";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {GoogleDriveAuthService} from "./google-drive-auth.service";
 import {mock, when} from "strong-mock";
@@ -55,6 +55,7 @@ describe('FileUploadService', () => {
         expect(req2.request.method).toEqual('PUT');
         expect(req2.request.body).toEqual(f);
 
+        req2.event({total: 100, loaded: 100, type: HttpEventType.UploadProgress})
         req2.flush('');
 
         expect(completedRequest).toBeTrue();
