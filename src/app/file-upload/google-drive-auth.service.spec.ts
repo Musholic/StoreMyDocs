@@ -25,7 +25,15 @@ describe('GoogleDriveAuthService', () => {
   );
 
   it('should be created', () => {
+    // Arrange
+    let localStorageMock = getLocalStorageMock();
+    when(() => localStorageMock.getItem('google_auth_token')).thenReturn('');
+    when(() => localStorageMock.getItem('google_api_token')).thenReturn('');
+
+    // Act
     const service = MockRender(GoogleDriveAuthService).point.componentInstance;
+
+    // Assert
     expect(service).toBeTruthy();
   });
 
