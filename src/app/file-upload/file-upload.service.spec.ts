@@ -27,8 +27,8 @@ describe('FileUploadService', () => {
         let f = new File(["test_content"], "test.txt", {type: 'application/txt'});
         let httpTestingController = TestBed.inject(HttpTestingController);
         let authService = TestBed.inject(GoogleDriveAuthService);
-        let accessTokenMock = mock<GoogleDriveAuthService['getAccessToken']>();
-        authService.getAccessToken = accessTokenMock;
+        let accessTokenMock = mock<GoogleDriveAuthService['getApiToken']>();
+        authService.getApiToken = accessTokenMock;
         when(() => accessTokenMock()).thenResolve('at87964');
 
         // Act

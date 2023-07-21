@@ -1,0 +1,21 @@
+<mat-toolbar color="primary" class="mat-elevation-z4">
+    <span>Store My Docs</span>
+
+    <span class="spacer"></span>
+    <div id="gbtn" [hidden]="isAuthenticated()"></div>
+    <button class="avatar-button" mat-icon-button [matMenuTriggerFor]="menu" *ngIf="isAuthenticated()">
+        <img alt class="avatar" [src]="getUserPicture()">
+    </button>
+    <mat-menu #menu="matMenu">
+        <mat-card>
+            <mat-card-content>
+                <div>
+                    {{getUserName()}}
+                    <br>
+                    {{getUserMail()}}
+                </div>
+            </mat-card-content>
+        </mat-card>
+        <button mat-menu-item (click)="logout()">Log out</button>
+    </mat-menu>
+</mat-toolbar>

@@ -13,13 +13,17 @@ import {HttpClientModule} from "@angular/common/http";
 import {MatCardModule} from "@angular/material/card";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import { FileUploadElementComponent } from './file-upload/file-upload-element/file-upload-element.component';
+import { NavBarComponent } from './nav-bar/nav-bar.component';
+import {MatMenuModule} from "@angular/material/menu";
+import {MatListModule} from "@angular/material/list";
 
 @NgModule({
   declarations: [
     AppComponent,
     FileUploadComponent,
     HomepageComponent,
-    FileUploadElementComponent
+    FileUploadElementComponent,
+    NavBarComponent
   ],
     imports: [
         BrowserModule,
@@ -31,7 +35,9 @@ import { FileUploadElementComponent } from './file-upload/file-upload-element/fi
         MatButtonModule,
         MatIconModule,
         MatCardModule,
-        MatProgressBarModule
+        MatProgressBarModule,
+        MatMenuModule,
+        MatListModule
     ],
   providers: [],
   bootstrap: [AppComponent]

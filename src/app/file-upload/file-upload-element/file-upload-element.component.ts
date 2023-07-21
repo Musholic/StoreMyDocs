@@ -7,7 +7,7 @@ import {filesize} from "filesize";
     styleUrls: ['./file-upload-element.component.scss']
 })
 export class FileUploadElementComponent {
-    @Input() fileProgress: FileUploadProgress = {fileName: '??', loaded: 0, total: 0};
+    @Input({required: true}) fileProgress: FileUploadProgress = {fileName: '??', loaded: 0, total: 0};
 
     getLoaded() {
         return filesize(this.fileProgress.loaded);

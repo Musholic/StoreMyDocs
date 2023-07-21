@@ -15,7 +15,7 @@ export class FileUploadService {
         console.log('Uploading ' + file.name)
         const contentType = file.type || 'application/octet-stream';
 
-        return from(this.authService.getAccessToken()).pipe(
+        return from(this.authService.getApiToken()).pipe(
             mergeMap(accessToken => {
                 const authHeader = `Bearer ${accessToken}`;
 
