@@ -89,7 +89,7 @@ export class GoogleDriveAuthService {
 }
 
 
-interface AuthToken {
+export interface AuthToken {
     name: string,
     email: string,
     picture: string
