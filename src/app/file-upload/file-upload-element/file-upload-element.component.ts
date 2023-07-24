@@ -3,8 +3,7 @@ import {filesize} from "filesize";
 
 @Component({
     selector: 'app-file-upload-element',
-    templateUrl: './file-upload-element.component.html',
-    styleUrls: ['./file-upload-element.component.scss']
+    templateUrl: './file-upload-element.component.html'
 })
 export class FileUploadElementComponent {
     @Input({required: true}) fileProgress: FileUploadProgress = {fileName: '??', loaded: 0, total: 0};
