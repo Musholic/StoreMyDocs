@@ -5,76 +5,103 @@ import {MockBuilder, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {FileUploadService} from "./file-upload.service";
 import {mock, when} from "strong-mock";
-import {Observable} from "rxjs";
+import {Observable, of} from "rxjs";
 import {FileUploadElementComponent} from "./file-upload-element/file-upload-element.component";
+import {HttpEventType} from "@angular/common/http";
 
 describe('FileUploadComponent', () => {
 
-    beforeEach(() => {
-        return MockBuilder(FileUploadComponent, AppModule)
-            .keep(MatIconModule);
+  beforeEach(() => {
+    return MockBuilder(FileUploadComponent, AppModule)
+      .keep(MatIconModule);
+  });
+
+  it('should create', () => {
+    // Arrange
+    const fixture = MockRender(FileUploadComponent);
+    const component = fixture.point.componentInstance;
+
+    // Assert
+    expect(component).toBeTruthy();
+  });
+
+  describe('When selecting a file to upload', () => {
+    it('Should shows the file as being uploaded', () => {
+      // Arrange
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
+      let fileUploadService = TestBed.inject(FileUploadService);
+      let uploadMock = mock<typeof fileUploadService['upload']>();
+      fileUploadService.upload = uploadMock;
+
+      let file = new File([''], 'TestFile.txt');
+      when(() => uploadMock(file)).thenReturn(new Observable())
+
+      // Act
+      page.uploadFile(file);
+
+      // Assert
+      expect(page.uploadedFiles.map(v => v.fileProgress.fileName))
+        .toEqual(['TestFile.txt']);
     });
 
-    it('should create', () => {
-        // Arrange
-        const fixture = MockRender(FileUploadComponent);
-        const component = fixture.point.componentInstance;
+    it('Should update upload progress', () => {
+      // Arrange
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
+      let fileUploadService = TestBed.inject(FileUploadService);
+      let uploadMock = mock<typeof fileUploadService['upload']>();
+      fileUploadService.upload = uploadMock;
 
-        // Assert
-        expect(component).toBeTruthy();
+      let file = new File([''], 'TestFile.txt');
+      when(() => uploadMock(file)).thenReturn(of({
+        loaded: 50,
+        total: 100,
+        type: HttpEventType.UploadProgress
+      }))
+
+      // Act
+      page.uploadFile(file);
+
+      // Assert
+      expect(fixture.point.componentInstance.files).toEqual([{
+        fileName: 'TestFile.txt',
+        loaded: 50,
+        total: 100
+      }])
     });
-
-    describe('When selecting a file to upload', () => {
-        it('Should shows the file as being uploaded', () => {
-            // Arrange
-            const fixture = MockRender(FileUploadComponent);
-            const page = new Page(fixture);
-            let fileUploadService = TestBed.inject(FileUploadService);
-            let uploadMock = mock<typeof fileUploadService['upload']>();
-            fileUploadService.upload = uploadMock;
-
-            let file = new File([''], 'TestFile.txt');
-            when(() => uploadMock(file)).thenReturn(new Observable())
-
-            // Act
-            page.uploadFile(file);
-
-            // Assert
-            expect(page.uploadedFiles.map(v => v.fileProgress.fileName))
-                .toEqual(['TestFile.txt']);
-        });
-    })
+  })
 });
 
 class Page {
-    private fixture: ComponentFixture<FileUploadComponent>;
+  private fixture: ComponentFixture<FileUploadComponent>;
 
-    constructor(fixture: ComponentFixture<FileUploadComponent>) {
-        this.fixture = fixture;
-    }
+  constructor(fixture: ComponentFixture<FileUploadComponent>) {
+    this.fixture = fixture;
+  }
 
-    uploadFile(file: File) {
+  get uploadedFiles(): FileUploadElementComponent[] {
+    return ngMocks.findInstances(FileUploadElementComponent);
+  }
 
-        const dataTransfer = new DataTransfer()
-        dataTransfer.items.add(file)
+  private get uploadInput(): HTMLInputElement {
+    return this.query<HTMLInputElement>('input');
+  }
 
-        let event = new InputEvent('change', {dataTransfer: dataTransfer});
+  uploadFile(file: File) {
 
-        let uploadInput = this.uploadInput;
-        uploadInput.files = dataTransfer.files;
-        uploadInput.dispatchEvent(event);
-        this.fixture.detectChanges();
-    }
+    const dataTransfer = new DataTransfer()
+    dataTransfer.items.add(file)
 
-    get uploadedFiles(): FileUploadElementComponent[] {
-        return ngMocks.findInstances(FileUploadElementComponent);
-    }
+    let event = new InputEvent('change', {dataTransfer: dataTransfer});
 
-    private get uploadInput(): HTMLInputElement {
-        return this.query<HTMLInputElement>('input');
-    }
+    let uploadInput = this.uploadInput;
+    uploadInput.files = dataTransfer.files;
+    uploadInput.dispatchEvent(event);
+    this.fixture.detectChanges();
+  }
 
-    private query<T>(selector: string): T {
-        return this.fixture.nativeElement.querySelector(selector);
-    }
+  private query<T>(selector: string): T {
+    return this.fixture.nativeElement.querySelector(selector);
+  }
 }
