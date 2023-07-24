@@ -35,7 +35,7 @@ describe('NavBarComponent', () => {
       when(() => isAuthenticatedMock()).thenReturn(false).atLeast(1);
 
       // Act
-      MockRender(NavBarComponent).point.componentInstance;
+      MockRender(NavBarComponent);
 
       // Assert
       expect(Page.isLoginDisplayed()).toBeTrue();
@@ -50,7 +50,7 @@ describe('NavBarComponent', () => {
       when(() => isAuthenticatedMock()).thenReturn(true).atLeast(1);
 
       // Act
-      MockRender(NavBarComponent).point.componentInstance;
+      MockRender(NavBarComponent);
 
       // Assert
       expect(Page.isLoginDisplayed()).toBeFalse();
