@@ -13,6 +13,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          # So that we can use git describe properly
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -25,6 +28,9 @@ jobs:
 
       - name: Run tests
         run: npm run test:headless
+
+      - name: Set version from git
+        run: npm run set-version-from-git
 
       - name: Build
         run: npm run build:prod
