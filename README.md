@@ -1,27 +1,20 @@
-# Storemydocs
+# StoreMyDocs (Work in Progress)
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.1.3.
+StoreMyDocs is a web application designed with the primary purpose of effortlessly centralizing and storing all of your documents. It offers:
 
-## Development server
+* **Security**: Ensures that no document data is transmitted to the server, instead the files are encrypted before being sent to your chosen cloud storage.
+* **Ease of Access**: A high-powered analysis and indexing process automatically categorizes your documents, making them easy to locate.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Current Features
 
-## Code scaffolding
+* Upload files to a specific folder on Google Drive
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Contributing
 
-## Build
+Currently, contributions are not being accepted due to licensing restrictions. This situation may change in the future.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## License
 
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+Currently, all rights to this project's content and code are reserved.
+The license may change in the future.
+As of now, please do not reuse or distribute the code without express permission.
