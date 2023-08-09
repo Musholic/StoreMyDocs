@@ -28,6 +28,11 @@ jobs:
 
       - name: Build
         run: npm run build:prod
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: 'dist/storemydocs'
   deploy:
     # Add a dependency to the build job
     needs: build
@@ -46,13 +51,6 @@ jobs:
     # Specify runner + deployment step
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-          # Upload entire repository
-          path: 'dist/storemydocs'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
