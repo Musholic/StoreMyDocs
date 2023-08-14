@@ -1,0 +1,18 @@
+mat-toolbar {
+  position: relative;
+  z-index: 2;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.avatar {
+  height: 48px;
+  width: 48px;
+  border-radius: 50%;
+}
+
+.avatar-button {
+  padding: 0;
+}

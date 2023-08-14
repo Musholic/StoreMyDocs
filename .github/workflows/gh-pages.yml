@@ -3,19 +3,24 @@ name: GitHub Pages
 on:
   push:
     branches:
-      - master
+      - production
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          # So that we can use git describe properly
+          fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
           cache: 'npm'
 
       - name: Install dependencies
@@ -24,13 +29,34 @@ jobs:
       - name: Run tests
         run: npm run test:headless
 
+      - name: Set version from git
+        run: npm run set-version-from-git
+
       - name: Build
         run: npm run build:prod
 
-      - name: Deploy
-        if: success()
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: dist/storemydocs
-          enable_jekyll: true
+          path: 'dist/storemydocs'
+  deploy:
+    # Add a dependency to the build job
+    needs: build
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+
+    # Specify runner + deployment step
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
