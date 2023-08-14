@@ -1,3 +1,7 @@
+[![build](https://github.com/Musholic/StoreMyDocs/actions/workflows/build.yml/badge.svg)](https://github.com/Musholic/StoreMyDocs/actions/workflows/build.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Musholic_StoreMyDocs&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Musholic_StoreMyDocs)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Musholic_StoreMyDocs&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Musholic_StoreMyDocs)
+
 # StoreMyDocs (Work in Progress)
 
 StoreMyDocs is a web application designed with the primary purpose of effortlessly centralizing and storing all of your documents. It offers:
