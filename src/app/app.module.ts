@@ -20,6 +20,7 @@ import {FooterComponent} from './footer/footer.component';
 import {FileListComponent} from './file-list/file-list.component';
 import {MatTableModule} from "@angular/material/table";
 import {NgxFilesizeModule} from "ngx-filesize";
+import {MatRippleModule} from "@angular/material/core";
 
 @NgModule({
   declarations: [
@@ -45,7 +46,8 @@ import {NgxFilesizeModule} from "ngx-filesize";
     MatProgressBarModule,
     MatMenuModule,
     MatListModule,
-    MatTableModule
+    MatTableModule,
+    MatRippleModule
   ],
   providers: [],
   bootstrap: [AppComponent]

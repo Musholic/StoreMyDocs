@@ -15,7 +15,7 @@ export interface FileElement {
   styleUrls: ['./file-list.component.scss']
 })
 export class FileListComponent implements OnInit {
-  displayedColumns: string[] = ['name', 'date', 'size'];
+  displayedColumns: string[] = ['icon', 'name', 'date', 'size'];
   dataSource = new MatTableDataSource();
 
   constructor(private fileListService: FileListService) {
