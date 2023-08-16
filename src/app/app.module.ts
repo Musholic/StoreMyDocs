@@ -19,6 +19,7 @@ import {MatListModule} from "@angular/material/list";
 import {FooterComponent} from './footer/footer.component';
 import {FileListComponent} from './file-list/file-list.component';
 import {MatTableModule} from "@angular/material/table";
+import {NgxFilesizeModule} from "ngx-filesize";
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import {MatTableModule} from "@angular/material/table";
     AppRoutingModule,
     BrowserAnimationsModule,
     HttpClientModule,
+    NgxFilesizeModule,
 
     MatToolbarModule,
     MatButtonModule,
