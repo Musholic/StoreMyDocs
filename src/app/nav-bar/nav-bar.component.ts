@@ -1,6 +1,5 @@
 import {AfterViewInit, Component, NgZone} from '@angular/core';
 import {GoogleDriveAuthService} from "../file-upload/google-drive-auth.service";
-import {accounts} from "google-one-tap";
 
 @Component({
     selector: 'app-nav-bar',
@@ -14,10 +13,8 @@ export class NavBarComponent implements AfterViewInit {
     }
 
     ngAfterViewInit() {
-        // @ts-ignore
-        const gAccounts: accounts = google.accounts;
 
-        gAccounts.id.initialize({
+      google.accounts.id.initialize({
             client_id: this.GOOGLE_CLIENT_ID,
             context: "signin",
             ux_mode: 'popup',
@@ -29,7 +26,7 @@ export class NavBarComponent implements AfterViewInit {
             },
         });
 
-        gAccounts.id.renderButton(document.getElementById('gbtn') as HTMLElement, {
+      google.accounts.id.renderButton(document.getElementById('gbtn') as HTMLElement, {
             size: 'large',
             type: "standard",
             shape: "rectangular",
@@ -40,7 +37,7 @@ export class NavBarComponent implements AfterViewInit {
 
         if (!this.authService.isAuthenticated()) {
             // For automatic sign in with One Tap
-            gAccounts.id.prompt();
+          google.accounts.id.prompt();
         }
 
     }

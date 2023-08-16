@@ -2,13 +2,8 @@ import {GoogleDriveAuthService} from './google-drive-auth.service';
 import {MockBuilder, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {It, mock, when} from 'strong-mock';
-
-// @ts-ignore
-import TokenResponse = google.accounts.oauth2.TokenResponse;
-// @ts-ignore
-import TokenClientConfig = google.accounts.oauth2.TokenClientConfig;
-// @ts-ignore
 import TokenClient = google.accounts.oauth2.TokenClient;
+import TokenResponse = google.accounts.oauth2.TokenResponse;
 
 function getLocalStorageMock() {
   let localStorageMock = mock<Storage>();
@@ -46,7 +41,6 @@ describe('GoogleDriveAuthService', () => {
 
       setupAuthExchange();
 
-      // @ts-ignore
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
       // Act
@@ -64,7 +58,6 @@ describe('GoogleDriveAuthService', () => {
       when(() => localStorageMock.getItem('google_api_token')).thenReturn('');
       when(() => localStorageMock.setItem('google_auth_token', encodedTestUserAuthToken)).thenReturn();
 
-      // @ts-ignore
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
       // Act
@@ -82,7 +75,6 @@ describe('GoogleDriveAuthService', () => {
       when(() => localStorageMock.getItem('google_api_token')).thenReturn('at54613');
       when(() => localStorageMock.getItem('google_api_token_expires_at')).thenReturn('' + (new Date().getTime() + 60 * 1000));
 
-      // @ts-ignore
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
       // Act
@@ -100,7 +92,6 @@ describe('GoogleDriveAuthService', () => {
       when(() => localStorageMock.getItem('google_api_token_expires_at')).thenReturn(new Date().getTime() + '');
       setupAuthExchange()
 
-      // @ts-ignore
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
       // Act
@@ -118,18 +109,15 @@ describe('GoogleDriveAuthService', () => {
       when(() => localStorageMock.removeItem('google_auth_token')).thenReturn();
       when(() => localStorageMock.removeItem('google_api_token')).thenReturn();
       let disableAutoSelectMock = mock<() => void>();
-      // @ts-ignore
       window['google'] = {
         accounts: {
-          // @ts-ignore
           id: {
             disableAutoSelect: disableAutoSelectMock
           }
-        }
+        } as typeof google.accounts
       }
       when(() => disableAutoSelectMock()).thenReturn();
 
-      // @ts-ignore
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
       // Act
@@ -144,27 +132,24 @@ describe('GoogleDriveAuthService', () => {
 });
 
 function setupAuthExchange() {
-  type initTokenClientCallbackType = TokenClientConfig['callback'];
-  // @ts-ignore
+  type initTokenClientCallbackType = google.accounts.oauth2.TokenClientConfig['callback'];
   let initTokenClientMock = mock<typeof google.accounts.oauth2['initTokenClient']>();
-  // @ts-ignore
   window['google'] = {
     accounts: {
-      // @ts-ignore
       oauth2: {
         initTokenClient: initTokenClientMock
       }
-    }
+    } as typeof google.accounts
   }
   let localStorageMock = window.localStorage;
   when(() => localStorageMock.setItem('google_api_token', 'at8765465')).thenReturn();
+  // TODO: check value, probably bugged here
   when(() => localStorageMock.setItem('google_api_token_expires_at', It.isString())).thenReturn();
 
   let tokenClientMock = mock<TokenClient>();
   let initTokenClientCallback = It.willCapture<initTokenClientCallbackType>();
   when(() => initTokenClientMock(It.isObject({
     client_id: '99873064994-bn94ep45ugmo6u1s3fl3li84fr3olvnv.apps.googleusercontent.com',
-    // @ts-ignore
     callback: initTokenClientCallback,
     scope: 'https://www.googleapis.com/auth/drive.file',
     hint: 'testuser@gmail.com'

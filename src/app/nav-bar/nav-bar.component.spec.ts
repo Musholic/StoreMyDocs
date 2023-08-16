@@ -60,14 +60,11 @@ describe('NavBarComponent', () => {
 });
 
 function setupGoogleMocks() {
-  // @ts-ignore
   let gIdMock = mock<typeof google.accounts.id>();
-  // @ts-ignore
   window['google'] = {
-    // @ts-ignore
     accounts: {
-      id: gIdMock
-    }
+      id: gIdMock,
+    } as typeof google.accounts
   }
 
   when(() => gIdMock.initialize(It.isObject({
