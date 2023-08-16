@@ -143,8 +143,13 @@ function setupAuthExchange() {
   }
   let localStorageMock = window.localStorage;
   when(() => localStorageMock.setItem('google_api_token', 'at8765465')).thenReturn();
-  // TODO: check value, probably bugged here
-  when(() => localStorageMock.setItem('google_api_token_expires_at', It.isString())).thenReturn();
+  when(() => localStorageMock.setItem('google_api_token_expires_at',
+    It.matches(expires_at => {
+      let num = Number(expires_at);
+      let date = new Date().getTime();
+      return num > date && num <= date + 3600 * 1000
+    })
+  )).thenReturn();
 
   let tokenClientMock = mock<TokenClient>();
   let initTokenClientCallback = It.willCapture<initTokenClientCallbackType>();
@@ -157,7 +162,7 @@ function setupAuthExchange() {
     .thenReturn(tokenClientMock)
 
   when(() => tokenClientMock.requestAccessToken).thenReturn(() => {
-    initTokenClientCallback.value?.({access_token: 'at8765465'} as TokenResponse)
+    initTokenClientCallback.value?.({access_token: 'at8765465', expires_in: '3600'} as TokenResponse)
   })
 }
 

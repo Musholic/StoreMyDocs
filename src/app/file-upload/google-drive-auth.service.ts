@@ -45,8 +45,7 @@ export class GoogleDriveAuthService {
     localStorage.setItem(GoogleDriveAuthService.LOCAL_STORAGE_API_TOKEN, tokenResponse.access_token)
 
     let expires_at = new Date();
-    // @ts-ignore TODO: remove
-    expires_at.setSeconds(expires_at.getSeconds() + tokenResponse.expires_in);
+    expires_at.setSeconds(expires_at.getSeconds() + Number(tokenResponse.expires_in));
     localStorage.setItem(GoogleDriveAuthService.LOCAL_STORAGE_API_TOKEN_EXPIRES_AT, expires_at.getTime() + '')
     this.apiToken = tokenResponse.access_token;
   }
