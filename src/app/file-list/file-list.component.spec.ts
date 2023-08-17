@@ -37,13 +37,15 @@ describe('FileListComponent', () => {
       size: 1421315,
       date: '2023-08-14T14:48:44.928Z',
       name: 'name1',
-      iconLink: "https://drive-thirdparty.googleusercontent.com/16/type/application/pdf"
+      iconLink: "link",
+      dlLink: "dlLink"
     };
     let el2: FileElement = {
       size: 1745,
       date: '2023-08-03T14:54:55.556Z',
       name: 'name2',
-      iconLink: "https://drive-thirdparty.googleusercontent.com/16/type/application/pdf"
+      iconLink: "link",
+      dlLink: "dlLink"
     };
     when(() => listMock()).thenReturn(of([el1, el2]));
 

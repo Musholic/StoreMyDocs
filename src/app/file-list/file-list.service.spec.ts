@@ -33,7 +33,7 @@ describe('FileListService', () => {
     // Assert
     tick();
 
-    const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?q='parentId7854'%20in%20parents&fields=files(name,createdTime,size,iconLink)");
+    const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?q='parentId7854'%20in%20parents&fields=files(name,createdTime,size,iconLink,webContentLink)");
     expect(req.request.method).toEqual('GET');
     expect(req.request.headers.get('Authorization')).toEqual('Bearer at87964');
     req.flush({
@@ -42,19 +42,22 @@ describe('FileListService', () => {
           "size": "1811088",
           "name": "data.bin",
           "createdTime": "2023-08-14T14:48:44.928Z",
-          iconLink: "link"
+          iconLink: "link",
+          webContentLink: "dlLink"
         },
         {
           "size": "215142",
           "name": "document.pdf",
           "createdTime": "2023-08-14T12:28:46.935Z",
-          iconLink: "link"
+          iconLink: "link",
+          webContentLink: "dlLink"
         },
         {
           "size": "23207",
           "name": "test-render.png",
           "createdTime": "2023-08-03T14:54:55.556Z",
-          iconLink: "link"
+          iconLink: "link",
+          webContentLink: "dlLink"
         }
       ]
     });
@@ -64,19 +67,22 @@ describe('FileListService', () => {
         "size": 1811088,
         "name": "data.bin",
         "date": "2023-08-14T14:48:44.928Z",
-        iconLink: "link"
+        iconLink: "link",
+        dlLink: "dlLink"
       },
       {
         "size": 215142,
         "name": "document.pdf",
         "date": "2023-08-14T12:28:46.935Z",
-        iconLink: "link"
+        iconLink: "link",
+        dlLink: "dlLink"
       },
       {
         "size": 23207,
         "name": "test-render.png",
         "date": "2023-08-03T14:54:55.556Z",
-        iconLink: "link"
+        iconLink: "link",
+        dlLink: "dlLink"
       }
     ]);
 

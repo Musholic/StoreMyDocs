@@ -23,5 +23,7 @@
   </ng-container>
 
   <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-  <mat-row mat-ripple *matRowDef="let row; columns: displayedColumns;"></mat-row>
+  <a [href]="row.dlLink" *matRowDef="let row; columns: displayedColumns;" class="file-link">
+    <mat-row mat-ripple></mat-row>
+  </a>
 </mat-table>
