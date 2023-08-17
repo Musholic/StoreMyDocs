@@ -6,6 +6,7 @@ export interface FileElement {
   name: string;
   date: string;
   size: number;
+  iconLink: string;
 }
 
 

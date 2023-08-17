@@ -21,6 +21,7 @@ import {FileListComponent} from './file-list/file-list.component';
 import {MatTableModule} from "@angular/material/table";
 import {NgxFilesizeModule} from "ngx-filesize";
 import {MatRippleModule} from "@angular/material/core";
+import {NgOptimizedImage} from "@angular/common";
 
 @NgModule({
   declarations: [
@@ -47,7 +48,8 @@ import {MatRippleModule} from "@angular/material/core";
     MatMenuModule,
     MatListModule,
     MatTableModule,
-    MatRippleModule
+    MatRippleModule,
+    NgOptimizedImage
   ],
   providers: [],
   bootstrap: [AppComponent]

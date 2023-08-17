@@ -8,7 +8,8 @@
 
   <ng-container matColumnDef="name">
     <mat-header-cell *matHeaderCellDef> Name</mat-header-cell>
-    <mat-cell *matCellDef="let element">{{element.name}} </mat-cell>
+    <mat-cell *matCellDef="let element"><img [ngSrc]="element.iconLink" alt="file icon" width="16" height="16">
+      &nbsp; {{element.name}} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="date">
