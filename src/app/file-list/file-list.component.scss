@@ -1,12 +1,5 @@
-.mat-mdc-row .mat-mdc-cell {
+.mat-column-actions {
+  flex: 0 0 72px;
+  padding: 24px;
   cursor: pointer;
-}
-
-.mat-column-icon {
-  flex: 0 0 48px;
-  padding: 12px;
-}
-
-a.file-link {
-  text-decoration: none;
 }
