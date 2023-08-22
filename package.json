@@ -8,8 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "set-version-from-git": "npm version --no-git-tag-version --allow-same-version $(git describe --tags)",
     "build:prod": "ng build --configuration production",
-    "test": "ng test",
-    "test:headless": "ng test --watch=false --browsers=ChromeHeadless --code-coverage"
+    "test": "TZ=UTC ng test",
+    "test:headless": "TZ=UTC ng test --watch=false --browsers=ChromeHeadless --code-coverage"
   },
   "private": true,
   "dependencies": {

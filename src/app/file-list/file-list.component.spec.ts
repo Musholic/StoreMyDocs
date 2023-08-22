@@ -53,7 +53,10 @@ describe('FileListComponent', () => {
     const component = MockRender(FileListComponent).point.componentInstance;
 
     // Assert
-    expect([['download', 'name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB'], ['download', 'name2', 'Aug 3, 2023, 2:54:55 PM', '1.75 kB']]).toEqual(Page.getTableRows());
+    let actionsRow = 'more_vertdownloadDownloaddeleteDelete';
+    let expected = [['name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow],
+      ['name2', 'Aug 3, 2023, 2:54:55 PM', '1.75 kB', actionsRow]];
+    expect(expected).toEqual(Page.getTableRows());
   })
 });
 
