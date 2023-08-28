@@ -15,7 +15,6 @@ export class FileUploadService {
   }
 
   upload(file: File): Observable<HttpProgressEvent> {
-    console.log('Uploading ' + file.name)
     const contentType = file.type || 'application/octet-stream';
     let unknownFolder = true;
 

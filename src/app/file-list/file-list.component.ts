@@ -3,6 +3,7 @@ import {MatTableDataSource} from "@angular/material/table";
 import {FileListService} from "./file-list.service";
 
 export interface FileElement {
+  id: string;
   name: string;
   date: string;
   size: number;
@@ -29,4 +30,7 @@ export class FileListComponent implements OnInit {
     })
   }
 
+  deleteFile(element: FileElement) {
+    this.fileListService.delete(element.id);
+  }
 }

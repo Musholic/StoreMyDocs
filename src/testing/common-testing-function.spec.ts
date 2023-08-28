@@ -17,3 +17,15 @@ export function mockFindOrCreateBaseFolder() {
   baseFolderService.findOrCreateBaseFolder = findOrCreateBaseFolderMock
   when(() => findOrCreateBaseFolderMock('at87964')).thenReturn(of('parentId7854'));
 }
+
+export async function findAsyncSequential<T>(
+  array: T[],
+  predicate: (t: T) => Promise<boolean>,
+): Promise<T | undefined> {
+  for (const t of array) {
+    if (await predicate(t)) {
+      return t;
+    }
+  }
+  return undefined;
+}
