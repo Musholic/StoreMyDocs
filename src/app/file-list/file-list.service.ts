@@ -30,7 +30,7 @@ export class FileListService {
       'Authorization': authHeader,
       'Content-Type': 'application/json'
     };
-    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("'" + folderId + "' in parents") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink)");
+    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("'" + folderId + "' in parents and trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink)");
     return this.http.get<gapi.client.drive.FileList>(url, {headers: headers}).pipe(map(res => {
       if (res.files) {
         return res.files.map(f => {

@@ -28,12 +28,14 @@ describe('FileListService', () => {
     // Act
     let result: FileElement[] = [];
     service.list()
-        .subscribe(value => result = value)
+      .subscribe(value => result = value)
 
     // Assert
     tick();
 
-    const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?q='parentId7854'%20in%20parents&fields=files(id,name,createdTime,size,iconLink,webContentLink)");
+    const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?" +
+      "q='parentId7854'%20in%20parents%20and%20trashed%20=%20false" +
+      "&fields=files(id,name,createdTime,size,iconLink,webContentLink)");
     expect(req.request.method).toEqual('GET');
     expect(req.request.headers.get('Authorization')).toEqual('Bearer at87964');
     req.flush({
