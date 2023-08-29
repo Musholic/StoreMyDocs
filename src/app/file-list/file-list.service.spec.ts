@@ -28,7 +28,7 @@ describe('FileListService', () => {
     // Act
     let result: FileElement[] = [];
     service.list()
-      .subscribe(value => result = value)
+        .subscribe(value => result = value)
 
     // Assert
     tick();
@@ -91,6 +91,30 @@ describe('FileListService', () => {
         dlLink: "dlLink"
       }
     ]);
+
+    // Finally, assert that there are no outstanding requests.
+    httpTestingController.verify();
+  }))
+
+  it('should trash file', fakeAsync(() => {
+    // Arrange
+    const service = MockRender(FileListService).point.componentInstance;
+    let httpTestingController = TestBed.inject(HttpTestingController);
+    mockGetApiToken();
+
+    // Act
+    service.trash('id545').subscribe();
+
+    // Assert
+    tick();
+
+    const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files/id545");
+    expect(req.request.method).toEqual('PATCH');
+    expect(req.request.body).toEqual({
+      trashed: true
+    });
+    expect(req.request.headers.get('Authorization')).toEqual('Bearer at87964');
+    req.flush({});
 
     // Finally, assert that there are no outstanding requests.
     httpTestingController.verify();

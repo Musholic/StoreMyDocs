@@ -13,22 +13,22 @@ import {HarnessLoader} from "@angular/cdk/testing";
 import {MatMenuHarness} from "@angular/material/menu/testing";
 import {MatMenuModule} from "@angular/material/menu";
 import {BrowserAnimationsModule, NoopAnimationsModule} from "@angular/platform-browser/animations";
-import {findAsyncSequential} from "../../testing/common-testing-function.spec";
+import {findAsyncSequential, mustBeConsumedObservable} from "../../testing/common-testing-function.spec";
 
 describe('FileListComponent', () => {
   MockInstance.scope();
 
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
-    .keep(MatTableModule)
-    .keep(NgxFilesizeModule)
-    .keep(MatMenuModule)
-    .replace(BrowserAnimationsModule, NoopAnimationsModule)
+      .keep(MatTableModule)
+      .keep(NgxFilesizeModule)
+      .keep(MatMenuModule)
+      .replace(BrowserAnimationsModule, NoopAnimationsModule)
   );
 
   it('should create (no element)', fakeAsync(() => {
     // Arrange
     let listMock = MockInstance(FileListService, 'list', mock<FileListService['list']>());
-    when(() => listMock()).thenReturn(of([]));
+    when(() => listMock()).thenReturn(mustBeConsumedObservable(of([])));
 
     // Act
     const component = MockRender(FileListComponent).point.componentInstance;
@@ -53,23 +53,22 @@ describe('FileListComponent', () => {
     expect(expected).toEqual(Page.getTableRows());
   })
 
-  it('should delete an item', fakeAsync(async () => {
+  it('should trash an item', fakeAsync(async () => {
     // Arrange
     mockListTwoItems();
-    let deleteMock = MockInstance(FileListService, 'delete', mock<FileListService['delete']>());
-    when(() => deleteMock('id2')).thenReturn();
+    let trashMock = MockInstance(FileListService, 'trash', mock<FileListService['trash']>());
+    when(() => trashMock('id2'))
+        .thenReturn(mustBeConsumedObservable(of(undefined)));
     let fixture = MockRender(FileListComponent);
     let page = new Page(fixture);
     tick();
 
     // Act
     Page.openItemMenu('name2');
-    await page.clickMenuDelete()
+    await page.clickMenuTrash()
 
     // Assert
-    // Expectations are from the mock setup
-    expect().nothing()
-
+    tick();
   }))
 });
 
@@ -105,23 +104,23 @@ class Page {
 
   static getTableRows(): string[][] {
     return ngMocks.findAll("mat-row")
-      .map(row => row.children
-        .map(child => child.nativeNode.textContent.trim()));
+        .map(row => row.children
+            .map(child => child.nativeNode.textContent.trim()));
   }
 
-  async clickMenuDelete() {
+  async clickMenuTrash() {
     let matMenuHarnesses = await this.harnessLoader.getAllHarnesses(MatMenuHarness);
     // The menu should be the one opened
     let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
-    await matMenuHarness?.clickItem({selector: '.delete-file'});
+    await matMenuHarness?.clickItem({selector: '.trash-file'});
   }
 
   static openItemMenu(name: string) {
     let row = ngMocks.findAll("mat-row")
-      .filter(value => {
-        let nameColumn = ngMocks.find(value, ".mat-column-name");
-        return nameColumn.nativeNode.textContent.trim() === name;
-      })[0];
+        .filter(value => {
+          let nameColumn = ngMocks.find(value, ".mat-column-name");
+          return nameColumn.nativeNode.textContent.trim() === name;
+        })[0];
     ngMocks.find(row, ".mat-column-actions").nativeNode.click();
   }
 }

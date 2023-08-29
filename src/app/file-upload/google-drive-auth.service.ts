@@ -60,6 +60,11 @@ export class GoogleDriveAuthService {
     if (!this.apiToken) {
       await this.auth();
     }
+
+    if (this.apiToken == null) {
+      throw new Error('no api access token!')
+    }
+
     return this.apiToken;
   }
 

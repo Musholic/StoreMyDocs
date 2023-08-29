@@ -20,10 +20,6 @@ export class FileUploadService {
 
     return from(this.authService.getApiToken()).pipe(
       mergeMap(accessToken => {
-        if (accessToken == null) {
-          throw new Error('no api access token!')
-        }
-
         return this.baseFolderService.findOrCreateBaseFolder(accessToken)
           .pipe(mergeMap(baseFolderId => {
             return this.createUploadFileRequest(accessToken, file, contentType, baseFolderId);

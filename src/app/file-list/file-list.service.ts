@@ -16,9 +16,6 @@ export class FileListService {
   list(): Observable<FileElement[]> {
     return from(this.authService.getApiToken()).pipe(
       mergeMap(accessToken => {
-        if (accessToken == null) {
-          throw new Error('no api access token!')
-        }
         return this.baseFolderService.findOrCreateBaseFolder(accessToken).pipe(
           mergeMap(baseFolderId => {
             return this.findInFolder(accessToken, baseFolderId)
@@ -52,7 +49,17 @@ export class FileListService {
     }));
   }
 
-  delete(id: string) {
+  trash(id: string) {
+    return from(this.authService.getApiToken()).pipe(
+        mergeMap(accessToken => {
+          const authHeader = `Bearer ${accessToken}`;
+          const headers = {
+            'Authorization': authHeader,
+            'Content-Type': 'application/json'
+          };
 
+          const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '/' + id
+          return this.http.patch<void>(url, {trashed: true}, {headers: headers});
+        }));
   }
 }

@@ -30,7 +30,7 @@ export class FileListComponent implements OnInit {
     })
   }
 
-  deleteFile(element: FileElement) {
-    this.fileListService.delete(element.id);
+  trashFile(element: FileElement) {
+    this.fileListService.trash(element.id).subscribe();
   }
 }

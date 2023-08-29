@@ -2,7 +2,7 @@ import {TestBed} from "@angular/core/testing";
 import {GoogleDriveAuthService} from "../app/file-upload/google-drive-auth.service";
 import {mock, when} from "strong-mock";
 import {BaseFolderService} from "../app/file-upload/base-folder.service";
-import {of} from "rxjs";
+import {Observable, of, tap} from "rxjs";
 
 export function mockGetApiToken() {
   let authService = TestBed.inject(GoogleDriveAuthService);
@@ -28,4 +28,19 @@ export async function findAsyncSequential<T>(
     }
   }
   return undefined;
+}
+
+let notConsumedObservables = new Set<Observable<any>>();
+
+export function mustBeConsumedObservable<T>(observable: Observable<T>): Observable<T> {
+  notConsumedObservables.add(observable);
+  return observable.pipe(tap(value => notConsumedObservables.delete(observable)));
+}
+
+export function verifyObservablesAreConsumed() {
+  expect(notConsumedObservables.size).withContext("An observable was not consumed").toEqual(0);
+}
+
+export function resetObservablesAreConsumed() {
+  notConsumedObservables.clear();
 }
