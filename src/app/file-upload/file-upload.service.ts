@@ -1,6 +1,14 @@
 import {Injectable} from '@angular/core';
 import {GoogleDriveAuthService} from "./google-drive-auth.service";
-import {HttpClient, HttpEvent, HttpEventType, HttpHeaders, HttpProgressEvent, HttpRequest} from "@angular/common/http";
+import {
+  HttpClient,
+  HttpEvent,
+  HttpEventType,
+  HttpHeaders,
+  HttpProgressEvent,
+  HttpRequest,
+  HttpResponse
+} from "@angular/common/http";
 import {catchError, filter, from, mergeMap, Observable, of} from "rxjs";
 import {BaseFolderService} from "./base-folder.service";
 
@@ -14,7 +22,7 @@ export class FileUploadService {
   constructor(private authService: GoogleDriveAuthService, private http: HttpClient, private baseFolderService: BaseFolderService) {
   }
 
-  upload(file: File): Observable<HttpProgressEvent> {
+  upload(file: File): Observable<HttpProgressEvent | HttpResponse<any>> {
     const contentType = file.type || 'application/octet-stream';
     let unknownFolder = true;
 
@@ -29,7 +37,7 @@ export class FileUploadService {
         const locationUrl = metadataRes.headers.get('Location') ?? '';
         return this.uploadFileToUrl(locationUrl, contentType, file);
       }),
-      filter((e: HttpEvent<any>): e is HttpProgressEvent => e.type === HttpEventType.UploadProgress),
+      filter((e: HttpEvent<any>): e is HttpProgressEvent | HttpResponse<any> => e.type === HttpEventType.UploadProgress || e.type === HttpEventType.Response),
       catchError(err => {
         console.log(err)
         return of();

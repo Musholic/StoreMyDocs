@@ -1,8 +1,8 @@
 <header class="smd-header">
-    <h1>Store My Docs</h1>
-    <h2>Store and centralize all your documents securely in one place!</h2>
+  <h1>Store My Docs</h1>
+  <h2>Store and centralize all your documents securely in one place!</h2>
 </header>
-<app-file-list></app-file-list>
+<app-file-list #fileList></app-file-list>
 <div class="smd-main-content">
-  <app-file-upload></app-file-upload>
+  <app-file-upload (onUploadFinish)="fileList.refresh()"></app-file-upload>
 </div>

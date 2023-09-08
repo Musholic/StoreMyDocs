@@ -53,15 +53,24 @@ describe('FileListComponent', () => {
     expect(expected).toEqual(Page.getTableRows());
   })
 
-  it('should trash an item', fakeAsync(async () => {
+  it('should trash an item then refresh', fakeAsync(async () => {
     // Arrange
-    mockListTwoItems();
+    let listMock = mockListTwoItems();
     let trashMock = MockInstance(FileListService, 'trash', mock<FileListService['trash']>());
     when(() => trashMock('id2'))
         .thenReturn(mustBeConsumedObservable(of(undefined)));
     let fixture = MockRender(FileListComponent);
     let page = new Page(fixture);
     tick();
+    let el1: FileElement = {
+      id: 'id1',
+      size: 1421315,
+      date: '2023-08-14T14:48:44.928Z',
+      name: 'name1',
+      iconLink: "link",
+      dlLink: "dlLink"
+    };
+    when(() => listMock()).thenReturn(of([el1]))
 
     // Act
     Page.openItemMenu('name2');
@@ -69,6 +78,9 @@ describe('FileListComponent', () => {
 
     // Assert
     tick();
+    let actionsRow = 'more_vert';
+    let expected = [['name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
+    expect(expected).toEqual(Page.getTableRows());
   }))
 });
 
@@ -91,6 +103,7 @@ function mockListTwoItems() {
     dlLink: "dlLink"
   };
   when(() => listMock()).thenReturn(of([el1, el2]));
+  return listMock;
 }
 
 class Page {

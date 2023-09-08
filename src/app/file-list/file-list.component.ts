@@ -25,12 +25,17 @@ export class FileListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.fileListService.list().subscribe(files => {
-      this.dataSource.data = files;
-    })
+    this.refresh();
   }
 
   trashFile(element: FileElement) {
-    this.fileListService.trash(element.id).subscribe();
+    this.fileListService.trash(element.id)
+      .subscribe(() => this.refresh());
+  }
+
+  refresh() {
+    this.fileListService.list().subscribe(files => {
+      this.dataSource.data = files;
+    })
   }
 }

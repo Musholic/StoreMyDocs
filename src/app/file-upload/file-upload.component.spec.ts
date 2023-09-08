@@ -7,7 +7,7 @@ import {FileUploadService} from "./file-upload.service";
 import {mock, when} from "strong-mock";
 import {Observable, of} from "rxjs";
 import {FileUploadElementComponent} from "./file-upload-element/file-upload-element.component";
-import {HttpEventType} from "@angular/common/http";
+import {HttpEventType, HttpResponse} from "@angular/common/http";
 
 describe('FileUploadComponent', () => {
 
@@ -70,6 +70,29 @@ describe('FileUploadComponent', () => {
         total: 100
       }])
     });
+
+    it('Should trigger upload finish event', () => {
+      // Arrange
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
+      let fileUploadService = TestBed.inject(FileUploadService);
+      let uploadMock = mock<typeof fileUploadService['upload']>();
+      fileUploadService.upload = uploadMock;
+
+      let file = new File([''], 'TestFile.txt');
+      when(() => uploadMock(file)).thenReturn(of({
+        type: HttpEventType.Response
+      } as HttpResponse<any>))
+      let component = fixture.point.componentInstance;
+      let finishedEventReceived = false;
+      component.onUploadFinish.subscribe(() => finishedEventReceived = true)
+
+      // Act
+      page.uploadFile(file);
+
+      // Assert
+      expect(finishedEventReceived).toBeTruthy();
+    })
   })
 });
 
