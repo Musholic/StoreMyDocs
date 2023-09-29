@@ -3,6 +3,11 @@
     <mat-icon fontIcon="upload"></mat-icon>
     Upload files...
 </button>
+&nbsp;
+<button mat-raised-button color="primary" (click)="showGooglePicker()">
+  <mat-icon fontIcon="add_to_drive"></mat-icon>
+  Add file from Google Drive...
+</button>
 <br>
 <div *ngFor="let file of files">
     <br>

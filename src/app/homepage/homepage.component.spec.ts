@@ -1,24 +1,13 @@
-import {ComponentFixture, TestBed} from '@angular/core/testing';
-
 import {HomepageComponent} from './homepage.component';
-import {MockComponent} from "ng-mocks";
-import {FileUploadComponent} from "../file-upload/file-upload.component";
+import {MockBuilder, MockRender} from "ng-mocks";
+import {AppModule} from "../app.module";
 
 describe('HomepageComponent', () => {
-  let component: HomepageComponent;
-  let fixture: ComponentFixture<HomepageComponent>;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [MockComponent(FileUploadComponent)],
-      declarations: [HomepageComponent]
-    });
-    fixture = TestBed.createComponent(HomepageComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+  beforeEach(() => MockBuilder(HomepageComponent, AppModule));
 
   it('should create', () => {
+    let component = MockRender(HomepageComponent).point.componentInstance;
     expect(component).toBeTruthy();
   });
 });

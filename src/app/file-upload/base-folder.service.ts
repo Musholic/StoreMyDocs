@@ -6,7 +6,7 @@ import {HttpClient} from "@angular/common/http";
   providedIn: 'root'
 })
 export class BaseFolderService {
-  private readonly DRIVE_API_FILES_BASE_URL = 'https://www.googleapis.com/drive/v3/files';
+  static readonly DRIVE_API_FILES_BASE_URL = 'https://www.googleapis.com/drive/v3/files';
   private readonly BASE_FOLDER_NAME = 'storemydocs.ovh';
 
   constructor(private http: HttpClient) {
@@ -29,10 +29,9 @@ export class BaseFolderService {
       'Authorization': authHeader,
       'Content-Type': 'application/json'
     };
-    const url = this.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("mimeType='application/vnd.google-apps.folder' and name='" + this.BASE_FOLDER_NAME + "'");
-    // @ts-ignore
+    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("mimeType='application/vnd.google-apps.folder' and name='" + this.BASE_FOLDER_NAME + "'");
     return this.http.get<gapi.client.drive.FileList>(url, {headers: headers}).pipe(map(res => {
-      if (res.files.length > 0) {
+      if (res.files && res.files.length > 0) {
         return res.files[0].id;
       }
       return undefined;
@@ -48,9 +47,8 @@ export class BaseFolderService {
       'name': this.BASE_FOLDER_NAME,
       'mimeType': 'application/vnd.google-apps.folder'
     };
-    const url = this.DRIVE_API_FILES_BASE_URL;
+    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL;
 
-    // @ts-ignore
     return this.http.post<gapi.client.drive.File>(url, metadata, {headers: headers})
       .pipe(map(res => {
         if (!res.id) {

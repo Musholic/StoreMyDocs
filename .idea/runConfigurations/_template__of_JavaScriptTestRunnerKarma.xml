@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="true" type="JavaScriptTestRunnerKarma">
+    <config-file value="" />
+    <node-interpreter value="project" />
+    <envs>
+      <env name="TZ" value="UTC" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</component>

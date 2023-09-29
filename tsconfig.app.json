@@ -3,7 +3,11 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": []
+    "types": [
+      "gapi.client.drive-v3",
+      "google.accounts",
+      "google.picker"
+    ]
   },
   "files": [
     "src/main.ts"

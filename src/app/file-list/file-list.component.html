@@ -1,0 +1,37 @@
+<mat-table [dataSource]="dataSource" aria-label="List of uploaded files">
+  <ng-container matColumnDef="name">
+    <mat-header-cell *matHeaderCellDef> Name</mat-header-cell>
+    <mat-cell *matCellDef="let element"><img [ngSrc]="element.iconLink" alt="file icon" width="16" height="16">
+      &nbsp; {{element.name}} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="date">
+    <mat-header-cell *matHeaderCellDef> Date</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{element.date | date:'medium'}} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="size">
+    <mat-header-cell *matHeaderCellDef> Size</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{element.size | filesize}} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <mat-header-cell *matHeaderCellDef></mat-header-cell>
+    <mat-cell *matCellDef="let element" [matMenuTriggerFor]="menu" mat-ripple>
+      <mat-icon>more_vert</mat-icon>
+      <mat-menu #menu="matMenu">
+        <a [href]="element.dlLink" mat-menu-item>
+          <mat-icon>download</mat-icon>
+          <span>Download</span>
+        </a>
+        <button mat-menu-item class="force-warn trash-file" (click)="trashFile(element)">
+          <mat-icon class="force-warn">delete</mat-icon>
+          <span>Trash</span>
+        </button>
+      </mat-menu>
+    </mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>

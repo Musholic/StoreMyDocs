@@ -1,5 +1,4 @@
 import {Component, Input} from '@angular/core';
-import {filesize} from "filesize";
 
 @Component({
     selector: 'app-file-upload-element',
@@ -9,11 +8,11 @@ export class FileUploadElementComponent {
     @Input({required: true}) fileProgress: FileUploadProgress = {fileName: '??', loaded: 0, total: 0};
 
     getLoaded() {
-        return filesize(this.fileProgress.loaded);
+      return this.fileProgress.loaded;
     }
 
     getTotal() {
-        return filesize(this.fileProgress.total);
+      return this.fileProgress.total;
     }
 
     getProgress() {
