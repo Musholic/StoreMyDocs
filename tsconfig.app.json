@@ -5,7 +5,8 @@
     "outDir": "./out-tsc/app",
     "types": [
       "gapi.client.drive-v3",
-      "google.accounts"
+      "google.accounts",
+      "google.picker"
     ]
   },
   "files": [

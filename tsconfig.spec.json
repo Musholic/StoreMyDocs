@@ -6,7 +6,8 @@
     "types": [
       "jasmine",
       "gapi.client.drive-v3",
-      "google.accounts"
+      "google.accounts",
+      "google.picker"
     ]
   },
   "include": [

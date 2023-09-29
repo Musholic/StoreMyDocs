@@ -1,15 +1,20 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {FileUploadComponent} from './file-upload.component';
 import {MatIconModule} from "@angular/material/icon";
-import {MockBuilder, MockRender, ngMocks} from "ng-mocks";
+import {MockBuilder, MockInstance, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {FileUploadService} from "./file-upload.service";
 import {mock, when} from "strong-mock";
 import {Observable, of} from "rxjs";
 import {FileUploadElementComponent} from "./file-upload-element/file-upload-element.component";
 import {HttpEventType, HttpResponse} from "@angular/common/http";
+import {TestbedHarnessEnvironment} from "@angular/cdk/testing/testbed";
+import {HarnessLoader} from "@angular/cdk/testing";
+import {MatButtonHarness} from "@angular/material/button/testing";
+import {GooglePickerService} from "./google-picker.service";
 
 describe('FileUploadComponent', () => {
+  MockInstance.scope();
 
   beforeEach(() => {
     return MockBuilder(FileUploadComponent, AppModule)
@@ -85,7 +90,7 @@ describe('FileUploadComponent', () => {
       } as HttpResponse<any>))
       let component = fixture.point.componentInstance;
       let finishedEventReceived = false;
-      component.onUploadFinish.subscribe(() => finishedEventReceived = true)
+      component.onRefreshRequest.subscribe(() => finishedEventReceived = true)
 
       // Act
       page.uploadFile(file);
@@ -94,13 +99,36 @@ describe('FileUploadComponent', () => {
       expect(finishedEventReceived).toBeTruthy();
     })
   })
+
+  describe('When selecting a file with the google picker', () => {
+    it('Should refresh files', async () => {
+      // Arrange
+      let showMock = MockInstance(GooglePickerService, 'show', mock<GooglePickerService['show']>());
+      // The user has picked a file when we show the picker
+      when(() => showMock()).thenResolve(undefined);
+
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
+      let component = fixture.point.componentInstance;
+      let finishedEventReceived = false;
+      component.onRefreshRequest.subscribe(() => finishedEventReceived = true)
+
+      // Act
+      await page.openGooglePicker();
+
+      // Assert
+      expect(finishedEventReceived).toBeTruthy();
+    });
+  });
 });
 
 class Page {
   private fixture: ComponentFixture<FileUploadComponent>;
+  private harnessLoader: HarnessLoader;
 
   constructor(fixture: ComponentFixture<FileUploadComponent>) {
     this.fixture = fixture;
+    this.harnessLoader = TestbedHarnessEnvironment.loader(fixture);
   }
 
   get uploadedFiles(): FileUploadElementComponent[] {
@@ -122,6 +150,11 @@ class Page {
     uploadInput.files = dataTransfer.files;
     uploadInput.dispatchEvent(event);
     this.fixture.detectChanges();
+  }
+
+  async openGooglePicker() {
+    let button = await this.harnessLoader.getHarness(MatButtonHarness.with({text: 'Add file from Google Drive...'}));
+    await button.click();
   }
 
   private query<T>(selector: string): T {

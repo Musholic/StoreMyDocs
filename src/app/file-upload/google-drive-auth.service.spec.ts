@@ -114,8 +114,8 @@ describe('GoogleDriveAuthService', () => {
           id: {
             disableAutoSelect: disableAutoSelectMock
           }
-        } as typeof google.accounts
-      }
+        },
+      } as typeof google;
       when(() => disableAutoSelectMock()).thenReturn();
 
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
@@ -139,8 +139,8 @@ function setupAuthExchange() {
       oauth2: {
         initTokenClient: initTokenClientMock
       }
-    } as typeof google.accounts
-  }
+    }
+  } as typeof google;
   let localStorageMock = window.localStorage;
   when(() => localStorageMock.setItem('google_api_token', 'at8765465')).thenReturn();
   when(() => localStorageMock.setItem('google_api_token_expires_at',

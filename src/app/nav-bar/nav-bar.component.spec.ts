@@ -64,8 +64,8 @@ function setupGoogleMocks() {
   window['google'] = {
     accounts: {
       id: gIdMock,
-    } as typeof google.accounts
-  }
+    }
+  } as typeof google;
 
   when(() => gIdMock.initialize(It.isObject({
     client_id: '99873064994-bn94ep45ugmo6u1s3fl3li84fr3olvnv.apps.googleusercontent.com'

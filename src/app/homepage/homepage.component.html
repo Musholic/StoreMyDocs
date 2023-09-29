@@ -4,5 +4,5 @@
 </header>
 <app-file-list #fileList></app-file-list>
 <div class="smd-main-content">
-  <app-file-upload (onUploadFinish)="fileList.refresh()"></app-file-upload>
+  <app-file-upload (onRefreshRequest)="fileList.refresh()"></app-file-upload>
 </div>

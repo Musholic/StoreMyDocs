@@ -36,6 +36,7 @@
     "@angular/compiler-cli": "^16.1.0",
     "@types/gapi.client.drive-v3": "^0.0.1",
     "@types/google.accounts": "^0.0.7",
+    "@types/google.picker": "^0.0.39",
     "@types/jasmine": "~4.3.0",
     "jasmine-core": "~4.6.0",
     "karma": "~6.4.0",
