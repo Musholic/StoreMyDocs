@@ -2,7 +2,7 @@
     <mat-card-content>
         <span>{{fileProgress.fileName}}</span>
         <mat-progress-bar mode="determinate" [value]="getProgress()"></mat-progress-bar>
-        <p><em>{{getProgress()}}%</em> {{getLoaded()}} of {{getTotal()}}</p>
+      <p><em>{{getProgress()}}%</em> {{getLoaded() | filesize}} of {{getTotal() | filesize}}</p>
         <mat-icon *ngIf="isComplete()" fontIcon="done" color="accent"></mat-icon>
     </mat-card-content>
 </mat-card>

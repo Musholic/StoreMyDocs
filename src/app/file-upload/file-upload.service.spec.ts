@@ -4,10 +4,7 @@ import {AppModule} from "../app.module";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {HttpClientModule, HttpEventType} from "@angular/common/http";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
-import {GoogleDriveAuthService} from "./google-drive-auth.service";
-import {mock, when} from "strong-mock";
-import {BaseFolderService} from "./base-folder.service";
-import {of} from "rxjs";
+import {mockFindOrCreateBaseFolder, mockGetApiToken} from "../../testing/common-testing-function.spec";
 
 describe('FileUploadService', () => {
   beforeEach(() =>
@@ -28,14 +25,8 @@ describe('FileUploadService', () => {
     const service = MockRender(FileUploadService).point.componentInstance;
     let f = new File(["test_content"], "test.txt", {type: 'application/txt'});
     let httpTestingController = TestBed.inject(HttpTestingController);
-    let authService = TestBed.inject(GoogleDriveAuthService);
-    let baseFolderService = TestBed.inject(BaseFolderService);
-    let accessTokenMock = mock<GoogleDriveAuthService['getApiToken']>();
-    authService.getApiToken = accessTokenMock;
-    when(() => accessTokenMock()).thenResolve('at87964');
-    let findOrCreateBaseFolderMock = mock<BaseFolderService['findOrCreateBaseFolder']>();
-    baseFolderService.findOrCreateBaseFolder = findOrCreateBaseFolderMock
-    when(() => findOrCreateBaseFolderMock('at87964')).thenReturn(of('parentId7854'));
+    mockGetApiToken();
+    mockFindOrCreateBaseFolder();
 
     // Act
     let completedRequest = false;

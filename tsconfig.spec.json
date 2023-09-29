@@ -4,7 +4,10 @@
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
     "types": [
-      "jasmine"
+      "jasmine",
+      "gapi.client.drive-v3",
+      "google.accounts",
+      "google.picker"
     ]
   },
   "include": [

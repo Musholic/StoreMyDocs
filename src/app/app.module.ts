@@ -17,6 +17,11 @@ import {NavBarComponent} from './nav-bar/nav-bar.component';
 import {MatMenuModule} from "@angular/material/menu";
 import {MatListModule} from "@angular/material/list";
 import {FooterComponent} from './footer/footer.component';
+import {FileListComponent} from './file-list/file-list.component';
+import {MatTableModule} from "@angular/material/table";
+import {NgxFilesizeModule} from "ngx-filesize";
+import {MatRippleModule} from "@angular/material/core";
+import {NgOptimizedImage} from "@angular/common";
 
 @NgModule({
   declarations: [
@@ -25,22 +30,27 @@ import {FooterComponent} from './footer/footer.component';
     HomepageComponent,
     FileUploadElementComponent,
     NavBarComponent,
-    FooterComponent
+    FooterComponent,
+    FileListComponent
   ],
-    imports: [
-        BrowserModule,
-        AppRoutingModule,
-        BrowserAnimationsModule,
-        HttpClientModule,
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    BrowserAnimationsModule,
+    HttpClientModule,
+    NgxFilesizeModule,
 
-        MatToolbarModule,
-        MatButtonModule,
-        MatIconModule,
-        MatCardModule,
-        MatProgressBarModule,
-        MatMenuModule,
-        MatListModule
-    ],
+    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatProgressBarModule,
+    MatMenuModule,
+    MatListModule,
+    MatTableModule,
+    MatRippleModule,
+    NgOptimizedImage
+  ],
   providers: [],
   bootstrap: [AppComponent]
 })
