@@ -82,6 +82,17 @@ describe('FileListComponent', () => {
     let expected = [['name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
     expect(expected).toEqual(Page.getTableRows());
   }))
+
+  it('should list two categories', () => {
+    // Arrange
+    mockListTwoItems();
+
+    // Act
+    MockRender(FileListComponent)
+
+    // Assert
+    expect(Page.getCategories()).toEqual(['Cat1', 'Cat2'])
+  })
 });
 
 function mockListTwoItems() {
@@ -135,5 +146,10 @@ class Page {
           return nameColumn.nativeNode.textContent.trim() === name;
         })[0];
     ngMocks.find(row, ".mat-column-actions").nativeNode.click();
+  }
+
+  static getCategories() {
+    return ngMocks.findAll("mat-list-item div")
+      .map(value => value.nativeNode.textContent.trim());
   }
 }

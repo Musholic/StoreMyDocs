@@ -1,3 +1,10 @@
+<mat-list>
+  <div mat-subheader>Categories</div>
+  <mat-list-item *ngFor="let cat of categories">
+    <mat-icon matListItemIcon>folder</mat-icon>
+    <div>{{cat}}</div>
+  </mat-list-item>
+</mat-list>
 <mat-table [dataSource]="dataSource" aria-label="List of uploaded files">
   <ng-container matColumnDef="name">
     <mat-header-cell *matHeaderCellDef> Name</mat-header-cell>
