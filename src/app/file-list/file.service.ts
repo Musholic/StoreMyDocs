@@ -13,18 +13,7 @@ export class FileService {
   constructor(private baseFolderService: BaseFolderService, private authService: GoogleDriveAuthService, private http: HttpClient) {
   }
 
-  list(): Observable<FileElement[]> {
-    return from(this.authService.getApiToken()).pipe(
-      mergeMap(accessToken => {
-        return this.baseFolderService.findOrCreateBaseFolder(accessToken).pipe(
-          mergeMap(baseFolderId => {
-            return this.findInFolder(accessToken, baseFolderId)
-          })
-        );
-      }));
-  }
-
-  private findInFolder(accessToken: string, folderId: string) {
+  findInFolder(accessToken: string, folderId: string) {
     const authHeader = `Bearer ${accessToken}`;
     const headers = {
       'Authorization': authHeader,

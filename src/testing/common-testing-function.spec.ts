@@ -3,18 +3,17 @@ import {GoogleDriveAuthService} from "../app/file-upload/google-drive-auth.servi
 import {mock, when} from "strong-mock";
 import {BaseFolderService} from "../app/file-upload/base-folder.service";
 import {Observable, of, tap} from "rxjs";
+import {MockInstance} from "ng-mocks";
 
 export function mockGetApiToken() {
-  let authService = TestBed.inject(GoogleDriveAuthService);
-  let accessTokenMock = mock<GoogleDriveAuthService['getApiToken']>();
-  authService.getApiToken = accessTokenMock;
+  let accessTokenMock = MockInstance(GoogleDriveAuthService, 'getApiToken',
+    mock<GoogleDriveAuthService['getApiToken']>())
   when(() => accessTokenMock()).thenResolve('at87964');
 }
 
 export function mockFindOrCreateBaseFolder() {
-  let baseFolderService = TestBed.inject(BaseFolderService);
-  let findOrCreateBaseFolderMock = mock<BaseFolderService['findOrCreateBaseFolder']>();
-  baseFolderService.findOrCreateBaseFolder = findOrCreateBaseFolderMock
+  let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
+    mock<BaseFolderService['findOrCreateBaseFolder']>())
   when(() => findOrCreateBaseFolderMock('at87964')).thenReturn(of('parentId7854'));
 }
 

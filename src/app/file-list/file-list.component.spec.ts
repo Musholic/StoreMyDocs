@@ -14,6 +14,7 @@ import {MatMenuHarness} from "@angular/material/menu/testing";
 import {MatMenuModule} from "@angular/material/menu";
 import {BrowserAnimationsModule, NoopAnimationsModule} from "@angular/platform-browser/animations";
 import {findAsyncSequential, mustBeConsumedObservable} from "../../testing/common-testing-function.spec";
+import {BaseFolderService} from "../file-upload/base-folder.service";
 
 describe('FileListComponent', () => {
   MockInstance.scope();
@@ -27,7 +28,7 @@ describe('FileListComponent', () => {
 
   it('should create (no element)', fakeAsync(() => {
     // Arrange
-    let listMock = MockInstance(FileService, 'list', mock<FileService['list']>());
+    let listMock = MockInstance(BaseFolderService, 'listAllFiles', mock<BaseFolderService['listAllFiles']>());
     when(() => listMock()).thenReturn(mustBeConsumedObservable(of([])));
 
     // Act
@@ -127,7 +128,7 @@ describe('FileListComponent', () => {
 });
 
 function mockListTwoItems() {
-  let listMock = MockInstance(FileService, 'list', mock<FileService['list']>());
+  let listMock = MockInstance(BaseFolderService, 'listAllFiles', mock<BaseFolderService['listAllFiles']>());
   let el1: FileElement = {
     id: 'id1',
     size: 1421315,

@@ -22,11 +22,11 @@ describe('FileUploadService', () => {
 
   it('should upload', fakeAsync(() => {
     // Arrange
-    const service = MockRender(FileUploadService).point.componentInstance;
     let f = new File(["test_content"], "test.txt", {type: 'application/txt'});
-    let httpTestingController = TestBed.inject(HttpTestingController);
     mockGetApiToken();
     mockFindOrCreateBaseFolder();
+    const service = MockRender(FileUploadService).point.componentInstance;
+    let httpTestingController = TestBed.inject(HttpTestingController);
 
     // Act
     let completedRequest = false;

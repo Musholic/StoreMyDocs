@@ -1,13 +1,14 @@
 import {FileService} from './file.service';
-import {MockBuilder, MockRender} from "ng-mocks";
+import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {HttpClientModule} from "@angular/common/http";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {FileElement} from "./file-list.component";
-import {mockFindOrCreateBaseFolder, mockGetApiToken} from "../../testing/common-testing-function.spec";
+import {mockGetApiToken} from "../../testing/common-testing-function.spec";
 
 describe('FileService', () => {
+  MockInstance.scope();
 
   beforeEach(() => MockBuilder(FileService, AppModule)
     .replace(HttpClientModule, HttpClientTestingModule)
@@ -22,22 +23,20 @@ describe('FileService', () => {
     // Arrange
     const service = MockRender(FileService).point.componentInstance;
     let httpTestingController = TestBed.inject(HttpTestingController);
-    mockGetApiToken();
-    mockFindOrCreateBaseFolder();
 
     // Act
     let result: FileElement[] = [];
-    service.list()
+    service.findInFolder('at879', 'id8495')
       .subscribe(value => result = value)
 
     // Assert
     tick();
 
     const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?" +
-      "q='parentId7854'%20in%20parents%20and%20trashed%20=%20false" +
+      "q='id8495'%20in%20parents%20and%20trashed%20=%20false" +
       "&fields=files(id,name,createdTime,size,iconLink,webContentLink)");
     expect(req.request.method).toEqual('GET');
-    expect(req.request.headers.get('Authorization')).toEqual('Bearer at87964');
+    expect(req.request.headers.get('Authorization')).toEqual('Bearer at879');
     req.flush({
       "files": [
         {
@@ -100,9 +99,9 @@ describe('FileService', () => {
 
   it('should trash file', fakeAsync(() => {
     // Arrange
+    mockGetApiToken();
     const service = MockRender(FileService).point.componentInstance;
     let httpTestingController = TestBed.inject(HttpTestingController);
-    mockGetApiToken();
 
     // Act
     service.trash('id545').subscribe();

@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {MatTableDataSource} from "@angular/material/table";
 import {FileService} from "./file.service";
+import {BaseFolderService} from "../file-upload/base-folder.service";
 
 export interface FileElement {
   id: string;
@@ -23,6 +24,7 @@ export class FileListComponent implements OnInit {
   categories: string[] = ['Cat1', 'Cat2'];
 
   constructor(private fileListService: FileService) {
+  constructor(private fileListService: FileService, private baseFolderService: BaseFolderService) {
   }
 
   ngOnInit(): void {
@@ -35,7 +37,7 @@ export class FileListComponent implements OnInit {
   }
 
   refresh() {
-    this.fileListService.list().subscribe(files => {
+    this.baseFolderService.listAllFiles().subscribe(files => {
       this.dataSource.data = files;
     })
   }
