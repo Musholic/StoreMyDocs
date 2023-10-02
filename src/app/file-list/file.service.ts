@@ -66,4 +66,49 @@ export class FileService {
     return of();
   }
 
+  findOrCreateFolder(accessToken: string, folderName: string) {
+    const authHeader = `Bearer ${accessToken}`;
+    return this.findFolder(authHeader, folderName).pipe(mergeMap(baseId => {
+      if (baseId) {
+        return of(baseId);
+      } else {
+        return this.createFolder(authHeader, folderName);
+      }
+    }))
+  }
+
+  private findFolder(authHeader: string, folderName: string) {
+    const headers = {
+      'Authorization': authHeader,
+      'Content-Type': 'application/json'
+    };
+    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("mimeType='application/vnd.google-apps.folder' and name='" + folderName + "'");
+    return this.http.get<gapi.client.drive.FileList>(url, {headers: headers}).pipe(map(res => {
+      if (res.files && res.files.length > 0) {
+        return res.files[0].id;
+      }
+      return undefined;
+    }));
+  }
+
+  private createFolder(authHeader: string, folderName: string) {
+    const headers = {
+      'Authorization': authHeader,
+      'Content-Type': 'application/json'
+    };
+    const metadata = {
+      'name': folderName,
+      'mimeType': 'application/vnd.google-apps.folder'
+    };
+    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL;
+
+    return this.http.post<gapi.client.drive.File>(url, metadata, {headers: headers})
+      .pipe(map(res => {
+        if (!res.id) {
+          throw new Error('Error creating base folder');
+        }
+        return res.id;
+      }))
+  }
+
 }
