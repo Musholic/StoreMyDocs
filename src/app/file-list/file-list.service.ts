@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {FileElement} from "./file-list.component";
-import {from, map, mergeMap, Observable} from "rxjs";
+import {from, map, mergeMap, Observable, of} from "rxjs";
 import {BaseFolderService} from "../file-upload/base-folder.service";
 import {GoogleDriveAuthService} from "../file-upload/google-drive-auth.service";
 import {HttpClient} from "@angular/common/http";
@@ -62,4 +62,8 @@ export class FileListService {
           return this.http.patch<void>(url, {trashed: true}, {headers: headers});
         }));
   }
+  setCategory() :Observable<void>{
+    return of();
+  }
+
 }

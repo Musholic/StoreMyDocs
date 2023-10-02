@@ -39,4 +39,10 @@ export class FileListComponent implements OnInit {
       this.dataSource.data = files;
     })
   }
+
+  setCategory(element: FileElement) {
+    this.fileListService.setCategory()
+      .subscribe(_ => this.refresh());
+
+  }
 }

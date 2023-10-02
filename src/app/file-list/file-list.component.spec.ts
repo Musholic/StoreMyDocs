@@ -93,6 +93,37 @@ describe('FileListComponent', () => {
     // Assert
     expect(Page.getCategories()).toEqual(['Cat1', 'Cat2'])
   })
+
+  it('should refresh after assigning a category to a file', fakeAsync(async () => {
+    // Arrange
+    let listMock = mockListTwoItems();
+    let el1: FileElement = {
+      id: 'id1',
+      size: 1421315,
+      date: '2023-08-14T14:48:44.928Z',
+      name: 'name1',
+      iconLink: "link",
+      dlLink: "dlLink"
+    };
+    when(() => listMock()).thenReturn(of([el1]))
+    let setCategoryMock = MockInstance(FileListService, 'setCategory', mock<FileListService['setCategory']>());
+    when(() => setCategoryMock()).thenReturn(of(undefined));
+
+    let fixture = MockRender(FileListComponent);
+    let page = new Page(fixture);
+
+    // Act
+    Page.openItemMenu('name2');
+    await page.clickMenuAssignCategory()
+
+    // Assert
+    //TODO: verify service setCategory + verify refresh
+    tick();
+    let actionsRow = 'more_vert';
+    let expected = [['name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
+    expect(expected).toEqual(Page.getTableRows());
+  }))
+
 });
 
 function mockListTwoItems() {
@@ -133,10 +164,14 @@ class Page {
   }
 
   async clickMenuTrash() {
+    await this.clickMenu('.trash-file');
+  }
+
+  private async clickMenu(selector: string) {
     let matMenuHarnesses = await this.harnessLoader.getAllHarnesses(MatMenuHarness);
     // The menu should be the one opened
     let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
-    await matMenuHarness?.clickItem({selector: '.trash-file'});
+    await matMenuHarness?.clickItem({selector: selector});
   }
 
   static openItemMenu(name: string) {
@@ -151,5 +186,9 @@ class Page {
   static getCategories() {
     return ngMocks.findAll("mat-list-item div")
       .map(value => value.nativeNode.textContent.trim());
+  }
+
+  async clickMenuAssignCategory() {
+    await this.clickMenu('.set-category-file');
   }
 }

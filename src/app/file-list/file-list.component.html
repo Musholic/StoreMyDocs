@@ -31,6 +31,10 @@
           <mat-icon>download</mat-icon>
           <span>Download</span>
         </a>
+        <button mat-menu-item class="set-category-file" (click)="setCategory(element)">
+          <mat-icon>category</mat-icon>
+          <span>Set category</span>
+        </button>
         <button mat-menu-item class="force-warn trash-file" (click)="trashFile(element)">
           <mat-icon class="force-warn">delete</mat-icon>
           <span>Trash</span>
