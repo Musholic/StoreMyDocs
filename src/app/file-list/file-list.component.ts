@@ -23,8 +23,7 @@ export class FileListComponent implements OnInit {
   dataSource = new MatTableDataSource();
   categories: string[] = ['Cat1', 'Cat2'];
 
-  constructor(private fileListService: FileService) {
-  constructor(private fileListService: FileService, private baseFolderService: BaseFolderService) {
+  constructor(private fileService: FileService, private baseFolderService: BaseFolderService) {
   }
 
   ngOnInit(): void {
@@ -32,7 +31,7 @@ export class FileListComponent implements OnInit {
   }
 
   trashFile(element: FileElement) {
-    this.fileListService.trash(element.id)
+    this.fileService.trash(element.id)
       .subscribe(() => this.refresh());
   }
 
@@ -43,7 +42,7 @@ export class FileListComponent implements OnInit {
   }
 
   setCategory(element: FileElement) {
-    this.fileListService.setCategory()
+    this.fileService.setCategory()
       .subscribe(_ => this.refresh());
 
   }
