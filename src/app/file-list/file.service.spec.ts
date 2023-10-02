@@ -1,4 +1,4 @@
-import {FileListService} from './file-list.service';
+import {FileService} from './file.service';
 import {MockBuilder, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {HttpClientModule} from "@angular/common/http";
@@ -7,20 +7,20 @@ import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {FileElement} from "./file-list.component";
 import {mockFindOrCreateBaseFolder, mockGetApiToken} from "../../testing/common-testing-function.spec";
 
-describe('FileListService', () => {
+describe('FileService', () => {
 
-  beforeEach(() => MockBuilder(FileListService, AppModule)
+  beforeEach(() => MockBuilder(FileService, AppModule)
     .replace(HttpClientModule, HttpClientTestingModule)
   );
 
   it('should be created', () => {
-    const service = MockRender(FileListService).point.componentInstance;
+    const service = MockRender(FileService).point.componentInstance;
     expect(service).toBeTruthy();
   });
 
   it('should list files', fakeAsync(() => {
     // Arrange
-    const service = MockRender(FileListService).point.componentInstance;
+    const service = MockRender(FileService).point.componentInstance;
     let httpTestingController = TestBed.inject(HttpTestingController);
     mockGetApiToken();
     mockFindOrCreateBaseFolder();
@@ -100,7 +100,7 @@ describe('FileListService', () => {
 
   it('should trash file', fakeAsync(() => {
     // Arrange
-    const service = MockRender(FileListService).point.componentInstance;
+    const service = MockRender(FileService).point.componentInstance;
     let httpTestingController = TestBed.inject(HttpTestingController);
     mockGetApiToken();
 

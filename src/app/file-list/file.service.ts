@@ -8,7 +8,7 @@ import {HttpClient} from "@angular/common/http";
 @Injectable({
   providedIn: 'root'
 })
-export class FileListService {
+export class FileService {
 
   constructor(private baseFolderService: BaseFolderService, private authService: GoogleDriveAuthService, private http: HttpClient) {
   }

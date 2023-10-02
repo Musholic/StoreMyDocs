@@ -5,7 +5,7 @@ import {MockBuilder, MockedComponentFixture, MockInstance, MockRender, ngMocks} 
 import {AppModule} from "../app.module";
 import {MatTableModule} from "@angular/material/table";
 import {mock, when} from "strong-mock";
-import {FileListService} from "./file-list.service";
+import {FileService} from "./file.service";
 import {of} from "rxjs";
 import {NgxFilesizeModule} from "ngx-filesize";
 import {TestbedHarnessEnvironment} from "@angular/cdk/testing/testbed";
@@ -27,7 +27,7 @@ describe('FileListComponent', () => {
 
   it('should create (no element)', fakeAsync(() => {
     // Arrange
-    let listMock = MockInstance(FileListService, 'list', mock<FileListService['list']>());
+    let listMock = MockInstance(FileService, 'list', mock<FileService['list']>());
     when(() => listMock()).thenReturn(mustBeConsumedObservable(of([])));
 
     // Act
@@ -56,7 +56,7 @@ describe('FileListComponent', () => {
   it('should trash an item then refresh', fakeAsync(async () => {
     // Arrange
     let listMock = mockListTwoItems();
-    let trashMock = MockInstance(FileListService, 'trash', mock<FileListService['trash']>());
+    let trashMock = MockInstance(FileService, 'trash', mock<FileService['trash']>());
     when(() => trashMock('id2'))
         .thenReturn(mustBeConsumedObservable(of(undefined)));
     let fixture = MockRender(FileListComponent);
@@ -106,7 +106,7 @@ describe('FileListComponent', () => {
       dlLink: "dlLink"
     };
     when(() => listMock()).thenReturn(of([el1]))
-    let setCategoryMock = MockInstance(FileListService, 'setCategory', mock<FileListService['setCategory']>());
+    let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
     when(() => setCategoryMock()).thenReturn(of(undefined));
 
     let fixture = MockRender(FileListComponent);
@@ -127,7 +127,7 @@ describe('FileListComponent', () => {
 });
 
 function mockListTwoItems() {
-  let listMock = MockInstance(FileListService, 'list', mock<FileListService['list']>());
+  let listMock = MockInstance(FileService, 'list', mock<FileService['list']>());
   let el1: FileElement = {
     id: 'id1',
     size: 1421315,

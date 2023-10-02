@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {MatTableDataSource} from "@angular/material/table";
-import {FileListService} from "./file-list.service";
+import {FileService} from "./file.service";
 
 export interface FileElement {
   id: string;
@@ -22,7 +22,7 @@ export class FileListComponent implements OnInit {
   dataSource = new MatTableDataSource();
   categories: string[] = ['Cat1', 'Cat2'];
 
-  constructor(private fileListService: FileListService) {
+  constructor(private fileListService: FileService) {
   }
 
   ngOnInit(): void {
