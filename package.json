@@ -9,7 +9,8 @@
     "set-version-from-git": "npm version --no-git-tag-version --allow-same-version $(git describe --tags)",
     "build:prod": "ng build --configuration production",
     "test": "TZ=UTC ng test",
-    "test:headless": "TZ=UTC ng test --watch=false --browsers=ChromeHeadless --code-coverage"
+    "test:headless": "TZ=UTC ng test --watch=false --browsers=ChromeHeadless --code-coverage",
+    "e2e": "npx playwright test"
   },
   "private": true,
   "dependencies": {

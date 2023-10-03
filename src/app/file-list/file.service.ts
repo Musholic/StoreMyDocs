@@ -10,7 +10,7 @@ import {HttpClient} from "@angular/common/http";
 })
 export class FileService {
 
-  constructor(private baseFolderService: BaseFolderService, private authService: GoogleDriveAuthService, private http: HttpClient) {
+  constructor(private authService: GoogleDriveAuthService, private http: HttpClient) {
   }
 
   findInFolder(accessToken: string, folderId: string) {

@@ -1,5 +1,11 @@
 import {expect, test as base} from '@playwright/test';
 
+// The following errors are excluded since they are expected with the current test environment
+const excludedErrors: string[] = [
+  'Failed to load resource: the server responded with a status of 403',
+  'The given origin is not allowed for the given client ID.'
+];
+
 type ConsoleFixtureData = {
   messages: string[];
 };
@@ -10,7 +16,6 @@ type ConsoleFixtureData = {
 export const test = base.extend<ConsoleFixtureData>({
   page: async ({page}, use) => {
     const messages: string[] = [];
-    const excludedErrors: string[] = [];
 
     page.on('console', (msg) => {
       const errorText = msg.text();
