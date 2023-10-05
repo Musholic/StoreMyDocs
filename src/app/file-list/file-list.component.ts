@@ -42,7 +42,7 @@ export class FileListComponent implements OnInit {
   }
 
   setCategory(element: FileElement) {
-    this.fileService.setCategory()
+    this.fileService.setCategory(element.id, "SMD_CatTest")
       .subscribe(_ => this.refresh());
 
   }

@@ -6,6 +6,8 @@ import {HttpClientTestingModule, HttpTestingController} from "@angular/common/ht
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {FileElement} from "./file-list.component";
 import {mockGetApiToken} from "../../testing/common-testing-function.spec";
+import {mock, when} from "strong-mock";
+import {of} from "rxjs";
 
 describe('FileService', () => {
   MockInstance.scope();
@@ -167,7 +169,7 @@ describe('FileService', () => {
     })
 
     describe('when folder already exist', () => {
-      it('should create and return a new id', fakeAsync(() => {
+      it('should return existing id', fakeAsync(() => {
         // Arrange
         const service = MockRender(FileService).point.componentInstance;
         let httpTestingController = TestBed.inject(HttpTestingController);
@@ -202,5 +204,44 @@ describe('FileService', () => {
         httpTestingController.verify();
       }))
     })
+  })
+
+  describe('setCategory', () => {
+    describe('when category does not exist', () => {
+      it('should create a new category and assign it to the file', fakeAsync(() => {
+        // Arrange
+        mockGetApiToken();
+        const service = MockRender(FileService).point.componentInstance;
+
+        // Mock already tested public functions to simplify the test
+        service.findOrCreateFolder = mock<FileService['findOrCreateFolder']>();
+        when(() => service.findOrCreateFolder('at87964', 'cat787')).thenReturn(of('fId54848'));
+
+        let httpTestingController = TestBed.inject(HttpTestingController);
+
+        // Act
+        let result = false;
+        service.setCategory('fId4895', 'cat787')
+          .subscribe(_ => result = true);
+
+        // Assert
+        tick();
+
+        // We expect a call to the drive API to move the file
+        const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files/fId4895?addParents=fId54848");
+        expect(req.request.method).toEqual('PATCH');
+        req.flush({
+          "kind": "drive#file",
+          "id": "fId4895",
+          "name": "test.txt",
+          "mimeType": "text/plain"
+        });
+
+        // Finally, assert that there are no outstanding requests.
+        httpTestingController.verify();
+
+        expect(result).toBeTruthy();
+      }))
+    });
   })
 });

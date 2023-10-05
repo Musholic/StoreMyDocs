@@ -108,7 +108,7 @@ describe('FileListComponent', () => {
     };
     when(() => listMock()).thenReturn(of([el1]))
     let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
-    when(() => setCategoryMock()).thenReturn(of(undefined));
+    when(() => setCategoryMock('id2', 'SMD_CatTest')).thenReturn(of(undefined));
 
     let fixture = MockRender(FileListComponent);
     let page = new Page(fixture);
@@ -118,7 +118,6 @@ describe('FileListComponent', () => {
     await page.clickMenuAssignCategory()
 
     // Assert
-    //TODO: verify service setCategory + verify refresh
     tick();
     let actionsRow = 'more_vert';
     let expected = [['name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];

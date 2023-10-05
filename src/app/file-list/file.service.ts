@@ -40,19 +40,33 @@ export class FileService {
 
   trash(id: string) {
     return from(this.authService.getApiToken()).pipe(
-        mergeMap(accessToken => {
+      mergeMap(accessToken => {
+        const authHeader = `Bearer ${accessToken}`;
+        const headers = {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json'
+        };
+
+        const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '/' + id
+        return this.http.patch<void>(url, {trashed: true}, {headers: headers});
+      }));
+  }
+
+  setCategory(fileId: string, category: string): Observable<void> {
+    return from(this.authService.getApiToken()).pipe(
+      mergeMap(accessToken => {
+        // TODO: create the folder inside the base folder
+        return this.findOrCreateFolder(accessToken, category).pipe(mergeMap(folderId => {
           const authHeader = `Bearer ${accessToken}`;
           const headers = {
             'Authorization': authHeader,
             'Content-Type': 'application/json'
           };
 
-          const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '/' + id
-          return this.http.patch<void>(url, {trashed: true}, {headers: headers});
-        }));
-  }
-  setCategory() :Observable<void>{
-    return of();
+          const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '/' + fileId + "?addParents=" + folderId;
+          return this.http.patch<void>(url, {}, {headers: headers});
+        }))
+      }));
   }
 
   findOrCreateFolder(accessToken: string, folderName: string) {
