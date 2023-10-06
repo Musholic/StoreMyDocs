@@ -5,7 +5,12 @@
   <h2>Store and centralize all your documents securely in one place!</h2>
 </header>
 <div class="smd-main-content">
+  <!--  TODO: add a sign in button -->
   <span class="login-message" *ngIf="!isAuthenticated()">You must be logged in to use this application</span>
-  <span class="login-message" *ngIf="isAuthenticated()">You need to authorize the access to your Google Drive files.
+  <div *ngIf="isAuthenticated()">
+    <span class="login-message">You need to authorize the access to your Google Drive files.
     Only the files and folders that you open or create with this application will be accessible</span>
+    &nbsp;
+    <button mat-raised-button color="primary" (click)="authorize()">Authorize</button>
+  </div>
 </div>
