@@ -22,6 +22,7 @@ import {MatTableModule} from "@angular/material/table";
 import {NgxFilesizeModule} from "ngx-filesize";
 import {MatRippleModule} from "@angular/material/core";
 import {NgOptimizedImage} from "@angular/common";
+import { LoginComponent } from './login/login.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +32,8 @@ import {NgOptimizedImage} from "@angular/common";
     FileUploadElementComponent,
     NavBarComponent,
     FooterComponent,
-    FileListComponent
+    FileListComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,

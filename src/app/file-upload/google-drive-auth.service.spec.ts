@@ -13,6 +13,13 @@ function getLocalStorageMock() {
   return localStorageMock;
 }
 
+function setupValidAuthenticationAndApiToken() {
+  let localStorageMock = getLocalStorageMock();
+  when(() => localStorageMock.getItem('google_auth_token')).thenReturn(encodedTestUserAuthToken);
+  when(() => localStorageMock.getItem('google_api_token')).thenReturn('at54613');
+  when(() => localStorageMock.getItem('google_api_token_expires_at')).thenReturn('' + (new Date().getTime() + 60 * 1000));
+}
+
 describe('GoogleDriveAuthService', () => {
 
   beforeEach(() =>
@@ -70,10 +77,7 @@ describe('GoogleDriveAuthService', () => {
   describe('When there is an existing token', () => {
     it('Should get existing token', async () => {
       // Arrange
-      let localStorageMock = getLocalStorageMock();
-      when(() => localStorageMock.getItem('google_auth_token')).thenReturn(encodedTestUserAuthToken);
-      when(() => localStorageMock.getItem('google_api_token')).thenReturn('at54613');
-      when(() => localStorageMock.getItem('google_api_token_expires_at')).thenReturn('' + (new Date().getTime() + 60 * 1000));
+      setupValidAuthenticationAndApiToken();
 
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
@@ -126,6 +130,66 @@ describe('GoogleDriveAuthService', () => {
       // Assert
       expect(service.getAuthToken()).toBeNull();
       expect(service.isAuthenticated()).toEqual(false);
+    });
+  })
+  describe('isAuthenticatedAndHasValidApiToken', () => {
+    it('Should return true when authenticated with valid api token', () => {
+      // Arrange
+      setupValidAuthenticationAndApiToken();
+
+      const service = MockRender(GoogleDriveAuthService).point.componentInstance;
+
+      // Act
+      let result = service.isAuthenticatedAndHasValidApiToken();
+
+      // Assert
+      expect(result).toBeTruthy();
+    });
+
+    it('Should return false when not authenticated', () => {
+      // Arrange
+      let localStorageMock = getLocalStorageMock();
+      when(() => localStorageMock.getItem('google_auth_token')).thenReturn(null);
+      when(() => localStorageMock.getItem('google_api_token')).thenReturn('at54613');
+
+      const service = MockRender(GoogleDriveAuthService).point.componentInstance;
+
+      // Act
+      let result = service.isAuthenticatedAndHasValidApiToken();
+
+      // Assert
+      expect(result).toBeFalsy();
+    });
+
+    it('Should return false when there is no api token', () => {
+      // Arrange
+      let localStorageMock = getLocalStorageMock();
+      when(() => localStorageMock.getItem('google_auth_token')).thenReturn(encodedTestUserAuthToken);
+      when(() => localStorageMock.getItem('google_api_token')).thenReturn(null);
+
+      const service = MockRender(GoogleDriveAuthService).point.componentInstance;
+
+      // Act
+      let result = service.isAuthenticatedAndHasValidApiToken();
+
+      // Assert
+      expect(result).toBeFalsy();
+    });
+
+    it('Should return false when api token is not valid', () => {
+      // Arrange
+      let localStorageMock = getLocalStorageMock();
+      when(() => localStorageMock.getItem('google_auth_token')).thenReturn(encodedTestUserAuthToken);
+      when(() => localStorageMock.getItem('google_api_token')).thenReturn('at54613');
+      when(() => localStorageMock.getItem('google_api_token_expires_at')).thenReturn('' + (new Date().getTime() - 60 * 1000));
+
+      const service = MockRender(GoogleDriveAuthService).point.componentInstance;
+
+      // Act
+      let result = service.isAuthenticatedAndHasValidApiToken();
+
+      // Assert
+      expect(result).toBeFalsy();
     });
   })
 

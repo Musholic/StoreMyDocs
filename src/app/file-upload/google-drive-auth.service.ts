@@ -51,13 +51,7 @@ export class GoogleDriveAuthService {
   }
 
   async getApiToken() {
-    if (this.apiToken) {
-      let expires_at = Number(localStorage.getItem(GoogleDriveAuthService.LOCAL_STORAGE_API_TOKEN_EXPIRES_AT));
-      if (expires_at < new Date().getTime()) {
-        this.apiToken = null;
-      }
-    }
-    if (!this.apiToken) {
+    if (!this.hasValidApiToken()) {
       await this.auth();
     }
 
@@ -68,8 +62,22 @@ export class GoogleDriveAuthService {
     return this.apiToken;
   }
 
+  private hasValidApiToken() : boolean {
+    if (this.apiToken) {
+      let expires_at = Number(localStorage.getItem(GoogleDriveAuthService.LOCAL_STORAGE_API_TOKEN_EXPIRES_AT));
+      if (expires_at < new Date().getTime()) {
+        this.apiToken = null;
+      }
+    }
+    return !!this.apiToken;
+  }
+
   isAuthenticated(): boolean {
     return this.authToken !== null;
+  }
+
+  isAuthenticatedAndHasValidApiToken(): boolean {
+    return this.authToken !== null && this.hasValidApiToken();
   }
 
   authenticate(credential: string) {
