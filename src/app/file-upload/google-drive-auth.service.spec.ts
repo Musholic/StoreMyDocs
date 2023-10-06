@@ -1,9 +1,10 @@
 import {GoogleDriveAuthService} from './google-drive-auth.service';
-import {MockBuilder, MockRender} from "ng-mocks";
+import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {It, mock, when} from 'strong-mock';
 import TokenClient = google.accounts.oauth2.TokenClient;
 import TokenResponse = google.accounts.oauth2.TokenResponse;
+import {Router} from "@angular/router";
 
 function getLocalStorageMock() {
   let localStorageMock = mock<Storage>();
@@ -121,6 +122,10 @@ describe('GoogleDriveAuthService', () => {
         },
       } as typeof google;
       when(() => disableAutoSelectMock()).thenReturn();
+
+      // Expect a redirection to the login page
+      let navigateByUrlMock = MockInstance(Router, 'navigateByUrl', mock<Router['navigateByUrl']>());
+      when(() => navigateByUrlMock('/login')).thenResolve(true)
 
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
