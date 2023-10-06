@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {GoogleDriveAuthService} from "../file-upload/google-drive-auth.service";
 import {Router} from "@angular/router";
 
@@ -7,9 +7,16 @@ import {Router} from "@angular/router";
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
   constructor(private authService: GoogleDriveAuthService, private router: Router) {
+  }
+
+  ngOnInit() {
+    // Automatically ask for authorization if already authenticated
+    if(this.authService.isAuthenticated()) {
+      this.authorize();
+    }
   }
 
   isAuthenticated() {

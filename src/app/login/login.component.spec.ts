@@ -21,6 +21,8 @@ describe('LoginComponent', () => {
 
   it('should ask for authentication when the user is not authenticated', () => {
     // Arrange
+    // Ensure we don't try to authorize
+    MockInstance(GoogleDriveAuthService, 'getApiToken', mock<GoogleDriveAuthService['getApiToken']>());
     let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
     when(() => isAuthenticatedMock()).thenReturn(false).atLeast(1);
     MockRender(LoginComponent);
@@ -33,6 +35,20 @@ describe('LoginComponent', () => {
   })
 
   describe('When the user does not have a valid API token', () => {
+    it('should automatically request authorization', async () => {
+      // Arrange
+      // Expect the api token to be requested
+      let getApiTokenMock = MockInstance(GoogleDriveAuthService, 'getApiToken', mock<GoogleDriveAuthService['getApiToken']>());
+      when(() => getApiTokenMock()).thenResolve('apiToken');
+
+      // Expect a redirection
+      let navigateByUrlMock = MockInstance(Router, 'navigateByUrl', mock<Router['navigateByUrl']>());
+      when(() => navigateByUrlMock('/')).thenResolve(true)
+
+      // Act
+      MockRender(LoginComponent);
+    })
+
     it('should ask for authorization', () => {
       // Arrange
       let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
@@ -52,8 +68,10 @@ describe('LoginComponent', () => {
       let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
       when(() => isAuthenticatedMock()).thenReturn(true).atLeast(1);
 
-      // Expect the api token to be requested
       let getApiTokenMock = MockInstance(GoogleDriveAuthService, 'getApiToken', mock<GoogleDriveAuthService['getApiToken']>());
+      // Reject the automatic authorization
+      when(() => getApiTokenMock()).thenReject();
+      // Expect the api token to be requested a second time when clicking on the button
       when(() => getApiTokenMock()).thenResolve('apiToken');
 
       // Expect a redirection
