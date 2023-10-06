@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
+import {GoogleDriveAuthService} from "../file-upload/google-drive-auth.service";
 
 @Component({
   selector: 'app-login',
@@ -7,4 +8,10 @@ import { Component } from '@angular/core';
 })
 export class LoginComponent {
 
+  constructor(private authService: GoogleDriveAuthService) {
+  }
+
+  isAuthenticated() {
+    return this.authService.isAuthenticated();
+  }
 }
