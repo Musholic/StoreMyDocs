@@ -23,6 +23,7 @@ const config = {
     "Recommended to use about half of your available cores when running stryker with angular",
   coverageAnalysis: "perTest",
   checkers: ["typescript"],
-  tsconfigFile: "tsconfig.spec.json"
+  tsconfigFile: "tsconfig.spec.json",
+  dashboard: {}
 };
 export default config;
