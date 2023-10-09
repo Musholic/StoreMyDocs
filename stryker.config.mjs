@@ -17,7 +17,7 @@ const config = {
       browsers: ["ChromeHeadless"],
     },
   },
-  reporters: ["progress", "clear-text", "html", "dashboard"],
+  reporters: ["progress", "clear-text", "html", "dashboard", "json"],
   concurrency: 8,
   concurrency_comment:
     "Recommended to use about half of your available cores when running stryker with angular",
