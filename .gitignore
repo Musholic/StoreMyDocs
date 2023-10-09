@@ -241,3 +241,8 @@ e2e/*.map
 # System Files
 .DS_Store/
 /playwright-report/
+
+# stryker temp files
+.stryker-tmp
+
+reports/

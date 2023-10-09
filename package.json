@@ -1,6 +1,6 @@
 {
   "name": "storemydocs",
-  "version": "0.0.0",
+  "version": "0.2.0-20-ge04358c",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -11,7 +11,8 @@
     "build:prod": "ng build --configuration production",
     "test": "TZ=UTC ng test",
     "test:headless": "TZ=UTC ng test --watch=false --browsers=ChromeHeadless --code-coverage",
-    "e2e": "npx playwright test"
+    "e2e": "npx playwright test",
+    "test:mutation": "TZ=UTC npx stryker run --concurrency 1 --incremental"
   },
   "private": true,
   "dependencies": {
@@ -37,6 +38,10 @@
     "@angular/cli": "~16.1.3",
     "@angular/compiler-cli": "^16.1.0",
     "@playwright/test": "^1.38.1",
+    "stryker-cli": "^1.0.2",
+    "@stryker-mutator/core": "^7.2.0",
+    "@stryker-mutator/karma-runner": "^7.2.0",
+    "@stryker-mutator/typescript-checker": "^7.2.0",
     "@types/gapi.client.drive-v3": "^0.0.1",
     "@types/google.accounts": "^0.0.7",
     "@types/google.picker": "^0.0.39",
