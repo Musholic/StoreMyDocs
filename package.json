@@ -12,7 +12,7 @@
     "test": "TZ=UTC ng test",
     "test:headless": "TZ=UTC ng test --watch=false --browsers=ChromeHeadless --code-coverage",
     "e2e": "npx playwright test",
-    "test:mutation": "TZ=UTC npx stryker run --concurrency 1 --incremental"
+    "test:mutation": "TZ=UTC npx stryker run --concurrency 3 --incremental"
   },
   "private": true,
   "dependencies": {
