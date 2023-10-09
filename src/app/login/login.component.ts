@@ -24,7 +24,7 @@ export class LoginComponent implements OnInit {
   }
 
   async authorize() {
-    await this.authService.getApiToken();
+    await this.authService.requestApiToken();
     return this.router.navigateByUrl('/');
   }
 }

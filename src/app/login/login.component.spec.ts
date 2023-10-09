@@ -22,7 +22,7 @@ describe('LoginComponent', () => {
   it('should ask for authentication when the user is not authenticated', () => {
     // Arrange
     // Ensure we don't try to authorize
-    MockInstance(GoogleDriveAuthService, 'getApiToken', mock<GoogleDriveAuthService['getApiToken']>());
+    MockInstance(GoogleDriveAuthService, 'requestApiToken', mock<GoogleDriveAuthService['requestApiToken']>());
     let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
     when(() => isAuthenticatedMock()).thenReturn(false).atLeast(1);
     MockRender(LoginComponent);
@@ -38,12 +38,16 @@ describe('LoginComponent', () => {
     it('should automatically request authorization', async () => {
       // Arrange
       // Expect the api token to be requested
-      let getApiTokenMock = MockInstance(GoogleDriveAuthService, 'getApiToken', mock<GoogleDriveAuthService['getApiToken']>());
+      let getApiTokenMock = MockInstance(GoogleDriveAuthService, 'requestApiToken', mock<GoogleDriveAuthService['requestApiToken']>());
       when(() => getApiTokenMock()).thenResolve('apiToken');
 
       // Expect a redirection
       let navigateByUrlMock = MockInstance(Router, 'navigateByUrl', mock<Router['navigateByUrl']>());
       when(() => navigateByUrlMock('/')).thenResolve(true)
+
+      // The user is already authenticated
+      let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
+      when(() => isAuthenticatedMock()).thenReturn(true).atLeast(1);
 
       // Act
       MockRender(LoginComponent);
@@ -68,7 +72,7 @@ describe('LoginComponent', () => {
       let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
       when(() => isAuthenticatedMock()).thenReturn(true).atLeast(1);
 
-      let getApiTokenMock = MockInstance(GoogleDriveAuthService, 'getApiToken', mock<GoogleDriveAuthService['getApiToken']>());
+      let getApiTokenMock = MockInstance(GoogleDriveAuthService, 'requestApiToken', mock<GoogleDriveAuthService['requestApiToken']>());
       // Reject the automatic authorization
       when(() => getApiTokenMock()).thenReject();
       // Expect the api token to be requested a second time when clicking on the button

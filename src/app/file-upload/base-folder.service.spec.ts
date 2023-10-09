@@ -5,16 +5,16 @@ import {fakeAsync, tick} from "@angular/core/testing";
 import {FileService} from "../file-list/file.service";
 import {mock, when} from "strong-mock";
 import {of} from "rxjs";
-import {mockGetApiToken} from "../../testing/common-testing-function.spec";
 import {FileElement} from "../file-list/file-list.component";
 
 function mockFindOrCreateFolder() {
   let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
-  when(() => findOrCreateFolderMock('at87964', 'storemydocs.ovh'))
+  when(() => findOrCreateFolderMock('storemydocs.ovh'))
     .thenReturn(of('folderId51'))
 }
 
 describe('BaseFolderService', () => {
+  MockInstance.scope();
 
   beforeEach(() => MockBuilder(BaseFolderService, AppModule));
 
@@ -33,7 +33,7 @@ describe('BaseFolderService', () => {
 
     // Act
     let result = '';
-    service.findOrCreateBaseFolder('at87964')
+    service.findOrCreateBaseFolder()
       .subscribe(value => result = value);
 
     // Assert
@@ -43,7 +43,6 @@ describe('BaseFolderService', () => {
 
   it('should list files', fakeAsync(() => {
     // Arrange
-    mockGetApiToken();
     mockFindOrCreateFolder();
     let findInFolderMock = MockInstance(FileService, 'findInFolder', mock<FileService['findInFolder']>());
     let files: FileElement[] = [
@@ -56,7 +55,7 @@ describe('BaseFolderService', () => {
         dlLink: "dlLink"
       }
     ];
-    when(() => findInFolderMock('at87964', 'folderId51')).thenReturn(of(files))
+    when(() => findInFolderMock('folderId51')).thenReturn(of(files))
 
     const service = MockRender(BaseFolderService).point.componentInstance;
 

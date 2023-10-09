@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {FileService} from "../file-list/file.service";
-import {from, mergeMap, Observable} from "rxjs";
+import {mergeMap, Observable} from "rxjs";
 import {FileElement} from "../file-list/file-list.component";
 import {GoogleDriveAuthService} from "./google-drive-auth.service";
 
@@ -14,21 +14,15 @@ export class BaseFolderService {
   constructor(private fileService: FileService, private authService: GoogleDriveAuthService) {
   }
 
-  findOrCreateBaseFolder(accessToken: string) {
-
-    return this.fileService.findOrCreateFolder(accessToken, this.BASE_FOLDER_NAME);
+  findOrCreateBaseFolder() {
+    return this.fileService.findOrCreateFolder(this.BASE_FOLDER_NAME);
   }
 
   listAllFiles(): Observable<FileElement[]> {
-    return from(this.authService.getApiToken()).pipe(
-      mergeMap(accessToken => {
-        return this.findOrCreateBaseFolder(accessToken).pipe(
-          mergeMap(baseFolderId => {
-            return this.fileService.findInFolder(accessToken, baseFolderId)
-          })
-        );
-      }));
+    return this.findOrCreateBaseFolder().pipe(
+      mergeMap(baseFolderId => {
+        return this.fileService.findInFolder(baseFolderId)
+      })
+    );
   }
-
-
 }

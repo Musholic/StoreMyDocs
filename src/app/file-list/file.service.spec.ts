@@ -5,7 +5,6 @@ import {HttpClientModule} from "@angular/common/http";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {FileElement} from "./file-list.component";
-import {mockGetApiToken} from "../../testing/common-testing-function.spec";
 import {mock, when} from "strong-mock";
 import {of} from "rxjs";
 
@@ -28,7 +27,7 @@ describe('FileService', () => {
 
     // Act
     let result: FileElement[] = [];
-    service.findInFolder('at879', 'id8495')
+    service.findInFolder('id8495')
       .subscribe(value => result = value)
 
     // Assert
@@ -38,7 +37,6 @@ describe('FileService', () => {
       "q='id8495'%20in%20parents%20and%20trashed%20=%20false" +
       "&fields=files(id,name,createdTime,size,iconLink,webContentLink)");
     expect(req.request.method).toEqual('GET');
-    expect(req.request.headers.get('Authorization')).toEqual('Bearer at879');
     req.flush({
       "files": [
         {
@@ -101,7 +99,6 @@ describe('FileService', () => {
 
   it('should trash file', fakeAsync(() => {
     // Arrange
-    mockGetApiToken();
     const service = MockRender(FileService).point.componentInstance;
     let httpTestingController = TestBed.inject(HttpTestingController);
 
@@ -116,7 +113,6 @@ describe('FileService', () => {
     expect(req.request.body).toEqual({
       trashed: true
     });
-    expect(req.request.headers.get('Authorization')).toEqual('Bearer at87964');
     req.flush({});
 
     // Finally, assert that there are no outstanding requests.
@@ -132,7 +128,7 @@ describe('FileService', () => {
 
         // Act
         let result = '';
-        service.findOrCreateFolder('at545', 'folder78')
+        service.findOrCreateFolder('folder78')
           .subscribe(value => result = value)
 
         // Assert
@@ -140,7 +136,6 @@ describe('FileService', () => {
 
         const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.folder'%20and%20name='folder78'");
         expect(req.request.method).toEqual('GET');
-        expect(req.request.headers.get('Authorization')).toEqual('Bearer at545');
         req.flush({
           "kind": "drive#fileList",
           "incompleteSearch": false,
@@ -149,7 +144,6 @@ describe('FileService', () => {
 
         const req2 = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files");
         expect(req2.request.method).toEqual('POST');
-        expect(req2.request.headers.get('Authorization')).toEqual('Bearer at545');
         expect(req2.request.body).toEqual({
           mimeType: "application/vnd.google-apps.folder",
           name: 'folder78'
@@ -176,7 +170,7 @@ describe('FileService', () => {
 
         // Act
         let result = '';
-        service.findOrCreateFolder('at545', 'folder979')
+        service.findOrCreateFolder('folder979')
           .subscribe(value => result = value)
 
         // Assert
@@ -184,7 +178,6 @@ describe('FileService', () => {
 
         const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.folder'%20and%20name='folder979'");
         expect(req.request.method).toEqual('GET');
-        expect(req.request.headers.get('Authorization')).toEqual('Bearer at545');
         req.flush({
           "kind": "drive#fileList",
           "incompleteSearch": false,
@@ -210,12 +203,11 @@ describe('FileService', () => {
     describe('when category does not exist', () => {
       it('should create a new category and assign it to the file', fakeAsync(() => {
         // Arrange
-        mockGetApiToken();
         const service = MockRender(FileService).point.componentInstance;
 
         // Mock already tested public functions to simplify the test
         service.findOrCreateFolder = mock<FileService['findOrCreateFolder']>();
-        when(() => service.findOrCreateFolder('at87964', 'cat787')).thenReturn(of('fId54848'));
+        when(() => service.findOrCreateFolder('cat787')).thenReturn(of('fId54848'));
 
         let httpTestingController = TestBed.inject(HttpTestingController);
 

@@ -52,7 +52,7 @@ describe('GoogleDriveAuthService', () => {
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
       // Act
-      const accessToken = await service.getApiToken();
+      const accessToken = await service.requestApiToken();
 
       // Assert
       expect(accessToken).toEqual('at8765465');
@@ -76,6 +76,8 @@ describe('GoogleDriveAuthService', () => {
     });
   })
   describe('When there is an existing token', () => {
+    MockInstance.scope();
+
     it('Should get existing token', async () => {
       // Arrange
       setupValidAuthenticationAndApiToken();
@@ -83,10 +85,11 @@ describe('GoogleDriveAuthService', () => {
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
       // Act
-      const accessToken = await service.getApiToken();
+      const accessToken = await service.requestApiToken();
 
       // Assert
       expect(accessToken).toEqual('at54613');
+      expect(service.getApiToken()).toEqual('at54613')
     });
 
     it('Should refresh existing expired token', async () => {
@@ -100,10 +103,11 @@ describe('GoogleDriveAuthService', () => {
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
       // Act
-      const accessToken = await service.getApiToken();
+      const accessToken = await service.requestApiToken();
 
       // Assert
       expect(accessToken).toEqual('at8765465');
+      expect(service.getApiToken()).toEqual('at8765465')
     });
 
     it('Should logout', () => {
@@ -135,6 +139,7 @@ describe('GoogleDriveAuthService', () => {
       // Assert
       expect(service.getAuthToken()).toBeNull();
       expect(service.isAuthenticated()).toEqual(false);
+      expect(service.getApiToken()).toBeNull();
     });
   })
   describe('isAuthenticatedAndHasValidApiToken', () => {

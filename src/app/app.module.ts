@@ -23,6 +23,7 @@ import {NgxFilesizeModule} from "ngx-filesize";
 import {MatRippleModule} from "@angular/material/core";
 import {NgOptimizedImage} from "@angular/common";
 import { LoginComponent } from './login/login.component';
+import {httpInterceptorProviders} from "./auth/auth.interceptor";
 
 @NgModule({
   declarations: [
@@ -53,7 +54,9 @@ import { LoginComponent } from './login/login.component';
     MatRippleModule,
     NgOptimizedImage
   ],
-  providers: [],
+  providers: [
+    httpInterceptorProviders
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

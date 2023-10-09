@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {FileElement} from "./file-list.component";
-import {from, map, mergeMap, Observable, of} from "rxjs";
+import {map, mergeMap, Observable, of} from "rxjs";
 import {BaseFolderService} from "../file-upload/base-folder.service";
 import {GoogleDriveAuthService} from "../file-upload/google-drive-auth.service";
 import {HttpClient} from "@angular/common/http";
@@ -13,14 +13,9 @@ export class FileService {
   constructor(private authService: GoogleDriveAuthService, private http: HttpClient) {
   }
 
-  findInFolder(accessToken: string, folderId: string) {
-    const authHeader = `Bearer ${accessToken}`;
-    const headers = {
-      'Authorization': authHeader,
-      'Content-Type': 'application/json'
-    };
+  findInFolder(folderId: string) {
     const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("'" + folderId + "' in parents and trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink)");
-    return this.http.get<gapi.client.drive.FileList>(url, {headers: headers}).pipe(map(res => {
+    return this.http.get<gapi.client.drive.FileList>(url).pipe(map(res => {
       if (res.files) {
         return res.files.map(f => {
           return {
@@ -39,54 +34,31 @@ export class FileService {
   }
 
   trash(id: string) {
-    return from(this.authService.getApiToken()).pipe(
-      mergeMap(accessToken => {
-        const authHeader = `Bearer ${accessToken}`;
-        const headers = {
-          'Authorization': authHeader,
-          'Content-Type': 'application/json'
-        };
-
-        const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '/' + id
-        return this.http.patch<void>(url, {trashed: true}, {headers: headers});
-      }));
+    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '/' + id
+    return this.http.patch<void>(url, {trashed: true});
   }
 
   setCategory(fileId: string, category: string): Observable<void> {
-    return from(this.authService.getApiToken()).pipe(
-      mergeMap(accessToken => {
-        // TODO: create the folder inside the base folder
-        return this.findOrCreateFolder(accessToken, category).pipe(mergeMap(folderId => {
-          const authHeader = `Bearer ${accessToken}`;
-          const headers = {
-            'Authorization': authHeader,
-            'Content-Type': 'application/json'
-          };
-
-          const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '/' + fileId + "?addParents=" + folderId;
-          return this.http.patch<void>(url, {}, {headers: headers});
-        }))
-      }));
+    // TODO: create the folder inside the base folder
+    return this.findOrCreateFolder(category).pipe(mergeMap(folderId => {
+      const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '/' + fileId + "?addParents=" + folderId;
+      return this.http.patch<void>(url, {});
+    }))
   }
 
-  findOrCreateFolder(accessToken: string, folderName: string) {
-    const authHeader = `Bearer ${accessToken}`;
-    return this.findFolder(authHeader, folderName).pipe(mergeMap(baseId => {
+  findOrCreateFolder(folderName: string) {
+    return this.findFolder(folderName).pipe(mergeMap(baseId => {
       if (baseId) {
         return of(baseId);
       } else {
-        return this.createFolder(authHeader, folderName);
+        return this.createFolder(folderName);
       }
     }))
   }
 
-  private findFolder(authHeader: string, folderName: string) {
-    const headers = {
-      'Authorization': authHeader,
-      'Content-Type': 'application/json'
-    };
+  private findFolder(folderName: string) {
     const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("mimeType='application/vnd.google-apps.folder' and name='" + folderName + "'");
-    return this.http.get<gapi.client.drive.FileList>(url, {headers: headers}).pipe(map(res => {
+    return this.http.get<gapi.client.drive.FileList>(url).pipe(map(res => {
       if (res.files && res.files.length > 0) {
         return res.files[0].id;
       }
@@ -94,18 +66,14 @@ export class FileService {
     }));
   }
 
-  private createFolder(authHeader: string, folderName: string) {
-    const headers = {
-      'Authorization': authHeader,
-      'Content-Type': 'application/json'
-    };
+  private createFolder(folderName: string) {
     const metadata = {
       'name': folderName,
       'mimeType': 'application/vnd.google-apps.folder'
     };
     const url = BaseFolderService.DRIVE_API_FILES_BASE_URL;
 
-    return this.http.post<gapi.client.drive.File>(url, metadata, {headers: headers})
+    return this.http.post<gapi.client.drive.File>(url, metadata)
       .pipe(map(res => {
         if (!res.id) {
           throw new Error('Error creating base folder');

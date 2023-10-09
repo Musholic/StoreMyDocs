@@ -1,12 +1,14 @@
 import {FileUploadService} from './file-upload.service';
-import {MockBuilder, MockRender} from "ng-mocks";
+import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {HttpClientModule, HttpEventType} from "@angular/common/http";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
-import {mockFindOrCreateBaseFolder, mockGetApiToken} from "../../testing/common-testing-function.spec";
+import {mockFindOrCreateBaseFolder} from "../../testing/common-testing-function.spec";
 
 describe('FileUploadService', () => {
+  MockInstance.scope();
+
   beforeEach(() =>
     MockBuilder(FileUploadService, AppModule)
       .replace(HttpClientModule, HttpClientTestingModule)
@@ -23,7 +25,6 @@ describe('FileUploadService', () => {
   it('should upload', fakeAsync(() => {
     // Arrange
     let f = new File(["test_content"], "test.txt", {type: 'application/txt'});
-    mockGetApiToken();
     mockFindOrCreateBaseFolder();
     const service = MockRender(FileUploadService).point.componentInstance;
     let httpTestingController = TestBed.inject(HttpTestingController);
@@ -45,7 +46,6 @@ describe('FileUploadService', () => {
       'Content-Type': 'application/txt',
       'Content-Length': 12
     });
-    expect(req.request.headers.get('Authorization')).toEqual('Bearer at87964');
     req.flush('', {headers: {'Location': 'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&upload_id=ADPycdtRB5_hUde03FI0b'}});
 
     const req2 = httpTestingController.expectOne('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&upload_id=ADPycdtRB5_hUde03FI0b');

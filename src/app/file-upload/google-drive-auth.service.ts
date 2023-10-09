@@ -51,7 +51,7 @@ export class GoogleDriveAuthService {
     this.apiToken = tokenResponse.access_token;
   }
 
-  async getApiToken() {
+  async requestApiToken() {
     if (!this.hasValidApiToken()) {
       await this.auth();
     }
@@ -97,6 +97,10 @@ export class GoogleDriveAuthService {
     localStorage.removeItem(GoogleDriveAuthService.LOCAL_STORAGE_AUTH_TOKEN);
     localStorage.removeItem(GoogleDriveAuthService.LOCAL_STORAGE_API_TOKEN);
     this.router.navigateByUrl('/login');
+  }
+
+  getApiToken() {
+    return this.apiToken;
   }
 }
 

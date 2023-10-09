@@ -1,20 +1,12 @@
-import {TestBed} from "@angular/core/testing";
-import {GoogleDriveAuthService} from "../app/file-upload/google-drive-auth.service";
 import {mock, when} from "strong-mock";
 import {BaseFolderService} from "../app/file-upload/base-folder.service";
 import {Observable, of, tap} from "rxjs";
 import {MockInstance} from "ng-mocks";
 
-export function mockGetApiToken() {
-  let accessTokenMock = MockInstance(GoogleDriveAuthService, 'getApiToken',
-    mock<GoogleDriveAuthService['getApiToken']>())
-  when(() => accessTokenMock()).thenResolve('at87964');
-}
-
 export function mockFindOrCreateBaseFolder() {
   let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
     mock<BaseFolderService['findOrCreateBaseFolder']>())
-  when(() => findOrCreateBaseFolderMock('at87964')).thenReturn(of('parentId7854'));
+  when(() => findOrCreateBaseFolderMock()).thenReturn(of('parentId7854'));
 }
 
 export async function findAsyncSequential<T>(
