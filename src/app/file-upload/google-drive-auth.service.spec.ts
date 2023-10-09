@@ -22,6 +22,7 @@ function setupValidAuthenticationAndApiToken() {
 }
 
 describe('GoogleDriveAuthService', () => {
+  MockInstance.scope();
 
   beforeEach(() =>
     MockBuilder(GoogleDriveAuthService, AppModule)
@@ -76,7 +77,6 @@ describe('GoogleDriveAuthService', () => {
     });
   })
   describe('When there is an existing token', () => {
-    MockInstance.scope();
 
     it('Should get existing token', async () => {
       // Arrange
