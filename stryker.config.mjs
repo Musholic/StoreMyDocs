@@ -17,13 +17,12 @@ const config = {
       browsers: ["ChromeHeadless"],
     },
   },
-  reporters: ["progress", "clear-text", "html"],
+  reporters: ["progress", "clear-text", "html", "dashboard"],
   concurrency: 8,
   concurrency_comment:
     "Recommended to use about half of your available cores when running stryker with angular",
   coverageAnalysis: "perTest",
   checkers: ["typescript"],
-  tsconfigFile: "tsconfig.spec.json",
-  dashboard: {}
+  tsconfigFile: "tsconfig.spec.json"
 };
 export default config;
