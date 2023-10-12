@@ -26,7 +26,7 @@ export interface FileElement {
 export class FileListComponent implements OnInit {
   displayedColumns: string[] = ['name', 'date', 'size', 'actions'];
   dataSource = new MatTableDataSource();
-  categories: string[] = ['', 'Cat2'];
+  categories: string[] = ['Cat1', 'Cat2'];
 
   constructor(private fileService: FileService, private baseFolderService: BaseFolderService, public dialog: MatDialog) {
   }
