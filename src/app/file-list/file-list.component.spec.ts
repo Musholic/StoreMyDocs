@@ -1,4 +1,4 @@
-import {ComponentFixture, fakeAsync, tick} from '@angular/core/testing';
+import {fakeAsync, tick} from '@angular/core/testing';
 
 import {FileElement, FileListComponent} from './file-list.component';
 import {MockBuilder, MockedComponentFixture, MockInstance, MockRender, ngMocks} from "ng-mocks";
@@ -15,15 +15,19 @@ import {MatMenuModule} from "@angular/material/menu";
 import {BrowserAnimationsModule, NoopAnimationsModule} from "@angular/platform-browser/animations";
 import {findAsyncSequential, mustBeConsumedObservable} from "../../testing/common-testing-function.spec";
 import {BaseFolderService} from "../file-upload/base-folder.service";
+import {MatInputHarness} from "@angular/material/input/testing";
+import {MatButtonHarness} from "@angular/material/button/testing";
+import {MatDialogModule} from "@angular/material/dialog";
 
 describe('FileListComponent', () => {
   MockInstance.scope();
 
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
-      .keep(MatTableModule)
-      .keep(NgxFilesizeModule)
-      .keep(MatMenuModule)
-      .replace(BrowserAnimationsModule, NoopAnimationsModule)
+    .keep(MatTableModule)
+    .keep(NgxFilesizeModule)
+    .keep(MatMenuModule)
+    .keep(MatDialogModule)
+    .replace(BrowserAnimationsModule, NoopAnimationsModule)
   );
 
   it('should create (no element)', fakeAsync(() => {
@@ -59,7 +63,7 @@ describe('FileListComponent', () => {
     let listMock = mockListTwoItems();
     let trashMock = MockInstance(FileService, 'trash', mock<FileService['trash']>());
     when(() => trashMock('id2'))
-        .thenReturn(mustBeConsumedObservable(of(undefined)));
+      .thenReturn(mustBeConsumedObservable(of(undefined)));
     let fixture = MockRender(FileListComponent);
     let page = new Page(fixture);
     tick();
@@ -108,14 +112,16 @@ describe('FileListComponent', () => {
     };
     when(() => listMock()).thenReturn(of([el1]))
     let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
-    when(() => setCategoryMock('id2', 'SMD_CatTest')).thenReturn(of(undefined));
+    when(() => setCategoryMock('id2', 'Cat848')).thenReturn(of(undefined));
 
     let fixture = MockRender(FileListComponent);
     let page = new Page(fixture);
 
     // Act
     Page.openItemMenu('name2');
-    await page.clickMenuAssignCategory()
+    await page.clickMenuAssignCategory();
+    await page.setCategoryInDialog('Cat848');
+    await page.clickOkInDialog();
 
     // Assert
     tick();
@@ -123,6 +129,8 @@ describe('FileListComponent', () => {
     let expected = [['name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
     expect(expected).toEqual(Page.getTableRows());
   }))
+
+  // TODO: test name of dialog for selecting category
 
 });
 
@@ -149,18 +157,16 @@ function mockListTwoItems() {
 }
 
 class Page {
-  private harnessLoader: HarnessLoader;
+  private loader: HarnessLoader;
 
   constructor(fixture: MockedComponentFixture<FileListComponent, FileListComponent>) {
-    this.harnessLoader = TestbedHarnessEnvironment.loader(fixture);
+    this.loader = TestbedHarnessEnvironment.documentRootLoader(fixture);
   }
-
-  private static fixture: ComponentFixture<unknown>;
 
   static getTableRows(): string[][] {
     return ngMocks.findAll("mat-row")
-        .map(row => row.children
-            .map(child => child.nativeNode.textContent.trim()));
+      .map(row => row.children
+        .map(child => child.nativeNode.textContent.trim()));
   }
 
   async clickMenuTrash() {
@@ -168,7 +174,7 @@ class Page {
   }
 
   private async clickMenu(selector: string) {
-    let matMenuHarnesses = await this.harnessLoader.getAllHarnesses(MatMenuHarness);
+    let matMenuHarnesses = await this.loader.getAllHarnesses(MatMenuHarness);
     // The menu should be the one opened
     let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
     await matMenuHarness?.clickItem({selector: selector});
@@ -176,10 +182,10 @@ class Page {
 
   static openItemMenu(name: string) {
     let row = ngMocks.findAll("mat-row")
-        .filter(value => {
-          let nameColumn = ngMocks.find(value, ".mat-column-name");
-          return nameColumn.nativeNode.textContent.trim() === name;
-        })[0];
+      .filter(value => {
+        let nameColumn = ngMocks.find(value, ".mat-column-name");
+        return nameColumn.nativeNode.textContent.trim() === name;
+      })[0];
     ngMocks.find(row, ".mat-column-actions").nativeNode.click();
   }
 
@@ -190,5 +196,15 @@ class Page {
 
   async clickMenuAssignCategory() {
     await this.clickMenu('.set-category-file');
+  }
+
+  async setCategoryInDialog(category: string) {
+    let inputHarness = await this.loader.getHarness(MatInputHarness.with({placeholder: 'Category'}));
+    await inputHarness.setValue(category);
+  }
+
+  async clickOkInDialog() {
+    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Ok'}));
+    await button.click();
   }
 }

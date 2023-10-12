@@ -1,7 +1,12 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {MatTableDataSource} from "@angular/material/table";
 import {FileService} from "./file.service";
 import {BaseFolderService} from "../file-upload/base-folder.service";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef} from "@angular/material/dialog";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatInputModule} from "@angular/material/input";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
 
 export interface FileElement {
   id: string;
@@ -23,7 +28,7 @@ export class FileListComponent implements OnInit {
   dataSource = new MatTableDataSource();
   categories: string[] = ['Cat1', 'Cat2'];
 
-  constructor(private fileService: FileService, private baseFolderService: BaseFolderService) {
+  constructor(private fileService: FileService, private baseFolderService: BaseFolderService, public dialog: MatDialog) {
   }
 
   ngOnInit(): void {
@@ -42,8 +47,35 @@ export class FileListComponent implements OnInit {
   }
 
   setCategory(element: FileElement) {
-    this.fileService.setCategory(element.id, "SMD_CatTest")
-      .subscribe(_ => this.refresh());
+    let dialogRef = this.dialog.open(SelectFileCategoryDialog, {
+      data: element.name,
+      // False otherwise tests are failing abnormally...
+      closeOnNavigation: false
+    });
 
+    dialogRef.afterClosed().subscribe(category => {
+      this.fileService.setCategory(element.id, category)
+        .subscribe(_ => this.refresh());
+    })
+  }
+}
+
+@Component({
+  selector: 'select-file-category-dialog',
+  templateUrl: 'select-file-category.dialog.html',
+  standalone: true,
+  imports: [MatDialogModule, MatFormFieldModule, MatInputModule, FormsModule, MatButtonModule],
+})
+export class SelectFileCategoryDialog {
+  category = '';
+
+  constructor(
+    public dialogRef: MatDialogRef<SelectFileCategoryDialog>,
+    @Inject(MAT_DIALOG_DATA) public fileName: string,
+  ) {
+  }
+
+  onNoClick(): void {
+    this.dialogRef.close();
   }
 }

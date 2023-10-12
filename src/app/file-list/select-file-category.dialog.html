@@ -1,0 +1,11 @@
+<h1 mat-dialog-title>Select a category for {{fileName}}</h1>
+<div mat-dialog-content>
+  <mat-form-field>
+    <mat-label>Category</mat-label>
+    <input matInput placeholder="Category" [(ngModel)]="category">
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">Cancel</button>
+  <button mat-button [mat-dialog-close]="category">Ok</button>
+</div>
