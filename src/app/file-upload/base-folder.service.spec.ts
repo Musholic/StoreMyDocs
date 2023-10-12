@@ -14,8 +14,6 @@ function mockFindOrCreateFolder() {
 }
 
 describe('BaseFolderService', () => {
-  MockInstance.scope();
-
   beforeEach(() => MockBuilder(BaseFolderService, AppModule));
 
   it('should be created', () => {

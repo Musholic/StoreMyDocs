@@ -7,8 +7,6 @@ import {GoogleDriveAuthService} from "../file-upload/google-drive-auth.service";
 import {mock, when} from "strong-mock";
 
 describe('AuthInterceptor', () => {
-  MockInstance.scope();
-
   beforeEach(() => {
     return MockBuilder(AuthInterceptor, AppModule)
       .exclude(NG_MOCKS_INTERCEPTORS)

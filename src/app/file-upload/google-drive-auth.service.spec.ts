@@ -22,8 +22,6 @@ function setupValidAuthenticationAndApiToken() {
 }
 
 describe('GoogleDriveAuthService', () => {
-  MockInstance.scope();
-
   beforeEach(() =>
     MockBuilder(GoogleDriveAuthService, AppModule)
   );

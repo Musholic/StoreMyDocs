@@ -1,12 +1,5 @@
 import {authGuard} from './auth.guard';
-import {
-  MockBuilder,
-  MockedComponentFixture,
-  MockRender,
-  NG_MOCKS_GUARDS,
-  NG_MOCKS_ROOT_PROVIDERS,
-  ngMocks
-} from "ng-mocks";
+import {MockBuilder, MockedComponentFixture, MockInstance, MockRender, NG_MOCKS_GUARDS, ngMocks} from "ng-mocks";
 import {Router, RouterModule, RouterOutlet} from "@angular/router";
 import {RouterTestingModule} from "@angular/router/testing";
 import {AppModule} from "../app.module";
@@ -27,8 +20,7 @@ describe('authGuard', () => {
     MockBuilder(
       [
         RouterModule,
-        RouterTestingModule.withRoutes([]),
-        NG_MOCKS_ROOT_PROVIDERS,
+        RouterTestingModule.withRoutes([])
       ],
       AppModule,
     )
@@ -41,13 +33,13 @@ describe('authGuard', () => {
   describe('when we are not logged in', () => {
     it('redirects to login', fakeAsync(() => {
       // Arrange
+      let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticatedAndHasValidApiToken',
+        mock<GoogleDriveAuthService['isAuthenticatedAndHasValidApiToken']>());
+      when(() => isAuthenticatedMock()).thenReturn(false);
 
       const fixture = MockRender(RouterOutlet, {});
-      const router = ngMocks.get(Router);
 
-      let isAuthenticatedMock = mock<GoogleDriveAuthService['isAuthenticatedAndHasValidApiToken']>();
-      when(() => isAuthenticatedMock()).thenReturn(false);
-      ngMocks.get(GoogleDriveAuthService).isAuthenticatedAndHasValidApiToken = isAuthenticatedMock;
+      const router = ngMocks.get(Router);
 
       // Act
       initializeNavigation(fixture, router);
@@ -60,12 +52,12 @@ describe('authGuard', () => {
   describe('when we are already logged in', () => {
     it('allows navigation to root', fakeAsync(() => {
       // Arrange
+      let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticatedAndHasValidApiToken',
+        mock<GoogleDriveAuthService['isAuthenticatedAndHasValidApiToken']>());
+      when(() => isAuthenticatedMock()).thenReturn(true);
+
       const fixture = MockRender(RouterOutlet, {});
       const router = ngMocks.get(Router);
-
-      let isAuthenticatedMock = mock<GoogleDriveAuthService['isAuthenticatedAndHasValidApiToken']>();
-      when(() => isAuthenticatedMock()).thenReturn(true);
-      ngMocks.get(GoogleDriveAuthService).isAuthenticatedAndHasValidApiToken = isAuthenticatedMock;
 
       // Act
       initializeNavigation(fixture, router);

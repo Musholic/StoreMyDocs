@@ -10,8 +10,6 @@ import {MatButtonHarness} from "@angular/material/button/testing";
 import {Router} from "@angular/router";
 
 describe('LoginComponent', () => {
-  MockInstance.scope();
-
   beforeEach(() => MockBuilder(LoginComponent, AppModule));
 
   it('should create', () => {

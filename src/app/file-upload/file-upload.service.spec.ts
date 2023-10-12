@@ -7,8 +7,6 @@ import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {mockFindOrCreateBaseFolder} from "../../testing/common-testing-function.spec";
 
 describe('FileUploadService', () => {
-  MockInstance.scope();
-
   beforeEach(() =>
     MockBuilder(FileUploadService, AppModule)
       .replace(HttpClientModule, HttpClientTestingModule)

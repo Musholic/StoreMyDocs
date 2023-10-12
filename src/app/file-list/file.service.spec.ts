@@ -9,8 +9,6 @@ import {mock, when} from "strong-mock";
 import {of} from "rxjs";
 
 describe('FileService', () => {
-  MockInstance.scope();
-
   beforeEach(() => MockBuilder(FileService, AppModule)
     .replace(HttpClientModule, HttpClientTestingModule)
   );
