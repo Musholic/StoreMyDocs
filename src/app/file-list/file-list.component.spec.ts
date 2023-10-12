@@ -18,10 +18,9 @@ import {BaseFolderService} from "../file-upload/base-folder.service";
 import {MatInputHarness} from "@angular/material/input/testing";
 import {MatButtonHarness} from "@angular/material/button/testing";
 import {MatDialogModule} from "@angular/material/dialog";
+import {MatDialogHarness} from "@angular/material/dialog/testing";
 
 describe('FileListComponent', () => {
-  MockInstance.scope();
-
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
     .keep(MatTableModule)
     .keep(NgxFilesizeModule)
@@ -99,38 +98,58 @@ describe('FileListComponent', () => {
     expect(Page.getCategories()).toEqual(['Cat1', 'Cat2'])
   })
 
-  it('should refresh after assigning a category to a file', fakeAsync(async () => {
-    // Arrange
-    let listMock = mockListTwoItems();
-    let el1: FileElement = {
-      id: 'id1',
-      size: 1421315,
-      date: '2023-08-14T14:48:44.928Z',
-      name: 'name1',
-      iconLink: "link",
-      dlLink: "dlLink"
-    };
-    when(() => listMock()).thenReturn(of([el1]))
-    let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
-    when(() => setCategoryMock('id2', 'Cat848')).thenReturn(of(undefined));
+  describe('Category assignment', () => {
+    it('should refresh after assigning a category to a file', fakeAsync(async () => {
+      // Arrange
+      let listMock = mockListTwoItems();
+      let el1: FileElement = {
+        id: 'id1',
+        size: 1421315,
+        date: '2023-08-14T14:48:44.928Z',
+        name: 'name1',
+        iconLink: "link",
+        dlLink: "dlLink"
+      };
+      when(() => listMock()).thenReturn(of([el1]))
+      let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
+      when(() => setCategoryMock('id2', 'Cat848')).thenReturn(of(undefined));
 
-    let fixture = MockRender(FileListComponent);
-    let page = new Page(fixture);
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
 
-    // Act
-    Page.openItemMenu('name2');
-    await page.clickMenuAssignCategory();
-    await page.setCategoryInDialog('Cat848');
-    await page.clickOkInDialog();
+      // Act
+      Page.openItemMenu('name2');
+      await page.clickMenuAssignCategory();
+      await page.setCategoryInDialog('Cat848');
+      await page.clickOkInDialog();
 
-    // Assert
-    tick();
-    let actionsRow = 'more_vert';
-    let expected = [['name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
-    expect(expected).toEqual(Page.getTableRows());
-  }))
+      // Assert
+      tick();
+      let actionsRow = 'more_vert';
+      let expected = [['name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
+      expect(expected).toEqual(Page.getTableRows());
+    }))
 
-  // TODO: test name of dialog for selecting category
+    it('should show name of the file being assigned to a category in dialog', fakeAsync(async () => {
+      // Arrange
+      mockListTwoItems();
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name2');
+      await page.clickMenuAssignCategory();
+
+      // Assert
+      tick();
+      expect(await page.getDialogTitle()).toEqual('Select a category for name2');
+
+      // Cleanup
+      await page.clickCancelInDialog();
+    }))
+  })
+
 
 });
 
@@ -206,5 +225,15 @@ class Page {
   async clickOkInDialog() {
     let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Ok'}));
     await button.click();
+  }
+
+  async clickCancelInDialog() {
+    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Cancel'}));
+    await button.click();
+  }
+
+  async getDialogTitle() {
+    let dialogHarness = await this.loader.getHarness(MatDialogHarness);
+    return dialogHarness.getTitleText();
   }
 }
