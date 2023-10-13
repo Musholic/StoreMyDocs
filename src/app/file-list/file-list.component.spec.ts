@@ -112,7 +112,11 @@ describe('FileListComponent', () => {
       };
       when(() => listMock()).thenReturn(of([el1]))
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
-      when(() => setCategoryMock('id2', 'Cat848')).thenReturn(of(undefined));
+      when(() => setCategoryMock('id2', 'Cat848', 'baseFolderId78')).thenReturn(of(undefined));
+
+      let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
+        mock<BaseFolderService['findOrCreateBaseFolder']>());
+      when(() => findOrCreateBaseFolderMock()).thenReturn(of('baseFolderId78'))
 
       let fixture = MockRender(FileListComponent);
       let page = new Page(fixture);

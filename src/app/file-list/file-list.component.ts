@@ -55,8 +55,10 @@ export class FileListComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(category => {
       if(category) {
-        this.fileService.setCategory(element.id, category)
-          .subscribe(_ => this.refresh());
+        this.baseFolderService.findOrCreateBaseFolder().subscribe(baseFolderId => {
+          this.fileService.setCategory(element.id, category, baseFolderId)
+            .subscribe(_ => this.refresh());
+        });
       }
     })
   }

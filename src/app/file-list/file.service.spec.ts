@@ -126,13 +126,14 @@ describe('FileService', () => {
 
         // Act
         let result = '';
-        service.findOrCreateFolder('folder78')
+        service.findOrCreateFolder('folder78', 'parentFolder98')
           .subscribe(value => result = value)
 
         // Assert
         tick();
 
-        const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.folder'%20and%20name='folder78'");
+        const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?" +
+          "q=mimeType='application/vnd.google-apps.folder'%20and%20name='folder78'%20and%20'parentFolder98'%20in%20parents");
         expect(req.request.method).toEqual('GET');
         req.flush({
           "kind": "drive#fileList",
@@ -144,7 +145,8 @@ describe('FileService', () => {
         expect(req2.request.method).toEqual('POST');
         expect(req2.request.body).toEqual({
           mimeType: "application/vnd.google-apps.folder",
-          name: 'folder78'
+          name: 'folder78',
+          parents: ['parentFolder98']
         });
         req2.flush({
           "kind": "drive#file",
@@ -205,13 +207,13 @@ describe('FileService', () => {
 
         // Mock already tested public functions to simplify the test
         service.findOrCreateFolder = mock<FileService['findOrCreateFolder']>();
-        when(() => service.findOrCreateFolder('cat787')).thenReturn(of('fId54848'));
+        when(() => service.findOrCreateFolder('cat787', 'parent89798')).thenReturn(of('fId54848'));
 
         let httpTestingController = TestBed.inject(HttpTestingController);
 
         // Act
         let result = false;
-        service.setCategory('fId4895', 'cat787')
+        service.setCategory('fId4895', 'cat787', 'parent89798')
           .subscribe(_ => result = true);
 
         // Assert
