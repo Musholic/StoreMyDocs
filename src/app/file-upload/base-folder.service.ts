@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {FileService} from "../file-list/file.service";
 import {mergeMap, Observable} from "rxjs";
-import {FileElement} from "../file-list/file-list.component";
+import {FileOrFolderElement} from "../file-list/file-list.component";
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +17,7 @@ export class BaseFolderService {
     return this.fileService.findOrCreateFolder(this.BASE_FOLDER_NAME);
   }
 
-  listAllFiles(): Observable<FileElement[]> {
+  listAllFiles(): Observable<FileOrFolderElement[]> {
     return this.findOrCreateBaseFolder().pipe(
       mergeMap(baseFolderId => {
         return this.fileService.findInFolder(baseFolderId)

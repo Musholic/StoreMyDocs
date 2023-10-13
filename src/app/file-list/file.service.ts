@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {FileElement} from "./file-list.component";
+import {FileElement, FileOrFolderElement, FolderElement} from "./file-list.component";
 import {map, mergeMap, Observable, of} from "rxjs";
 import {BaseFolderService} from "../file-upload/base-folder.service";
 import {GoogleDriveAuthService} from "../file-upload/google-drive-auth.service";
@@ -13,19 +13,28 @@ export class FileService {
   constructor(private authService: GoogleDriveAuthService, private http: HttpClient) {
   }
 
-  findInFolder(folderId: string) {
-    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("'" + folderId + "' in parents and trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink)");
+  findInFolder(folderId: string): Observable<FileOrFolderElement[]> {
+    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("'" + folderId + "' in parents and trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink,mimeType)");
     return this.http.get<gapi.client.drive.FileList>(url).pipe(map(res => {
       if (res.files) {
         return res.files.map(f => {
-          return {
-            id: f.id,
-            name: f.name,
-            date: f.createdTime,
-            size: Number(f.size),
-            iconLink: f.iconLink,
-            dlLink: f.webContentLink
-          } as FileElement;
+          if (f.mimeType == 'application/vnd.google-apps.folder') {
+            return {
+              id: f.id,
+              name: f.name,
+              date: f.createdTime,
+              iconLink: f.iconLink,
+            } as FolderElement;
+          } else {
+            return {
+              id: f.id,
+              name: f.name,
+              date: f.createdTime,
+              size: Number(f.size),
+              iconLink: f.iconLink,
+              dlLink: f.webContentLink
+            } as FileElement;
+          }
         })
       } else {
         return []

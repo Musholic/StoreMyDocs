@@ -8,13 +8,23 @@ import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 
-export interface FileElement {
+export interface FileOrFolderElement {
   id: string;
   name: string;
   date: string;
-  size: number;
   iconLink: string;
+}
+
+export interface FileElement extends FileOrFolderElement {
+  size: number;
   dlLink: string;
+}
+
+function isFileElement(object: FileOrFolderElement): object is FileElement {
+  return 'size' in object;
+}
+
+export interface FolderElement extends FileOrFolderElement {
 }
 
 
@@ -26,7 +36,7 @@ export interface FileElement {
 export class FileListComponent implements OnInit {
   displayedColumns: string[] = ['name', 'date', 'size', 'actions'];
   dataSource = new MatTableDataSource();
-  categories: string[] = ['Cat1', 'Cat2'];
+  categories: FolderElement[] = [];
 
   constructor(private fileService: FileService, private baseFolderService: BaseFolderService, public dialog: MatDialog) {
   }
@@ -41,8 +51,9 @@ export class FileListComponent implements OnInit {
   }
 
   refresh() {
-    this.baseFolderService.listAllFiles().subscribe(files => {
-      this.dataSource.data = files;
+    this.baseFolderService.listAllFiles().subscribe(filesOrFolders => {
+      this.dataSource.data = filesOrFolders.filter(value => isFileElement(value));
+      this.categories = filesOrFolders.filter(value => !isFileElement(value));
     })
   }
 
@@ -54,7 +65,7 @@ export class FileListComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(category => {
-      if(category) {
+      if (category) {
         this.baseFolderService.findOrCreateBaseFolder().subscribe(baseFolderId => {
           this.fileService.setCategory(element.id, category, baseFolderId)
             .subscribe(_ => this.refresh());

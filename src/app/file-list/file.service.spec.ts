@@ -4,7 +4,7 @@ import {AppModule} from "../app.module";
 import {HttpClientModule} from "@angular/common/http";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
-import {FileElement} from "./file-list.component";
+import {FileElement, FileOrFolderElement, FolderElement} from "./file-list.component";
 import {mock, when} from "strong-mock";
 import {of} from "rxjs";
 
@@ -18,13 +18,13 @@ describe('FileService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should list files', fakeAsync(() => {
+  it('should list files and folders', fakeAsync(() => {
     // Arrange
     const service = MockRender(FileService).point.componentInstance;
     let httpTestingController = TestBed.inject(HttpTestingController);
 
     // Act
-    let result: FileElement[] = [];
+    let result: FileOrFolderElement[] = [];
     service.findInFolder('id8495')
       .subscribe(value => result = value)
 
@@ -33,7 +33,7 @@ describe('FileService', () => {
 
     const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?" +
       "q='id8495'%20in%20parents%20and%20trashed%20=%20false" +
-      "&fields=files(id,name,createdTime,size,iconLink,webContentLink)");
+      "&fields=files(id,name,createdTime,size,iconLink,webContentLink,mimeType)");
     expect(req.request.method).toEqual('GET');
     req.flush({
       "files": [
@@ -60,7 +60,14 @@ describe('FileService', () => {
           "createdTime": "2023-08-03T14:54:55.556Z",
           iconLink: "link",
           webContentLink: "dlLink"
-        }
+        },
+        {
+          "id": "id4",
+          "mimeType": "application/vnd.google-apps.folder",
+          "name": "image",
+          iconLink: "link",
+          "createdTime": "2023-10-13T08:47:32.059Z"
+        },
       ]
     });
 
@@ -72,7 +79,7 @@ describe('FileService', () => {
         "date": "2023-08-14T14:48:44.928Z",
         iconLink: "link",
         dlLink: "dlLink"
-      },
+      } as FileElement,
       {
         id: "id2",
         "size": 215142,
@@ -80,7 +87,7 @@ describe('FileService', () => {
         "date": "2023-08-14T12:28:46.935Z",
         iconLink: "link",
         dlLink: "dlLink"
-      },
+      } as FileElement,
       {
         id: "id3",
         "size": 23207,
@@ -88,8 +95,14 @@ describe('FileService', () => {
         "date": "2023-08-03T14:54:55.556Z",
         iconLink: "link",
         dlLink: "dlLink"
-      }
-    ]);
+      } as FileElement,
+      {
+        "id": "id4",
+        "name": "image",
+        "date": "2023-10-13T08:47:32.059Z",
+        iconLink: "link"
+      } as FolderElement
+    ] as FileOrFolderElement[]);
 
     // Finally, assert that there are no outstanding requests.
     httpTestingController.verify();

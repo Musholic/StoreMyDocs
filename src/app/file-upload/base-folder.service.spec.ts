@@ -5,7 +5,7 @@ import {fakeAsync, tick} from "@angular/core/testing";
 import {FileService} from "../file-list/file.service";
 import {mock, when} from "strong-mock";
 import {of} from "rxjs";
-import {FileElement} from "../file-list/file-list.component";
+import {FileElement, FileOrFolderElement} from "../file-list/file-list.component";
 
 function mockFindOrCreateFolder() {
   let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
@@ -58,7 +58,7 @@ describe('BaseFolderService', () => {
     const service = MockRender(BaseFolderService).point.componentInstance;
 
     // Act
-    let result: FileElement[] = [];
+    let result: FileOrFolderElement[] = [];
     service.listAllFiles()
       .subscribe(value => result = value)
 

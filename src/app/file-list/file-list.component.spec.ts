@@ -1,6 +1,6 @@
 import {fakeAsync, tick} from '@angular/core/testing';
 
-import {FileElement, FileListComponent} from './file-list.component';
+import {FileElement, FileListComponent, FolderElement} from './file-list.component';
 import {MockBuilder, MockedComponentFixture, MockInstance, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {MatTableModule} from "@angular/material/table";
@@ -45,7 +45,7 @@ describe('FileListComponent', () => {
 
   it('should list two items', () => {
     // Arrange
-    mockListTwoItems();
+    mockListTwoItemsAndTwoCategories();
 
     // Act
     MockRender(FileListComponent)
@@ -59,7 +59,7 @@ describe('FileListComponent', () => {
 
   it('should trash an item then refresh', fakeAsync(async () => {
     // Arrange
-    let listMock = mockListTwoItems();
+    let listMock = mockListTwoItemsAndTwoCategories();
     let trashMock = MockInstance(FileService, 'trash', mock<FileService['trash']>());
     when(() => trashMock('id2'))
       .thenReturn(mustBeConsumedObservable(of(undefined)));
@@ -89,7 +89,7 @@ describe('FileListComponent', () => {
 
   it('should list two categories', () => {
     // Arrange
-    mockListTwoItems();
+    mockListTwoItemsAndTwoCategories();
 
     // Act
     MockRender(FileListComponent)
@@ -101,7 +101,7 @@ describe('FileListComponent', () => {
   describe('Category assignment', () => {
     it('should refresh after assigning a category to a file', fakeAsync(async () => {
       // Arrange
-      let listMock = mockListTwoItems();
+      let listMock = mockListTwoItemsAndTwoCategories();
       let el1: FileElement = {
         id: 'id1',
         size: 1421315,
@@ -136,7 +136,7 @@ describe('FileListComponent', () => {
 
     it('should show name of the file being assigned to a category in dialog', fakeAsync(async () => {
       // Arrange
-      mockListTwoItems();
+      mockListTwoItemsAndTwoCategories();
 
       let fixture = MockRender(FileListComponent);
       let page = new Page(fixture);
@@ -157,7 +157,7 @@ describe('FileListComponent', () => {
 
 });
 
-function mockListTwoItems() {
+function mockListTwoItemsAndTwoCategories() {
   let listMock = MockInstance(BaseFolderService, 'listAllFiles', mock<BaseFolderService['listAllFiles']>());
   let el1: FileElement = {
     id: 'id1',
@@ -175,7 +175,19 @@ function mockListTwoItems() {
     iconLink: "link",
     dlLink: "dlLink"
   };
-  when(() => listMock()).thenReturn(of([el1, el2]));
+  let el3: FolderElement = {
+    id: 'id3',
+    date: '2023-08-02T14:54:55.556Z',
+    name: 'Cat1',
+    iconLink: "link"
+  };
+  let el4: FolderElement = {
+    id: 'id4',
+    date: '2023-08-01T14:54:55.556Z',
+    name: 'Cat2',
+    iconLink: "link"
+  };
+  when(() => listMock()).thenReturn(of([el1, el2, el3, el4]));
   return listMock;
 }
 
