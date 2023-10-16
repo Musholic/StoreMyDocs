@@ -13,7 +13,7 @@ export class FileService {
   }
 
   findAll(): Observable<FileOrFolderElement[]> {
-    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink,mimeType)");
+    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink,mimeType,parents)");
     return this.http.get<gapi.client.drive.FileList>(url).pipe(map(res => {
       if (res.files) {
         return res.files.map(f => {
@@ -23,6 +23,7 @@ export class FileService {
               name: f.name,
               date: f.createdTime,
               iconLink: f.iconLink,
+              parentId: f.parents?.[0]
             } as FolderElement;
           } else {
             return {
@@ -31,6 +32,7 @@ export class FileService {
               date: f.createdTime,
               size: Number(f.size),
               iconLink: f.iconLink,
+              parentId: f.parents?.[0],
               dlLink: f.webContentLink
             } as FileElement;
           }

@@ -21,6 +21,7 @@ import {MatDialogModule} from "@angular/material/dialog";
 import {MatDialogHarness} from "@angular/material/dialog/testing";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
+import {MatTreeModule} from "@angular/material/tree";
 
 describe('FileListComponent', () => {
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
@@ -30,11 +31,16 @@ describe('FileListComponent', () => {
     .keep(MatDialogModule)
     .keep(MatInputModule)
     .keep(FormsModule)
+    .keep(MatTreeModule)
     .replace(BrowserAnimationsModule, NoopAnimationsModule)
   );
 
   it('should create (no element)', fakeAsync(() => {
     // Arrange
+    let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
+      mock<BaseFolderService['findOrCreateBaseFolder']>());
+    when(() => findOrCreateBaseFolderMock()).thenReturn(of('baseFolderId'));
+
     let listMock = MockInstance(FileService, 'findAll', mock<FileService['findAll']>());
     when(() => listMock()).thenReturn(mustBeConsumedObservable(of([])));
 
@@ -49,7 +55,7 @@ describe('FileListComponent', () => {
 
   it('should list two items', () => {
     // Arrange
-    mockListTwoItemsAndTwoCategories();
+    mockListItemsAndCategories();
 
     // Act
     MockRender(FileListComponent)
@@ -63,7 +69,7 @@ describe('FileListComponent', () => {
 
   it('should trash an item then refresh', fakeAsync(async () => {
     // Arrange
-    let listMock = mockListTwoItemsAndTwoCategories();
+    let listMock = mockListItemsAndCategories();
     let trashMock = MockInstance(FileService, 'trash', mock<FileService['trash']>());
     when(() => trashMock('id2'))
       .thenReturn(mustBeConsumedObservable(of(undefined)));
@@ -76,7 +82,8 @@ describe('FileListComponent', () => {
       date: '2023-08-14T14:48:44.928Z',
       name: 'name1',
       iconLink: "link",
-      dlLink: "dlLink"
+      dlLink: "dlLink",
+      parentId: "rootId"
     };
     when(() => listMock()).thenReturn(of([el1]))
 
@@ -91,38 +98,36 @@ describe('FileListComponent', () => {
     expect(expected).toEqual(Page.getTableRows());
   }))
 
-  it('should list two categories', () => {
+  it('should list two categories and one sub-category', fakeAsync(() => {
     // Arrange
-    mockListTwoItemsAndTwoCategories();
+    mockListItemsAndCategories();
 
     // Act
     MockRender(FileListComponent)
 
     // Assert
-    expect(Page.getCategories()).toEqual(['Cat1', 'Cat2'])
-  })
+    tick();
+    expect(Page.getCategories()).toEqual(['Cat1', 'Cat1Child', 'Cat2'])
+  }))
 
   describe('Category assignment', () => {
     it('should refresh after assigning a category to a file', fakeAsync(async () => {
       // Arrange
-      let listMock = mockListTwoItemsAndTwoCategories();
+      let listMock = mockListItemsAndCategories();
       let el1: FileElement = {
         id: 'id1',
         size: 1421315,
         date: '2023-08-14T14:48:44.928Z',
         name: 'name1',
         iconLink: "link",
-        dlLink: "dlLink"
+        dlLink: "dlLink",
+        parentId: "rootId"
       };
       when(() => listMock()).thenReturn(of([el1]))
       let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
-      when(() => findOrCreateFolderMock('Cat848', 'baseFolderId78')).thenReturn(of('cat848Id'));
+      when(() => findOrCreateFolderMock('Cat848', 'baseFolderId')).thenReturn(of('cat848Id'));
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
       when(() => setCategoryMock('id2', 'cat848Id')).thenReturn(of(undefined));
-
-      let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
-        mock<BaseFolderService['findOrCreateBaseFolder']>());
-      when(() => findOrCreateBaseFolderMock()).thenReturn(of('baseFolderId78'))
 
       let fixture = MockRender(FileListComponent);
       let page = new Page(fixture);
@@ -142,7 +147,7 @@ describe('FileListComponent', () => {
 
     it('should show name of the file being assigned to a category in dialog', fakeAsync(async () => {
       // Arrange
-      mockListTwoItemsAndTwoCategories();
+      mockListItemsAndCategories();
 
       let fixture = MockRender(FileListComponent);
       let page = new Page(fixture);
@@ -161,7 +166,7 @@ describe('FileListComponent', () => {
 
     it('should create and assign a sub-category', fakeAsync(async () => {
       // Arrange
-      let findAllMock = mockListTwoItemsAndTwoCategories();
+      let findAllMock = mockListItemsAndCategories();
       // We expect a refresh
       when(() => findAllMock()).thenReturn(of());
 
@@ -169,12 +174,8 @@ describe('FileListComponent', () => {
       when(() => setCategoryMock('id2', 'cat7Id')).thenReturn(of(undefined));
 
       let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
-      when(() => findOrCreateFolderMock('ParentCat8', 'baseFolderId78')).thenReturn(of('parentCat8Id'));
+      when(() => findOrCreateFolderMock('ParentCat8', 'baseFolderId')).thenReturn(of('parentCat8Id'));
       when(() => findOrCreateFolderMock('Cat7', 'parentCat8Id')).thenReturn(of('cat7Id'));
-
-      let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
-        mock<BaseFolderService['findOrCreateBaseFolder']>());
-      when(() => findOrCreateBaseFolderMock()).thenReturn(of('baseFolderId78'))
 
       let fixture = MockRender(FileListComponent);
       let page = new Page(fixture);
@@ -193,7 +194,7 @@ describe('FileListComponent', () => {
 
   it('should filter out one item out of two items', async () => {
     // Arrange
-    mockListTwoItemsAndTwoCategories();
+    mockListItemsAndCategories();
     let fixture = MockRender(FileListComponent);
     let page = new Page(fixture);
 
@@ -208,7 +209,14 @@ describe('FileListComponent', () => {
   // TODO: test when there is nothing to show with a given filter
 });
 
-function mockListTwoItemsAndTwoCategories() {
+/**
+ * @return two files, two categories and one sub-category
+ */
+function mockListItemsAndCategories() {
+  let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
+    mock<BaseFolderService['findOrCreateBaseFolder']>());
+  when(() => findOrCreateBaseFolderMock()).thenReturn(of('baseFolderId'));
+
   let listMock = MockInstance(FileService, 'findAll', mock<FileService['findAll']>());
   let el1: FileElement = {
     id: 'id1',
@@ -216,7 +224,8 @@ function mockListTwoItemsAndTwoCategories() {
     date: '2023-08-14T14:48:44.928Z',
     name: 'name1',
     iconLink: "link",
-    dlLink: "dlLink"
+    dlLink: "dlLink",
+    parentId: 'baseFolderId'
   };
   let el2: FileElement = {
     id: 'id2',
@@ -224,21 +233,31 @@ function mockListTwoItemsAndTwoCategories() {
     date: '2023-08-03T14:54:55.556Z',
     name: 'name2',
     iconLink: "link",
-    dlLink: "dlLink"
+    dlLink: "dlLink",
+    parentId: 'baseFolderId'
   };
   let el3: FolderElement = {
     id: 'id3',
     date: '2023-08-02T14:54:55.556Z',
     name: 'Cat1',
-    iconLink: "link"
+    iconLink: "link",
+    parentId: 'baseFolderId'
   };
   let el4: FolderElement = {
     id: 'id4',
     date: '2023-08-01T14:54:55.556Z',
     name: 'Cat2',
-    iconLink: "link"
+    iconLink: "link",
+    parentId: 'baseFolderId'
   };
-  when(() => listMock()).thenReturn(of([el1, el2, el3, el4]));
+  let el5: FolderElement = {
+    id: 'id5',
+    date: '2023-08-01T14:54:55.556Z',
+    name: 'Cat1Child',
+    iconLink: "link",
+    parentId: 'id3'
+  };
+  when(() => listMock()).thenReturn(of([el1, el2, el3, el4, el5]));
   return listMock;
 }
 
@@ -276,7 +295,7 @@ class Page {
   }
 
   static getCategories() {
-    return ngMocks.findAll("mat-list-item div")
+    return ngMocks.findAll(".categoryName")
       .map(value => value.nativeNode.textContent.trim());
   }
 

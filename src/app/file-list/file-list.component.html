@@ -1,15 +1,27 @@
-<mat-list>
-  <div mat-subheader>Categories</div>
-  <mat-list-item *ngFor="let cat of categories">
-    <mat-icon matListItemIcon>folder</mat-icon>
-    <div>{{cat.name}}</div>
-  </mat-list-item>
-</mat-list>
+<div mat-subheader>Categories</div>
+<mat-tree [dataSource]="categoryDataSource" [treeControl]="categoryTreeControl">
+  <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
+    <div class="categoryName"> {{node.name}} </div>
+  </mat-tree-node>
+  <mat-nested-tree-node *matTreeNodeDef="let node; when: categoryHasChild">
+    <div class="mat-tree-node">
+      <button mat-icon-button matTreeNodeToggle>
+        <mat-icon class="mat-icon-rtl-mirror">
+          {{categoryTreeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+        </mat-icon>
+      </button>
+      <div class="categoryName"> {{node.name}} </div>
+    </div>
+    <div [hidden]="!categoryTreeControl.isExpanded(node)" role="group">
+      <ng-container matTreeNodeOutlet></ng-container>
+    </div>
+  </mat-nested-tree-node>
+</mat-tree>
 <mat-form-field class="nameFilter">
   <mat-label>Filter</mat-label>
   <input matInput placeholder="Filter" [(ngModel)]="nameFilter" (keyup)="applyFilter($event)">
 </mat-form-field>
-<mat-table [dataSource]="dataSource" aria-label="List of uploaded files">
+<mat-table [dataSource]="fileDataSource" aria-label="List of uploaded files">
   <ng-container matColumnDef="name">
     <mat-header-cell *matHeaderCellDef> Name</mat-header-cell>
     <mat-cell *matCellDef="let element"><img [ngSrc]="element.iconLink" alt="file icon" width="16" height="16">

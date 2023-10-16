@@ -9,15 +9,18 @@ import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatChipInputEvent, MatChipsModule} from "@angular/material/chips";
 import {MatIconModule} from "@angular/material/icon";
-import {COMMA, ENTER} from "@angular/cdk/keycodes";
+import {ENTER} from "@angular/cdk/keycodes";
 import {NgForOf} from "@angular/common";
 import {mergeMap, Observable, of} from "rxjs";
+import {NestedTreeControl} from "@angular/cdk/tree";
+import {MatTreeNestedDataSource} from "@angular/material/tree";
 
 export interface FileOrFolderElement {
   id: string;
   name: string;
   date: string;
   iconLink: string;
+  parentId: string;
 }
 
 export interface FileElement extends FileOrFolderElement {
@@ -40,20 +43,29 @@ export interface FolderElement extends FileOrFolderElement {
 })
 export class FileListComponent implements OnInit {
   displayedColumns: string[] = ['name', 'date', 'size', 'actions'];
-  dataSource = new MatTableDataSource();
-  categories: FolderElement[] = [];
+  fileDataSource = new MatTableDataSource();
   nameFilter = '';
+  baseFolderId = '';
+
+  categories: FolderElement[] = [];
+  parentToCategoryMap = new Map<string, FolderElement[]>();
+
+  categoryDataSource = new MatTreeNestedDataSource<FolderElement>();
+  categoryTreeControl = new NestedTreeControl<FolderElement>(node => this.getChildren(node.id));
 
   constructor(private fileService: FileService, private baseFolderService: BaseFolderService, public dialog: MatDialog) {
   }
 
   ngOnInit(): void {
-    this.refresh();
+    this.baseFolderService.findOrCreateBaseFolder().subscribe(baseFolderId => {
+      this.baseFolderId = baseFolderId;
+      this.refresh();
+    });
   }
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.fileDataSource.filter = filterValue.trim().toLowerCase();
   }
 
   trashFile(element: FileElement) {
@@ -63,8 +75,10 @@ export class FileListComponent implements OnInit {
 
   refresh() {
     this.fileService.findAll().subscribe(filesOrFolders => {
-      this.dataSource.data = filesOrFolders.filter(value => isFileElement(value));
+      this.fileDataSource.data = filesOrFolders.filter(value => isFileElement(value));
       this.categories = filesOrFolders.filter(value => !isFileElement(value));
+
+      this.constructCategoryTree();
     })
   }
 
@@ -77,15 +91,36 @@ export class FileListComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((categories: string[]) => {
       if (categories) {
-        this.baseFolderService.findOrCreateBaseFolder()
-          .pipe(mergeMap(baseFolderId => {
-            return this.findOrCreateCategories(categories, baseFolderId)
-          }), mergeMap(categoryId => {
+        this.findOrCreateCategories(categories, this.baseFolderId)
+          .pipe(mergeMap(categoryId => {
             return this.fileService.setCategory(element.id, categoryId)
           }))
           .subscribe(_ => this.refresh());
       }
     })
+  }
+
+
+  categoryHasChild = (_: number, node: FolderElement) => {
+    return this.getChildren(node.id).length > 0;
+  };
+
+  private getChildren(catId: string) {
+    return this.parentToCategoryMap.get(catId) ?? []
+  }
+
+  private constructCategoryTree() {
+    // Populate parentToCategoryMap
+    this.parentToCategoryMap.clear();
+    for (let category of this.categories) {
+      if (!this.parentToCategoryMap.has(category.parentId)) {
+        this.parentToCategoryMap.set(category.parentId, []);
+      }
+      this.parentToCategoryMap.get(category.parentId)?.push(category);
+    }
+
+    // Add the root categories
+    this.categoryDataSource.data = this.getChildren(this.baseFolderId);
   }
 
   /**

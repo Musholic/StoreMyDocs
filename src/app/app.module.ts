@@ -27,6 +27,7 @@ import {httpInterceptorProviders} from "./auth/auth.interceptor";
 import {MatDialogModule} from "@angular/material/dialog";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
+import {MatTreeModule} from "@angular/material/tree";
 
 @NgModule({
   declarations: [
@@ -39,27 +40,28 @@ import {FormsModule} from "@angular/forms";
     FileListComponent,
     LoginComponent
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    BrowserAnimationsModule,
-    HttpClientModule,
-    NgxFilesizeModule,
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        BrowserAnimationsModule,
+        HttpClientModule,
+        NgxFilesizeModule,
 
-    MatToolbarModule,
-    MatButtonModule,
-    MatIconModule,
-    MatCardModule,
-    MatProgressBarModule,
-    MatMenuModule,
-    MatListModule,
-    MatTableModule,
-    MatRippleModule,
-    NgOptimizedImage,
-    MatDialogModule,
-    MatInputModule,
-    FormsModule
-  ],
+        MatToolbarModule,
+        MatButtonModule,
+        MatIconModule,
+        MatCardModule,
+        MatProgressBarModule,
+        MatMenuModule,
+        MatListModule,
+        MatTableModule,
+        MatRippleModule,
+        NgOptimizedImage,
+        MatDialogModule,
+        MatInputModule,
+        FormsModule,
+        MatTreeModule
+    ],
   providers: [
     httpInterceptorProviders
   ],
