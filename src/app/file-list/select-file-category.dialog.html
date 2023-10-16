@@ -1,11 +1,20 @@
 <h1 mat-dialog-title>Select a category for {{fileName}}</h1>
 <div mat-dialog-content>
-  <mat-form-field>
+  <mat-form-field class="category-select">
     <mat-label>Category</mat-label>
-    <input matInput placeholder="Category" [(ngModel)]="category">
+    <mat-chip-grid #chipGrid>
+      <mat-chip-row *ngFor="let category of categories"
+                    (removed)="remove(category)">
+        {{category}}
+      </mat-chip-row>
+      <input matInput placeholder="Select category..."
+             [matChipInputFor]="chipGrid"
+             [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+             (matChipInputTokenEnd)="add($event)"/>
+    </mat-chip-grid>
   </mat-form-field>
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
-  <button mat-button [mat-dialog-close]="category">Ok</button>
+  <button mat-button [mat-dialog-close]="categories">Ok</button>
 </div>

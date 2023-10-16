@@ -7,6 +7,11 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
+import {MatChipInputEvent, MatChipsModule} from "@angular/material/chips";
+import {MatIconModule} from "@angular/material/icon";
+import {COMMA, ENTER} from "@angular/cdk/keycodes";
+import {NgForOf} from "@angular/common";
+import {mergeMap, Observable, of} from "rxjs";
 
 export interface FileOrFolderElement {
   id: string;
@@ -70,25 +75,44 @@ export class FileListComponent implements OnInit {
       closeOnNavigation: false
     });
 
-    dialogRef.afterClosed().subscribe(category => {
-      if (category) {
-        this.baseFolderService.findOrCreateBaseFolder().subscribe(baseFolderId => {
-          this.fileService.setCategory(element.id, category, baseFolderId)
-            .subscribe(_ => this.refresh());
-        });
+    dialogRef.afterClosed().subscribe((categories: string[]) => {
+      if (categories) {
+        this.baseFolderService.findOrCreateBaseFolder()
+          .pipe(mergeMap(baseFolderId => {
+            return this.findOrCreateCategories(categories, baseFolderId)
+          }), mergeMap(categoryId => {
+            return this.fileService.setCategory(element.id, categoryId)
+          }))
+          .subscribe(_ => this.refresh());
       }
     })
+  }
+
+  /**
+   * Return the last category id of the list
+   */
+  private findOrCreateCategories(categories: string[], categoryId: string): Observable<string> {
+    let categoryName = categories.shift();
+    if (categoryName) {
+      return this.fileService.findOrCreateFolder(categoryName, categoryId)
+        .pipe(mergeMap(newCategoryId => {
+          return this.findOrCreateCategories(categories, newCategoryId);
+        }));
+    }
+    return of(categoryId);
   }
 }
 
 @Component({
   selector: 'select-file-category-dialog',
-  templateUrl: 'select-file-category.dialog.html',
+  templateUrl: './select-file-category.dialog.html',
+  styleUrls: ['./select-file-category.dialog.scss'],
   standalone: true,
-  imports: [MatDialogModule, MatFormFieldModule, MatInputModule, FormsModule, MatButtonModule],
+  imports: [MatDialogModule, MatFormFieldModule, MatInputModule, FormsModule, MatButtonModule, MatChipsModule, MatIconModule, NgForOf],
 })
 export class SelectFileCategoryDialog {
-  category = '';
+  readonly separatorKeysCodes = [ENTER] as const;
+  categories: string[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<SelectFileCategoryDialog>,
@@ -98,5 +122,23 @@ export class SelectFileCategoryDialog {
 
   onNoClick(): void {
     this.dialogRef.close();
+  }
+
+  add(event: MatChipInputEvent): void {
+    const value = (event.value || '').trim();
+    if (value) {
+      this.categories.push(value);
+    }
+
+    // Clear the input value
+    event.chipInput.clear();
+  }
+
+  remove(category: string) {
+    const index = this.categories.indexOf(category);
+
+    if (index >= 0) {
+      this.categories.splice(index, 1);
+    }
   }
 }

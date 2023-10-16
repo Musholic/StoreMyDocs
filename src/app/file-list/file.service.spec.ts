@@ -218,15 +218,11 @@ describe('FileService', () => {
         // Arrange
         const service = MockRender(FileService).point.componentInstance;
 
-        // Mock already tested public functions to simplify the test
-        service.findOrCreateFolder = mock<FileService['findOrCreateFolder']>();
-        when(() => service.findOrCreateFolder('cat787', 'parent89798')).thenReturn(of('fId54848'));
-
         let httpTestingController = TestBed.inject(HttpTestingController);
 
         // Act
         let result = false;
-        service.setCategory('fId4895', 'cat787', 'parent89798')
+        service.setCategory('fId4895', 'fId54848')
           .subscribe(_ => result = true);
 
         // Assert

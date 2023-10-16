@@ -9,7 +9,7 @@ import {FileService} from "./file.service";
 import {of} from "rxjs";
 import {NgxFilesizeModule} from "ngx-filesize";
 import {TestbedHarnessEnvironment} from "@angular/cdk/testing/testbed";
-import {HarnessLoader} from "@angular/cdk/testing";
+import {HarnessLoader, TestKey} from "@angular/cdk/testing";
 import {MatMenuHarness} from "@angular/material/menu/testing";
 import {MatMenuModule} from "@angular/material/menu";
 import {BrowserAnimationsModule, NoopAnimationsModule} from "@angular/platform-browser/animations";
@@ -115,8 +115,10 @@ describe('FileListComponent', () => {
         dlLink: "dlLink"
       };
       when(() => listMock()).thenReturn(of([el1]))
+      let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
+      when(() => findOrCreateFolderMock('Cat848', 'baseFolderId78')).thenReturn(of('cat848Id'));
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
-      when(() => setCategoryMock('id2', 'Cat848', 'baseFolderId78')).thenReturn(of(undefined));
+      when(() => setCategoryMock('id2', 'cat848Id')).thenReturn(of(undefined));
 
       let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
         mock<BaseFolderService['findOrCreateBaseFolder']>());
@@ -155,6 +157,37 @@ describe('FileListComponent', () => {
 
       // Cleanup
       await page.clickCancelInDialog();
+    }))
+
+    it('should create and assign a sub-category', fakeAsync(async () => {
+      // Arrange
+      let findAllMock = mockListTwoItemsAndTwoCategories();
+      // We expect a refresh
+      when(() => findAllMock()).thenReturn(of());
+
+      let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
+      when(() => setCategoryMock('id2', 'cat7Id')).thenReturn(of(undefined));
+
+      let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
+      when(() => findOrCreateFolderMock('ParentCat8', 'baseFolderId78')).thenReturn(of('parentCat8Id'));
+      when(() => findOrCreateFolderMock('Cat7', 'parentCat8Id')).thenReturn(of('cat7Id'));
+
+      let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
+        mock<BaseFolderService['findOrCreateBaseFolder']>());
+      when(() => findOrCreateBaseFolderMock()).thenReturn(of('baseFolderId78'))
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name2');
+      await page.clickMenuAssignCategory();
+      await page.setCategoryInDialog('ParentCat8');
+      await page.setCategoryInDialog('Cat7');
+      await page.clickOkInDialog();
+
+      // Assert
+      // No failure from mock setup
     }))
   })
 
@@ -252,8 +285,10 @@ class Page {
   }
 
   async setCategoryInDialog(category: string) {
-    let inputHarness = await this.loader.getHarness(MatInputHarness.with({placeholder: 'Category'}));
+    let inputHarness = await this.loader.getHarness(MatInputHarness.with({placeholder: 'Select category...'}));
     await inputHarness.setValue(category);
+    let testElement = await inputHarness.host();
+    await testElement.sendKeys(TestKey.ENTER)
   }
 
   async clickOkInDialog() {

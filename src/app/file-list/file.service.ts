@@ -2,7 +2,6 @@ import {Injectable} from '@angular/core';
 import {FileElement, FileOrFolderElement, FolderElement} from "./file-list.component";
 import {map, mergeMap, Observable, of} from "rxjs";
 import {BaseFolderService} from "../file-upload/base-folder.service";
-import {GoogleDriveAuthService} from "../file-upload/google-drive-auth.service";
 import {HttpClient} from "@angular/common/http";
 
 @Injectable({
@@ -47,11 +46,9 @@ export class FileService {
     return this.http.patch<void>(url, {trashed: true});
   }
 
-  setCategory(fileId: string, category: string, parentId: string): Observable<void> {
-    return this.findOrCreateFolder(category, parentId).pipe(mergeMap(folderId => {
-      const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '/' + fileId + "?addParents=" + folderId;
-      return this.http.patch<void>(url, {});
-    }))
+  setCategory(fileId: string, categoryId: string): Observable<void> {
+    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '/' + fileId + "?addParents=" + categoryId;
+    return this.http.patch<void>(url, {});
   }
 
   findOrCreateFolder(folderName: string, parentId: string | null = null) {
