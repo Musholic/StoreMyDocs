@@ -25,14 +25,14 @@ describe('FileService', () => {
 
     // Act
     let result: FileOrFolderElement[] = [];
-    service.findInFolder('id8495')
+    service.findAll()
       .subscribe(value => result = value)
 
     // Assert
     tick();
 
     const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?" +
-      "q='id8495'%20in%20parents%20and%20trashed%20=%20false" +
+      "q=trashed%20=%20false" +
       "&fields=files(id,name,createdTime,size,iconLink,webContentLink,mimeType)");
     expect(req.request.method).toEqual('GET');
     req.flush({

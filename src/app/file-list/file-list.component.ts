@@ -51,7 +51,7 @@ export class FileListComponent implements OnInit {
   }
 
   refresh() {
-    this.baseFolderService.listAllFiles().subscribe(filesOrFolders => {
+    this.fileService.findAll().subscribe(filesOrFolders => {
       this.dataSource.data = filesOrFolders.filter(value => isFileElement(value));
       this.categories = filesOrFolders.filter(value => !isFileElement(value));
     })

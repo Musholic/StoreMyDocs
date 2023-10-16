@@ -31,7 +31,7 @@ describe('FileListComponent', () => {
 
   it('should create (no element)', fakeAsync(() => {
     // Arrange
-    let listMock = MockInstance(BaseFolderService, 'listAllFiles', mock<BaseFolderService['listAllFiles']>());
+    let listMock = MockInstance(FileService, 'findAll', mock<FileService['findAll']>());
     when(() => listMock()).thenReturn(mustBeConsumedObservable(of([])));
 
     // Act
@@ -158,7 +158,7 @@ describe('FileListComponent', () => {
 });
 
 function mockListTwoItemsAndTwoCategories() {
-  let listMock = MockInstance(BaseFolderService, 'listAllFiles', mock<BaseFolderService['listAllFiles']>());
+  let listMock = MockInstance(FileService, 'findAll', mock<FileService['findAll']>());
   let el1: FileElement = {
     id: 'id1',
     size: 1421315,

@@ -16,12 +16,4 @@ export class BaseFolderService {
   findOrCreateBaseFolder() {
     return this.fileService.findOrCreateFolder(this.BASE_FOLDER_NAME);
   }
-
-  listAllFiles(): Observable<FileOrFolderElement[]> {
-    return this.findOrCreateBaseFolder().pipe(
-      mergeMap(baseFolderId => {
-        return this.fileService.findInFolder(baseFolderId)
-      })
-    );
-  }
 }

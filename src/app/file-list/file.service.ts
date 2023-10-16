@@ -10,11 +10,11 @@ import {HttpClient} from "@angular/common/http";
 })
 export class FileService {
 
-  constructor(private authService: GoogleDriveAuthService, private http: HttpClient) {
+  constructor(private http: HttpClient) {
   }
 
-  findInFolder(folderId: string): Observable<FileOrFolderElement[]> {
-    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("'" + folderId + "' in parents and trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink,mimeType)");
+  findAll(): Observable<FileOrFolderElement[]> {
+    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink,mimeType)");
     return this.http.get<gapi.client.drive.FileList>(url).pipe(map(res => {
       if (res.files) {
         return res.files.map(f => {
