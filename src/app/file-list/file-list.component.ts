@@ -37,12 +37,18 @@ export class FileListComponent implements OnInit {
   displayedColumns: string[] = ['name', 'date', 'size', 'actions'];
   dataSource = new MatTableDataSource();
   categories: FolderElement[] = [];
+  nameFilter = '';
 
   constructor(private fileService: FileService, private baseFolderService: BaseFolderService, public dialog: MatDialog) {
   }
 
   ngOnInit(): void {
     this.refresh();
+  }
+
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
   trashFile(element: FileElement) {

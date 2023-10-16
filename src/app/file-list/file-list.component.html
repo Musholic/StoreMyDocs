@@ -5,6 +5,10 @@
     <div>{{cat.name}}</div>
   </mat-list-item>
 </mat-list>
+<mat-form-field class="nameFilter">
+  <mat-label>Filter</mat-label>
+  <input matInput placeholder="Filter" [(ngModel)]="nameFilter" (keyup)="applyFilter($event)">
+</mat-form-field>
 <mat-table [dataSource]="dataSource" aria-label="List of uploaded files">
   <ng-container matColumnDef="name">
     <mat-header-cell *matHeaderCellDef> Name</mat-header-cell>

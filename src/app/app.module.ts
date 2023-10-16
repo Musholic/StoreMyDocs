@@ -25,6 +25,8 @@ import {NgOptimizedImage} from "@angular/common";
 import { LoginComponent } from './login/login.component';
 import {httpInterceptorProviders} from "./auth/auth.interceptor";
 import {MatDialogModule} from "@angular/material/dialog";
+import {MatInputModule} from "@angular/material/input";
+import {FormsModule} from "@angular/forms";
 
 @NgModule({
   declarations: [
@@ -54,7 +56,9 @@ import {MatDialogModule} from "@angular/material/dialog";
     MatTableModule,
     MatRippleModule,
     NgOptimizedImage,
-    MatDialogModule
+    MatDialogModule,
+    MatInputModule,
+    FormsModule
   ],
   providers: [
     httpInterceptorProviders

@@ -19,6 +19,8 @@ import {MatInputHarness} from "@angular/material/input/testing";
 import {MatButtonHarness} from "@angular/material/button/testing";
 import {MatDialogModule} from "@angular/material/dialog";
 import {MatDialogHarness} from "@angular/material/dialog/testing";
+import {MatInputModule} from "@angular/material/input";
+import {FormsModule} from "@angular/forms";
 
 describe('FileListComponent', () => {
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
@@ -26,6 +28,8 @@ describe('FileListComponent', () => {
     .keep(NgxFilesizeModule)
     .keep(MatMenuModule)
     .keep(MatDialogModule)
+    .keep(MatInputModule)
+    .keep(FormsModule)
     .replace(BrowserAnimationsModule, NoopAnimationsModule)
   );
 
@@ -154,7 +158,21 @@ describe('FileListComponent', () => {
     }))
   })
 
+  it('should filter out one item out of two items', async () => {
+    // Arrange
+    mockListTwoItemsAndTwoCategories();
+    let fixture = MockRender(FileListComponent);
+    let page = new Page(fixture);
 
+    // Act
+    await page.setFilter('name1');
+
+    // Assert
+    let actionsRow = 'more_vert';
+    let expected = [['name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
+    expect(expected).toEqual(Page.getTableRows());
+  })
+  // TODO: test when there is nothing to show with a given filter
 });
 
 function mockListTwoItemsAndTwoCategories() {
@@ -251,5 +269,10 @@ class Page {
   async getDialogTitle() {
     let dialogHarness = await this.loader.getHarness(MatDialogHarness);
     return dialogHarness.getTitleText();
+  }
+
+  async setFilter(filter: string) {
+    let inputHarness = await this.loader.getHarness(MatInputHarness.with({placeholder: 'Filter'}));
+    await inputHarness.setValue(filter);
   }
 }
