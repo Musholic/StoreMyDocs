@@ -1,5 +1,5 @@
-import {Component, Inject, OnInit, ViewChild} from '@angular/core';
-import {MatTable, MatTableDataSource} from "@angular/material/table";
+import {Component, Inject, OnInit} from '@angular/core';
+import {MatTableDataSource} from "@angular/material/table";
 import {FileService} from "./file.service";
 import {BaseFolderService} from "../file-upload/base-folder.service";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef} from "@angular/material/dialog";
@@ -52,9 +52,7 @@ export class FileListComponent implements OnInit {
 
   categoryDataSource = new MatTreeNestedDataSource<FolderElement>();
   categoryTreeControl = new NestedTreeControl<FolderElement>(node => this.getChildren(node.id));
-  // @ts-ignore
-  @ViewChild(MatTable) fileTable: MatTable<any>;
-  private categoryFilter = '';
+  private categoryFilters: string[] = [];
 
   constructor(private fileService: FileService, private baseFolderService: BaseFolderService, public dialog: MatDialog) {
     this.fileDataSource.filterPredicate = data => {
@@ -113,7 +111,7 @@ export class FileListComponent implements OnInit {
   }
 
   filterByCategory(category: FolderElement) {
-    this.categoryFilter = category.name;
+    this.categoryFilters.push(category.name)
     this.refreshFilter();
   }
 
@@ -128,8 +126,11 @@ export class FileListComponent implements OnInit {
     if (!data.name.toLowerCase().includes(this.nameFilter.trim().toLowerCase())) {
       return false
     }
-    if (this.categoryFilter) {
-      return this.getCategories(data).includes(this.categoryFilter)
+    if (this.categoryFilters.length > 0) {
+      // We want at least one category to match
+      return this.categoryFilters.some(category => {
+        return this.getCategories(data).includes(category);
+      })
     }
     return true;
   }

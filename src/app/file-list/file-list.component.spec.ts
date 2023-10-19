@@ -23,7 +23,7 @@ import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatTreeModule} from "@angular/material/tree";
 import {MatChipsModule} from "@angular/material/chips";
-import { v4 as uuid } from 'uuid';
+import {v4 as uuid} from 'uuid';
 
 describe('FileListComponent', () => {
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
@@ -250,12 +250,28 @@ describe('FileListComponent', () => {
       // Assert
       expect(Page.getDisplayedFileNames()).toEqual(['funny.png', 'default.png', 'avatar.png'])
     })
+
+    it('should filter on two unrelated categories', async () => {
+      // Arrange
+      mockTxtAndImageFiles();
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      await page.selectCategoryFilter('TXT');
+      await page.selectCategoryFilter('Avatar');
+
+      // Assert
+      fixture.detectChanges()
+      expect(Page.getDisplayedFileNames()).toEqual(['text.txt', 'avatar.png'])
+    })
   })
   // TODO: test when there is nothing to show with a given filter + test when filtering by selecting category (on file list + on category list + with multiple category + check category selection somewhere impact other places)
 });
 
 function mockFileElement(name: string, parentId: string, id: string | undefined = undefined, size: number = 0, date: string = ''): FileElement {
-  if(!id) {
+  if (!id) {
     id = uuid();
   }
   return {
@@ -268,8 +284,9 @@ function mockFileElement(name: string, parentId: string, id: string | undefined 
     parentId: parentId
   };
 }
+
 function mockFolderElement(name: string, parentId: string = 'baseFolderId', id: string | undefined = undefined): FolderElement {
-  if(!id) {
+  if (!id) {
     id = uuid();
   }
   return {
@@ -289,6 +306,19 @@ function mockListItemsAndCategories(itemsAndCategories: (FileElement | FolderEle
   let listMock = MockInstance(FileService, 'findAll', mock<FileService['findAll']>());
   when(() => listMock()).thenReturn(of(itemsAndCategories));
   return listMock;
+}
+
+function mockTxtAndImageFiles() {
+  let txtFolder = mockFolderElement('TXT');
+  let imageFolder = mockFolderElement('Image');
+  let imageFunnyFolder = mockFolderElement('Funny', imageFolder.id);
+  let imageAvatarFolder = mockFolderElement('Avatar', imageFolder.id);
+  let itemsAndCategories = [txtFolder, imageFolder, imageFunnyFolder, imageAvatarFolder];
+  itemsAndCategories.push(mockFileElement('text.txt', txtFolder.id))
+  itemsAndCategories.push(mockFileElement('funny.png', imageFunnyFolder.id))
+  itemsAndCategories.push(mockFileElement('default.png', imageFolder.id))
+  itemsAndCategories.push(mockFileElement('avatar.png', imageAvatarFolder.id))
+  mockListItemsAndCategories(itemsAndCategories)
 }
 
 /**
