@@ -110,11 +110,11 @@ export class FileListComponent implements OnInit {
     return this.getAncestorCategories(element.parentId);
   }
 
-  filterByCategory(category: FolderElement, selected: boolean) {
+  filterByCategory(categoryName: string, selected: boolean) {
     if (selected) {
-      this.categoryFilters.add(category.name);
+      this.categoryFilters.add(categoryName);
     } else {
-      this.categoryFilters.delete(category.name);
+      this.categoryFilters.delete(categoryName);
     }
     this.refreshFilter();
   }

@@ -1,7 +1,7 @@
 import {fakeAsync, tick} from '@angular/core/testing';
 
 import {FileElement, FileListComponent, FolderElement} from './file-list.component';
-import {MockBuilder, MockedComponentFixture, MockInstance, MockRender, ngMocks} from "ng-mocks";
+import {MockBuilder, MockedComponentFixture, MockedDebugElement, MockInstance, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {MatTableModule} from "@angular/material/table";
 import {mock, when} from "strong-mock";
@@ -24,6 +24,7 @@ import {FormsModule} from "@angular/forms";
 import {MatTreeModule} from "@angular/material/tree";
 import {MatChipsModule} from "@angular/material/chips";
 import {v4 as uuid} from 'uuid';
+import {By} from "@angular/platform-browser";
 
 describe('FileListComponent', () => {
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
@@ -213,14 +214,13 @@ describe('FileListComponent', () => {
   })
 
   describe('Filter by file category', () => {
-    it('should filter out one item out of two items', async () => {
+    it('should filter out one item out of two items', () => {
       // Arrange
       mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
-      let fixture = MockRender(FileListComponent);
-      let page = new Page(fixture);
+      MockRender(FileListComponent);
 
       // Act
-      await page.selectCategoryFilter('Cat1Child');
+      Page.selectCategoryFilter('Cat1Child');
 
       // Assert
       let actionsRow = 'more_vert';
@@ -228,50 +228,61 @@ describe('FileListComponent', () => {
       expect(Page.getTableRows()).toEqual(expected);
     })
 
-    it('should filter based on root category', async () => {
+    it('should filter based on root category', () => {
       // Arrange
       mockTxtAndImageFiles();
 
-      let fixture = MockRender(FileListComponent);
-      let page = new Page(fixture);
+      MockRender(FileListComponent);
 
       // Act
-      await page.selectCategoryFilter('Image');
+      Page.selectCategoryFilter('Image');
 
       // Assert
       expect(Page.getDisplayedFileNames()).toEqual(['funny.png', 'default.png', 'avatar.png'])
     })
 
-    it('should filter on two unrelated categories', async () => {
+    it('should filter on two unrelated categories', () => {
       // Arrange
       mockTxtAndImageFiles();
 
       let fixture = MockRender(FileListComponent);
-      let page = new Page(fixture);
 
       // Act
-      await page.selectCategoryFilter('TXT');
-      await page.selectCategoryFilter('Avatar');
+      Page.selectCategoryFilter('TXT');
+      Page.selectCategoryFilter('Avatar');
 
       // Assert
       fixture.detectChanges()
       expect(Page.getDisplayedFileNames()).toEqual(['text.txt', 'avatar.png'])
     })
 
-    it('should allow removing a category filter', async () => {
+    it('should allow removing a category filter', () => {
       // Arrange
       mockTxtAndImageFiles();
 
       let fixture = MockRender(FileListComponent);
-      let page = new Page(fixture);
 
       // Act
-      await page.selectCategoryFilter('TXT');
-      await page.selectCategoryFilter('TXT');
+      Page.selectCategoryFilter('TXT');
+      Page.selectCategoryFilter('TXT');
 
       // Assert
       fixture.detectChanges()
       expect(Page.getDisplayedFileNames()).toEqual(['text.txt', 'funny.png', 'default.png', 'avatar.png'])
+    })
+
+    it('should allow filtering on the file categories, from a row of the table list', () => {
+      // Arrange
+      mockTxtAndImageFiles();
+
+      let fixture = MockRender(FileListComponent);
+
+      // Act
+      Page.selectCategoryFilterOnFileRow('avatar.png', 'Avatar');
+
+      // Assert
+      fixture.detectChanges()
+      expect(Page.getDisplayedFileNames()).toEqual(['avatar.png'])
     })
   })
   // TODO: test when there is nothing to show with a given filter + test when filtering by selecting category (on file list + on category list + with multiple category + check category selection somewhere impact other places)
@@ -359,12 +370,15 @@ class Page {
   }
 
   static openItemMenu(name: string) {
-    let row = ngMocks.findAll("mat-row")
+    ngMocks.find(this.getFileRow(name), ".mat-column-actions").nativeNode.click();
+  }
+
+  private static getFileRow(name: string): MockedDebugElement {
+    return ngMocks.findAll("mat-row")
       .filter(value => {
         let nameColumn = ngMocks.find(value, ".mat-column-name");
         return nameColumn.nativeNode.textContent.trim() === name;
       })[0];
-    ngMocks.find(row, ".mat-column-actions").nativeNode.click();
   }
 
   static getCategories() {
@@ -407,8 +421,15 @@ class Page {
     await inputHarness.setValue(filter);
   }
 
-  async selectCategoryFilter(cat: string) {
+  static selectCategoryFilter(cat: string) {
     let categoryChipElement = ngMocks.findAll(".categoryName")
+      .find(value => value.nativeNode.textContent.trim() === cat);
+    let button: HTMLButtonElement = categoryChipElement?.nativeElement.querySelector('button');
+    button.click();
+  }
+
+  static selectCategoryFilterOnFileRow(fileName: string, cat: string) {
+    let categoryChipElement = this.getFileRow(fileName).queryAll(By.css("mat-chip-option"))
       .find(value => value.nativeNode.textContent.trim() === cat);
     let button: HTMLButtonElement = categoryChipElement?.nativeElement.querySelector('button');
     button.click();
