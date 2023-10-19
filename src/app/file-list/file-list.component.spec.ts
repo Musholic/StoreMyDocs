@@ -113,6 +113,22 @@ describe('FileListComponent', () => {
     expect(Page.getCategories()).toEqual(['Cat1', 'Cat1Child', 'Cat2'])
   }))
 
+  it('should not list base folder as category in row categories', () => {
+    // Arrange
+    let baseFolder = mockFolderElement('BaseFolder', 'rootId', 'baseFolderId');
+    let el1 = mockFileElement('name1', baseFolder.id, 'id1', 1421315, '2023-08-14T14:48:44.928Z');
+    mockListItemsAndCategories([baseFolder, el1]);
+
+    // Act
+    let fixture = MockRender(FileListComponent);
+
+    // Assert
+    fixture.detectChanges();
+    let actionsRow = 'more_vert';
+    let expected = [['name1', '', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
+    expect(Page.getTableRows()).toEqual(expected);
+  })
+
   describe('Category assignment', () => {
     it('should refresh after assigning a category to a file', fakeAsync(async () => {
       // Arrange

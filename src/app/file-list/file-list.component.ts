@@ -145,7 +145,8 @@ export class FileListComponent implements OnInit {
 
   private getAncestorCategories(catId: string): string[] {
     let category = this.categories.get(catId);
-    if (category) {
+    // We should not include the base folder which is not to be considered as a category
+    if (category && category.id !== this.baseFolderId) {
       let categories = this.getAncestorCategories(category.parentId);
       categories.push(category.name);
       return categories;
