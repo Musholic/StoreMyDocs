@@ -62,8 +62,8 @@ describe('FileListComponent', () => {
 
     // Assert
     let actionsRow = 'more_vert';
-    let expected = [['name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow],
-      ['name2', 'Aug 3, 2023, 2:54:55 PM', '1.75 kB', actionsRow]];
+    let expected = [['name1', 'Cat1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow],
+      ['name2', 'Cat1Cat1Child', 'Aug 3, 2023, 2:54:55 PM', '1.75 kB', actionsRow]];
     expect(expected).toEqual(Page.getTableRows());
   })
 
@@ -94,7 +94,7 @@ describe('FileListComponent', () => {
     // Assert
     tick();
     let actionsRow = 'more_vert';
-    let expected = [['name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
+    let expected = [['name1', '', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
     expect(expected).toEqual(Page.getTableRows());
   }))
 
@@ -141,7 +141,7 @@ describe('FileListComponent', () => {
       // Assert
       tick();
       let actionsRow = 'more_vert';
-      let expected = [['name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
+      let expected = [['name1', '', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
       expect(expected).toEqual(Page.getTableRows());
     }))
 
@@ -203,10 +203,10 @@ describe('FileListComponent', () => {
 
     // Assert
     let actionsRow = 'more_vert';
-    let expected = [['name1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
+    let expected = [['name1', 'Cat1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
     expect(expected).toEqual(Page.getTableRows());
   })
-  // TODO: test when there is nothing to show with a given filter
+  // TODO: test when there is nothing to show with a given filter + test when filtering by selecting category (on file list + on category list)
 });
 
 /**
@@ -225,7 +225,7 @@ function mockListItemsAndCategories() {
     name: 'name1',
     iconLink: "link",
     dlLink: "dlLink",
-    parentId: 'baseFolderId'
+    parentId: 'id3'
   };
   let el2: FileElement = {
     id: 'id2',
@@ -234,7 +234,7 @@ function mockListItemsAndCategories() {
     name: 'name2',
     iconLink: "link",
     dlLink: "dlLink",
-    parentId: 'baseFolderId'
+    parentId: 'id5'
   };
   let el3: FolderElement = {
     id: 'id3',
@@ -274,17 +274,6 @@ class Page {
         .map(child => child.nativeNode.textContent.trim()));
   }
 
-  async clickMenuTrash() {
-    await this.clickMenu('.trash-file');
-  }
-
-  private async clickMenu(selector: string) {
-    let matMenuHarnesses = await this.loader.getAllHarnesses(MatMenuHarness);
-    // The menu should be the one opened
-    let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
-    await matMenuHarness?.clickItem({selector: selector});
-  }
-
   static openItemMenu(name: string) {
     let row = ngMocks.findAll("mat-row")
       .filter(value => {
@@ -297,6 +286,10 @@ class Page {
   static getCategories() {
     return ngMocks.findAll(".categoryName")
       .map(value => value.nativeNode.textContent.trim());
+  }
+
+  async clickMenuTrash() {
+    await this.clickMenu('.trash-file');
   }
 
   async clickMenuAssignCategory() {
@@ -328,5 +321,12 @@ class Page {
   async setFilter(filter: string) {
     let inputHarness = await this.loader.getHarness(MatInputHarness.with({placeholder: 'Filter'}));
     await inputHarness.setValue(filter);
+  }
+
+  private async clickMenu(selector: string) {
+    let matMenuHarnesses = await this.loader.getAllHarnesses(MatMenuHarness);
+    // The menu should be the one opened
+    let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
+    await matMenuHarness?.clickItem({selector: selector});
   }
 }

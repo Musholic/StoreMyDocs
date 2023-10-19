@@ -33,6 +33,15 @@
     <mat-cell *matCellDef="let element"> {{element.date | date:'medium'}} </mat-cell>
   </ng-container>
 
+  <ng-container matColumnDef="category">
+    <mat-header-cell *matHeaderCellDef> Date</mat-header-cell>
+    <mat-cell *matCellDef="let element">
+      <mat-chip-listbox [multiple]="true">
+        <mat-chip-option *ngFor="let cat of getCategories(element)">{{cat}}</mat-chip-option>
+      </mat-chip-listbox>
+    </mat-cell>
+  </ng-container>
+
   <ng-container matColumnDef="size">
     <mat-header-cell *matHeaderCellDef> Size</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{element.size | filesize}} </mat-cell>

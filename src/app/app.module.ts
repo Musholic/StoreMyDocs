@@ -28,6 +28,7 @@ import {MatDialogModule} from "@angular/material/dialog";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatTreeModule} from "@angular/material/tree";
+import {MatChipsModule} from "@angular/material/chips";
 
 @NgModule({
   declarations: [
@@ -40,28 +41,29 @@ import {MatTreeModule} from "@angular/material/tree";
     FileListComponent,
     LoginComponent
   ],
-    imports: [
-        BrowserModule,
-        AppRoutingModule,
-        BrowserAnimationsModule,
-        HttpClientModule,
-        NgxFilesizeModule,
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    BrowserAnimationsModule,
+    HttpClientModule,
+    NgxFilesizeModule,
 
-        MatToolbarModule,
-        MatButtonModule,
-        MatIconModule,
-        MatCardModule,
-        MatProgressBarModule,
-        MatMenuModule,
-        MatListModule,
-        MatTableModule,
-        MatRippleModule,
-        NgOptimizedImage,
-        MatDialogModule,
-        MatInputModule,
-        FormsModule,
-        MatTreeModule
-    ],
+    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatProgressBarModule,
+    MatMenuModule,
+    MatListModule,
+    MatTableModule,
+    MatRippleModule,
+    NgOptimizedImage,
+    MatDialogModule,
+    MatInputModule,
+    FormsModule,
+    MatTreeModule,
+    MatChipsModule
+  ],
   providers: [
     httpInterceptorProviders
   ],

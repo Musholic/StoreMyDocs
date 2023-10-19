@@ -42,12 +42,12 @@ export interface FolderElement extends FileOrFolderElement {
   styleUrls: ['./file-list.component.scss']
 })
 export class FileListComponent implements OnInit {
-  displayedColumns: string[] = ['name', 'date', 'size', 'actions'];
+  displayedColumns: string[] = ['name', 'category', 'date', 'size', 'actions'];
   fileDataSource = new MatTableDataSource();
   nameFilter = '';
   baseFolderId = '';
 
-  categories: FolderElement[] = [];
+  categories = new Map<string, FolderElement>();
   parentToCategoryMap = new Map<string, FolderElement[]>();
 
   categoryDataSource = new MatTreeNestedDataSource<FolderElement>();
@@ -76,7 +76,9 @@ export class FileListComponent implements OnInit {
   refresh() {
     this.fileService.findAll().subscribe(filesOrFolders => {
       this.fileDataSource.data = filesOrFolders.filter(value => isFileElement(value));
-      this.categories = filesOrFolders.filter(value => !isFileElement(value));
+      this.categories.clear();
+      filesOrFolders.filter(value => !isFileElement(value))
+        .forEach(category => this.categories.set(category.id, category));
 
       this.constructCategoryTree();
     })
@@ -105,6 +107,21 @@ export class FileListComponent implements OnInit {
     return this.getChildren(node.id).length > 0;
   };
 
+  getCategories(element: FileElement) {
+    return this.getAncestorCategories(element.parentId);
+  }
+
+  private getAncestorCategories(catId: string): string[] {
+    let category = this.categories.get(catId);
+    if (category) {
+      let categories = this.getAncestorCategories(category.parentId);
+      categories.push(category.name);
+      return categories;
+    } else {
+      return [];
+    }
+  }
+
   private getChildren(catId: string) {
     return this.parentToCategoryMap.get(catId) ?? []
   }
@@ -112,7 +129,7 @@ export class FileListComponent implements OnInit {
   private constructCategoryTree() {
     // Populate parentToCategoryMap
     this.parentToCategoryMap.clear();
-    for (let category of this.categories) {
+    for (let category of this.categories.values()) {
       if (!this.parentToCategoryMap.has(category.parentId)) {
         this.parentToCategoryMap.set(category.parentId, []);
       }
