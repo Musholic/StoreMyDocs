@@ -312,6 +312,20 @@ describe('FileListComponent', () => {
       fixture.detectChanges()
       expect(Page.isCategorySelectedOnCategoriesList('Image')).toBeTruthy();
     })
+
+    it('when filtering from the categories list, should change the filter state on the rows', () => {
+      // Arrange
+      mockTxtAndImageFiles();
+
+      let fixture = MockRender(FileListComponent);
+
+      // Act
+      Page.selectCategoryFilter('TXT');
+
+      // Assert
+      fixture.detectChanges()
+      expect(Page.isCategorySelectedOnFileRow('text.txt', 'TXT')).toBeTruthy();
+    })
   })
   // TODO: test when there is nothing to show with a given filter + test when filtering by selecting category (on file list + on category list + with multiple category + check category selection somewhere impact other places)
 });
@@ -401,17 +415,43 @@ class Page {
     ngMocks.find(this.getFileRow(name), ".mat-column-actions").nativeNode.click();
   }
 
+  static getCategories() {
+    return ngMocks.findAll(".categoryName")
+      .map(value => value.nativeNode.textContent.trim());
+  }
+
+  static selectCategoryFilter(cat: string) {
+    let categoryChipElement = ngMocks.findAll(".categoryName")
+      .find(value => value.nativeNode.textContent.trim() === cat);
+    let button: HTMLButtonElement = categoryChipElement?.nativeElement.querySelector('button');
+    button.click();
+  }
+
+  static selectCategoryFilterOnFileRow(fileName: string, cat: string) {
+    let categoryChipElement = this.getFileRow(fileName).queryAll(By.css("mat-chip-option"))
+      .find(value => value.nativeNode.textContent.trim() === cat);
+    let button: HTMLButtonElement = categoryChipElement?.nativeElement.querySelector('button');
+    button.click();
+  }
+
+  static isCategorySelectedOnCategoriesList(cat: string) {
+    let categoryChipElement = ngMocks.findAll(".categoryName")
+      .find(value => value.nativeNode.textContent.trim() === cat);
+    return !!categoryChipElement?.classes['mat-mdc-chip-selected'];
+  }
+
+  static isCategorySelectedOnFileRow(fileName: string, cat: string) {
+    let categoryChipElement = this.getFileRow(fileName).queryAll(By.css("mat-chip-option"))
+      .find(value => value.nativeNode.textContent.trim() === cat);
+    return !!categoryChipElement?.classes['mat-mdc-chip-selected'];
+  }
+
   private static getFileRow(name: string): MockedDebugElement {
     return ngMocks.findAll("mat-row")
       .filter(value => {
         let nameColumn = ngMocks.find(value, ".mat-column-name");
         return nameColumn.nativeNode.textContent.trim() === name;
       })[0];
-  }
-
-  static getCategories() {
-    return ngMocks.findAll(".categoryName")
-      .map(value => value.nativeNode.textContent.trim());
   }
 
   async clickMenuTrash() {
@@ -449,30 +489,10 @@ class Page {
     await inputHarness.setValue(filter);
   }
 
-  static selectCategoryFilter(cat: string) {
-    let categoryChipElement = ngMocks.findAll(".categoryName")
-      .find(value => value.nativeNode.textContent.trim() === cat);
-    let button: HTMLButtonElement = categoryChipElement?.nativeElement.querySelector('button');
-    button.click();
-  }
-
-  static selectCategoryFilterOnFileRow(fileName: string, cat: string) {
-    let categoryChipElement = this.getFileRow(fileName).queryAll(By.css("mat-chip-option"))
-      .find(value => value.nativeNode.textContent.trim() === cat);
-    let button: HTMLButtonElement = categoryChipElement?.nativeElement.querySelector('button');
-    button.click();
-  }
-
   private async clickMenu(selector: string) {
     let matMenuHarnesses = await this.loader.getAllHarnesses(MatMenuHarness);
     // The menu should be the one opened
     let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
     await matMenuHarness?.clickItem({selector: selector});
-  }
-
-  static isCategorySelectedOnCategoriesList(cat: string) {
-    let categoryChipElement = ngMocks.findAll(".categoryName")
-      .find(value => value.nativeNode.textContent.trim() === cat);
-    return !!categoryChipElement?.classes['mat-mdc-chip-selected'];
   }
 }

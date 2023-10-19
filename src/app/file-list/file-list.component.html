@@ -39,7 +39,7 @@
     <mat-header-cell *matHeaderCellDef> Category </mat-header-cell>
     <mat-cell *matCellDef="let element">
       <mat-chip-listbox [multiple]="true">
-        <mat-chip-option *ngFor="let cat of getCategories(element)"
+        <mat-chip-option *ngFor="let cat of getCategories(element)" [selected]="isCategorySelected(cat)"
                          (selectionChange)="filterByCategory(cat, $event.selected)">{{cat}}</mat-chip-option>
       </mat-chip-listbox>
     </mat-cell>
