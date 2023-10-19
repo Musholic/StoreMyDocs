@@ -1,7 +1,7 @@
 <div mat-subheader>Categories</div>
 <mat-tree [dataSource]="categoryDataSource" [treeControl]="categoryTreeControl">
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
-    <mat-chip-option class="categoryName"
+    <mat-chip-option class="categoryName" [selected]="isCategorySelected(node.name)"
                      (selectionChange)="filterByCategory(node.name,$event.selected)"> {{node.name}} </mat-chip-option>
   </mat-tree-node>
   <mat-nested-tree-node *matTreeNodeDef="let node; when: categoryHasChild">
@@ -11,7 +11,7 @@
           {{categoryTreeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
         </mat-icon>
       </button>
-      <mat-chip-option class="categoryName"
+      <mat-chip-option class="categoryName" [selected]="isCategorySelected(node.name)"
                        (selectionChange)="filterByCategory(node.name,$event.selected)"> {{node.name}} </mat-chip-option>
     </div>
     <div [hidden]="!categoryTreeControl.isExpanded(node)" role="group">
@@ -36,7 +36,7 @@
   </ng-container>
 
   <ng-container matColumnDef="category">
-    <mat-header-cell *matHeaderCellDef> Date</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef> Category </mat-header-cell>
     <mat-cell *matCellDef="let element">
       <mat-chip-listbox [multiple]="true">
         <mat-chip-option *ngFor="let cat of getCategories(element)"

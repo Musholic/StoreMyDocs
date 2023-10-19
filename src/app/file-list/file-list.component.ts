@@ -185,6 +185,10 @@ export class FileListComponent implements OnInit {
     }
     return of(categoryId);
   }
+
+  isCategorySelected(name: string) {
+    return this.categoryFilters.has(name);
+  }
 }
 
 @Component({

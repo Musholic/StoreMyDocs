@@ -284,6 +284,34 @@ describe('FileListComponent', () => {
       fixture.detectChanges()
       expect(Page.getDisplayedFileNames()).toEqual(['avatar.png'])
     })
+
+    it('when filtering from a row, should change the filter state on the categories list (for leaf category)', () => {
+      // Arrange
+      mockTxtAndImageFiles();
+
+      let fixture = MockRender(FileListComponent);
+
+      // Act
+      Page.selectCategoryFilterOnFileRow('avatar.png', 'Avatar');
+
+      // Assert
+      fixture.detectChanges()
+      expect(Page.isCategorySelectedOnCategoriesList('Avatar')).toBeTruthy();
+    })
+
+    it('when filtering from a row, should change the filter state on the categories list (for parent category)', () => {
+      // Arrange
+      mockTxtAndImageFiles();
+
+      let fixture = MockRender(FileListComponent);
+
+      // Act
+      Page.selectCategoryFilterOnFileRow('avatar.png', 'Image');
+
+      // Assert
+      fixture.detectChanges()
+      expect(Page.isCategorySelectedOnCategoriesList('Image')).toBeTruthy();
+    })
   })
   // TODO: test when there is nothing to show with a given filter + test when filtering by selecting category (on file list + on category list + with multiple category + check category selection somewhere impact other places)
 });
@@ -440,5 +468,11 @@ class Page {
     // The menu should be the one opened
     let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
     await matMenuHarness?.clickItem({selector: selector});
+  }
+
+  static isCategorySelectedOnCategoriesList(cat: string) {
+    let categoryChipElement = ngMocks.findAll(".categoryName")
+      .find(value => value.nativeNode.textContent.trim() === cat);
+    return !!categoryChipElement?.classes['mat-mdc-chip-selected'];
   }
 }
