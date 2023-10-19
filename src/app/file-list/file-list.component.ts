@@ -52,7 +52,7 @@ export class FileListComponent implements OnInit {
 
   categoryDataSource = new MatTreeNestedDataSource<FolderElement>();
   categoryTreeControl = new NestedTreeControl<FolderElement>(node => this.getChildren(node.id));
-  private categoryFilters: string[] = [];
+  private categoryFilters = new Set<string>();
 
   constructor(private fileService: FileService, private baseFolderService: BaseFolderService, public dialog: MatDialog) {
     this.fileDataSource.filterPredicate = data => {
@@ -110,8 +110,12 @@ export class FileListComponent implements OnInit {
     return this.getAncestorCategories(element.parentId);
   }
 
-  filterByCategory(category: FolderElement) {
-    this.categoryFilters.push(category.name)
+  filterByCategory(category: FolderElement, selected: boolean) {
+    if (selected) {
+      this.categoryFilters.add(category.name);
+    } else {
+      this.categoryFilters.delete(category.name);
+    }
     this.refreshFilter();
   }
 
@@ -126,11 +130,15 @@ export class FileListComponent implements OnInit {
     if (!data.name.toLowerCase().includes(this.nameFilter.trim().toLowerCase())) {
       return false
     }
-    if (this.categoryFilters.length > 0) {
+    if (this.categoryFilters.size > 0) {
       // We want at least one category to match
-      return this.categoryFilters.some(category => {
-        return this.getCategories(data).includes(category);
-      })
+      for (const category of this.categoryFilters) {
+        if (this.getCategories(data).includes(category)) {
+          return true;
+        }
+      }
+      // No matching category
+      return false;
     }
     return true;
   }

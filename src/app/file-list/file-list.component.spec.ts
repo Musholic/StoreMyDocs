@@ -230,16 +230,7 @@ describe('FileListComponent', () => {
 
     it('should filter based on root category', async () => {
       // Arrange
-      let txtFolder = mockFolderElement('TXT');
-      let imageFolder = mockFolderElement('Image');
-      let imageFunnyFolder = mockFolderElement('Funny', imageFolder.id);
-      let imageAvatarFolder = mockFolderElement('Avatar', imageFolder.id);
-      let itemsAndCategories = [txtFolder, imageFolder, imageFunnyFolder, imageAvatarFolder];
-      itemsAndCategories.push(mockFileElement('text.txt', txtFolder.id))
-      itemsAndCategories.push(mockFileElement('funny.png', imageFunnyFolder.id))
-      itemsAndCategories.push(mockFileElement('default.png', imageFolder.id))
-      itemsAndCategories.push(mockFileElement('avatar.png', imageAvatarFolder.id))
-      mockListItemsAndCategories(itemsAndCategories)
+      mockTxtAndImageFiles();
 
       let fixture = MockRender(FileListComponent);
       let page = new Page(fixture);
@@ -265,6 +256,22 @@ describe('FileListComponent', () => {
       // Assert
       fixture.detectChanges()
       expect(Page.getDisplayedFileNames()).toEqual(['text.txt', 'avatar.png'])
+    })
+
+    it('should allow removing a category filter', async () => {
+      // Arrange
+      mockTxtAndImageFiles();
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      await page.selectCategoryFilter('TXT');
+      await page.selectCategoryFilter('TXT');
+
+      // Assert
+      fixture.detectChanges()
+      expect(Page.getDisplayedFileNames()).toEqual(['text.txt', 'funny.png', 'default.png', 'avatar.png'])
     })
   })
   // TODO: test when there is nothing to show with a given filter + test when filtering by selecting category (on file list + on category list + with multiple category + check category selection somewhere impact other places)
