@@ -22,6 +22,7 @@ import {MatDialogHarness} from "@angular/material/dialog/testing";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatTreeModule} from "@angular/material/tree";
+import {MatChipsModule} from "@angular/material/chips";
 
 describe('FileListComponent', () => {
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
@@ -32,6 +33,7 @@ describe('FileListComponent', () => {
     .keep(MatInputModule)
     .keep(FormsModule)
     .keep(MatTreeModule)
+    .keep(MatChipsModule)
     .replace(BrowserAnimationsModule, NoopAnimationsModule)
   );
 
@@ -49,8 +51,7 @@ describe('FileListComponent', () => {
 
     // Assert
     expect(component).toBeTruthy();
-    let result: string[][] = [];
-    expect(result).toEqual(Page.getTableRows());
+    expect(Page.getTableRows()).toEqual([]);
   }));
 
   it('should list two items', () => {
@@ -64,7 +65,7 @@ describe('FileListComponent', () => {
     let actionsRow = 'more_vert';
     let expected = [['name1', 'Cat1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow],
       ['name2', 'Cat1Cat1Child', 'Aug 3, 2023, 2:54:55 PM', '1.75 kB', actionsRow]];
-    expect(expected).toEqual(Page.getTableRows());
+    expect(Page.getTableRows()).toEqual(expected);
   })
 
   it('should trash an item then refresh', fakeAsync(async () => {
@@ -95,7 +96,7 @@ describe('FileListComponent', () => {
     tick();
     let actionsRow = 'more_vert';
     let expected = [['name1', '', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
-    expect(expected).toEqual(Page.getTableRows());
+    expect(Page.getTableRows()).toEqual(expected);
   }))
 
   it('should list two categories and one sub-category', fakeAsync(() => {
@@ -142,7 +143,7 @@ describe('FileListComponent', () => {
       tick();
       let actionsRow = 'more_vert';
       let expected = [['name1', '', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
-      expect(expected).toEqual(Page.getTableRows());
+      expect(Page.getTableRows()).toEqual(expected);
     }))
 
     it('should show name of the file being assigned to a category in dialog', fakeAsync(async () => {
@@ -192,21 +193,41 @@ describe('FileListComponent', () => {
     }))
   })
 
-  it('should filter out one item out of two items', async () => {
-    // Arrange
-    mockListItemsAndCategories();
-    let fixture = MockRender(FileListComponent);
-    let page = new Page(fixture);
+  describe('Filter by file name', () => {
+    it('should filter out one item out of two items', async () => {
+      // Arrange
+      mockListItemsAndCategories();
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
 
-    // Act
-    await page.setFilter('name1');
+      // Act
+      //TODO: test filters ignore case
+      await page.setFilter('name1');
 
-    // Assert
-    let actionsRow = 'more_vert';
-    let expected = [['name1', 'Cat1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
-    expect(expected).toEqual(Page.getTableRows());
+      // Assert
+      let actionsRow = 'more_vert';
+      let expected = [['name1', 'Cat1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
+      expect(Page.getTableRows()).toEqual(expected);
+    })
   })
-  // TODO: test when there is nothing to show with a given filter + test when filtering by selecting category (on file list + on category list)
+
+  describe('Filter by file category', () => {
+    it('should filter out one item out of two items', async () => {
+      // Arrange
+      mockListItemsAndCategories();
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      await page.selectCategoryFilter('Cat1Child');
+
+      // Assert
+      let actionsRow = 'more_vert';
+      let expected = [['name2', 'Cat1Cat1Child', 'Aug 3, 2023, 2:54:55 PM', '1.75 kB', actionsRow]];
+      expect(Page.getTableRows()).toEqual(expected);
+    })
+  })
+  // TODO: test when there is nothing to show with a given filter + test when filtering by selecting category (on file list + on category list + with multiple category + check category selection somewhere impact other places)
 });
 
 /**
@@ -321,6 +342,13 @@ class Page {
   async setFilter(filter: string) {
     let inputHarness = await this.loader.getHarness(MatInputHarness.with({placeholder: 'Filter'}));
     await inputHarness.setValue(filter);
+  }
+
+  async selectCategoryFilter(cat: string) {
+    let categoryChipElement = ngMocks.findAll(".categoryName")
+      .find(value => value.nativeNode.textContent.trim() === cat);
+    let button: HTMLButtonElement = categoryChipElement?.nativeElement.querySelector('button');
+    button.click();
   }
 
   private async clickMenu(selector: string) {

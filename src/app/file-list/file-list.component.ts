@@ -1,5 +1,5 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {MatTableDataSource} from "@angular/material/table";
+import {Component, Inject, OnInit, ViewChild} from '@angular/core';
+import {MatTable, MatTableDataSource} from "@angular/material/table";
 import {FileService} from "./file.service";
 import {BaseFolderService} from "../file-upload/base-folder.service";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef} from "@angular/material/dialog";
@@ -43,7 +43,7 @@ export interface FolderElement extends FileOrFolderElement {
 })
 export class FileListComponent implements OnInit {
   displayedColumns: string[] = ['name', 'category', 'date', 'size', 'actions'];
-  fileDataSource = new MatTableDataSource();
+  fileDataSource = new MatTableDataSource<FileElement>();
   nameFilter = '';
   baseFolderId = '';
 
@@ -52,8 +52,14 @@ export class FileListComponent implements OnInit {
 
   categoryDataSource = new MatTreeNestedDataSource<FolderElement>();
   categoryTreeControl = new NestedTreeControl<FolderElement>(node => this.getChildren(node.id));
+  // @ts-ignore
+  @ViewChild(MatTable) fileTable: MatTable<any>;
+  private categoryFilter = '';
 
   constructor(private fileService: FileService, private baseFolderService: BaseFolderService, public dialog: MatDialog) {
+    this.fileDataSource.filterPredicate = data => {
+      return this.filterPredicate(data);
+    }
   }
 
   ngOnInit(): void {
@@ -63,11 +69,6 @@ export class FileListComponent implements OnInit {
     });
   }
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.fileDataSource.filter = filterValue.trim().toLowerCase();
-  }
-
   trashFile(element: FileElement) {
     this.fileService.trash(element.id)
       .subscribe(() => this.refresh());
@@ -75,7 +76,8 @@ export class FileListComponent implements OnInit {
 
   refresh() {
     this.fileService.findAll().subscribe(filesOrFolders => {
-      this.fileDataSource.data = filesOrFolders.filter(value => isFileElement(value));
+      this.fileDataSource.data = filesOrFolders.filter(value => isFileElement(value))
+        .map(value => value as FileElement);
       this.categories.clear();
       filesOrFolders.filter(value => !isFileElement(value))
         .forEach(category => this.categories.set(category.id, category));
@@ -102,13 +104,34 @@ export class FileListComponent implements OnInit {
     })
   }
 
-
   categoryHasChild = (_: number, node: FolderElement) => {
     return this.getChildren(node.id).length > 0;
   };
 
   getCategories(element: FileElement) {
     return this.getAncestorCategories(element.parentId);
+  }
+
+  filterByCategory(category: FolderElement) {
+    this.categoryFilter = category.name;
+    this.refreshFilter();
+  }
+
+  refreshFilter() {
+    this.fileDataSource.filter = "true"
+  }
+
+  /**
+   * Filter by name (ignoring case) then filter by category
+   */
+  private filterPredicate<T>(data: FileElement) {
+    if (!data.name.toLowerCase().includes(this.nameFilter.trim().toLowerCase())) {
+      return false
+    }
+    if (this.categoryFilter) {
+      return this.getCategories(data).includes(this.categoryFilter)
+    }
+    return true;
   }
 
   private getAncestorCategories(catId: string): string[] {
