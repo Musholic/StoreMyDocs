@@ -23,6 +23,7 @@ import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatTreeModule} from "@angular/material/tree";
 import {MatChipsModule} from "@angular/material/chips";
+import { v4 as uuid } from 'uuid';
 
 describe('FileListComponent', () => {
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
@@ -56,7 +57,7 @@ describe('FileListComponent', () => {
 
   it('should list two items', () => {
     // Arrange
-    mockListItemsAndCategories();
+    mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
 
     // Act
     MockRender(FileListComponent)
@@ -70,7 +71,7 @@ describe('FileListComponent', () => {
 
   it('should trash an item then refresh', fakeAsync(async () => {
     // Arrange
-    let listMock = mockListItemsAndCategories();
+    let listMock = mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
     let trashMock = MockInstance(FileService, 'trash', mock<FileService['trash']>());
     when(() => trashMock('id2'))
       .thenReturn(mustBeConsumedObservable(of(undefined)));
@@ -101,7 +102,7 @@ describe('FileListComponent', () => {
 
   it('should list two categories and one sub-category', fakeAsync(() => {
     // Arrange
-    mockListItemsAndCategories();
+    mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
 
     // Act
     MockRender(FileListComponent)
@@ -114,7 +115,7 @@ describe('FileListComponent', () => {
   describe('Category assignment', () => {
     it('should refresh after assigning a category to a file', fakeAsync(async () => {
       // Arrange
-      let listMock = mockListItemsAndCategories();
+      let listMock = mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
       let el1: FileElement = {
         id: 'id1',
         size: 1421315,
@@ -148,7 +149,7 @@ describe('FileListComponent', () => {
 
     it('should show name of the file being assigned to a category in dialog', fakeAsync(async () => {
       // Arrange
-      mockListItemsAndCategories();
+      mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
 
       let fixture = MockRender(FileListComponent);
       let page = new Page(fixture);
@@ -167,7 +168,7 @@ describe('FileListComponent', () => {
 
     it('should create and assign a sub-category', fakeAsync(async () => {
       // Arrange
-      let findAllMock = mockListItemsAndCategories();
+      let findAllMock = mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
       // We expect a refresh
       when(() => findAllMock()).thenReturn(of());
 
@@ -196,7 +197,7 @@ describe('FileListComponent', () => {
   describe('Filter by file name', () => {
     it('should filter out one item out of two items', async () => {
       // Arrange
-      mockListItemsAndCategories();
+      mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
       let fixture = MockRender(FileListComponent);
       let page = new Page(fixture);
 
@@ -214,7 +215,7 @@ describe('FileListComponent', () => {
   describe('Filter by file category', () => {
     it('should filter out one item out of two items', async () => {
       // Arrange
-      mockListItemsAndCategories();
+      mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
       let fixture = MockRender(FileListComponent);
       let page = new Page(fixture);
 
@@ -226,60 +227,81 @@ describe('FileListComponent', () => {
       let expected = [['name2', 'Cat1Cat1Child', 'Aug 3, 2023, 2:54:55 PM', '1.75 kB', actionsRow]];
       expect(Page.getTableRows()).toEqual(expected);
     })
+
+    it('should filter based on root category', async () => {
+      // Arrange
+      let txtFolder = mockFolderElement('TXT');
+      let imageFolder = mockFolderElement('Image');
+      let imageFunnyFolder = mockFolderElement('Funny', imageFolder.id);
+      let imageAvatarFolder = mockFolderElement('Avatar', imageFolder.id);
+      let itemsAndCategories = [txtFolder, imageFolder, imageFunnyFolder, imageAvatarFolder];
+      itemsAndCategories.push(mockFileElement('text.txt', txtFolder.id))
+      itemsAndCategories.push(mockFileElement('funny.png', imageFunnyFolder.id))
+      itemsAndCategories.push(mockFileElement('default.png', imageFolder.id))
+      itemsAndCategories.push(mockFileElement('avatar.png', imageAvatarFolder.id))
+      mockListItemsAndCategories(itemsAndCategories)
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      await page.selectCategoryFilter('Image');
+
+      // Assert
+      expect(Page.getDisplayedFileNames()).toEqual(['funny.png', 'default.png', 'avatar.png'])
+    })
   })
   // TODO: test when there is nothing to show with a given filter + test when filtering by selecting category (on file list + on category list + with multiple category + check category selection somewhere impact other places)
 });
 
+function mockFileElement(name: string, parentId: string, id: string | undefined = undefined, size: number = 0, date: string = ''): FileElement {
+  if(!id) {
+    id = uuid();
+  }
+  return {
+    id: id,
+    size: size,
+    date: date,
+    name: name,
+    iconLink: "link",
+    dlLink: "dlLink",
+    parentId: parentId
+  };
+}
+function mockFolderElement(name: string, parentId: string = 'baseFolderId', id: string | undefined = undefined): FolderElement {
+  if(!id) {
+    id = uuid();
+  }
+  return {
+    id: id,
+    date: '2023-08-02T14:54:55.556Z',
+    name: name,
+    iconLink: "link",
+    parentId: parentId
+  }
+}
+
+function mockListItemsAndCategories(itemsAndCategories: (FileElement | FolderElement)[]) {
+  let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
+    mock<BaseFolderService['findOrCreateBaseFolder']>());
+
+  when(() => findOrCreateBaseFolderMock()).thenReturn(of('baseFolderId'));
+  let listMock = MockInstance(FileService, 'findAll', mock<FileService['findAll']>());
+  when(() => listMock()).thenReturn(of(itemsAndCategories));
+  return listMock;
+}
+
 /**
  * @return two files, two categories and one sub-category
  */
-function mockListItemsAndCategories() {
-  let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
-    mock<BaseFolderService['findOrCreateBaseFolder']>());
-  when(() => findOrCreateBaseFolderMock()).thenReturn(of('baseFolderId'));
-
-  let listMock = MockInstance(FileService, 'findAll', mock<FileService['findAll']>());
-  let el1: FileElement = {
-    id: 'id1',
-    size: 1421315,
-    date: '2023-08-14T14:48:44.928Z',
-    name: 'name1',
-    iconLink: "link",
-    dlLink: "dlLink",
-    parentId: 'id3'
-  };
-  let el2: FileElement = {
-    id: 'id2',
-    size: 1745,
-    date: '2023-08-03T14:54:55.556Z',
-    name: 'name2',
-    iconLink: "link",
-    dlLink: "dlLink",
-    parentId: 'id5'
-  };
-  let el3: FolderElement = {
-    id: 'id3',
-    date: '2023-08-02T14:54:55.556Z',
-    name: 'Cat1',
-    iconLink: "link",
-    parentId: 'baseFolderId'
-  };
-  let el4: FolderElement = {
-    id: 'id4',
-    date: '2023-08-01T14:54:55.556Z',
-    name: 'Cat2',
-    iconLink: "link",
-    parentId: 'baseFolderId'
-  };
-  let el5: FolderElement = {
-    id: 'id5',
-    date: '2023-08-01T14:54:55.556Z',
-    name: 'Cat1Child',
-    iconLink: "link",
-    parentId: 'id3'
-  };
-  when(() => listMock()).thenReturn(of([el1, el2, el3, el4, el5]));
-  return listMock;
+function mockListItemsAndCategoriesWithTwoItemsAndThreeCategories() {
+  let el3 = mockFolderElement('Cat1', 'baseFolderId', 'id3');
+  let el4 = mockFolderElement('Cat2', 'baseFolderId', 'id4');
+  let el5 = mockFolderElement('Cat1Child', el3.id, 'id5');
+  let el1 = mockFileElement('name1', el3.id, 'id1', 1421315, '2023-08-14T14:48:44.928Z');
+  let el2 = mockFileElement('name2', el5.id, 'id2', 1745, '2023-08-03T14:54:55.556Z');
+  let itemsAndCategories = [el1, el2, el3, el4, el5];
+  return mockListItemsAndCategories(itemsAndCategories);
 }
 
 class Page {
@@ -293,6 +315,10 @@ class Page {
     return ngMocks.findAll("mat-row")
       .map(row => row.children
         .map(child => child.nativeNode.textContent.trim()));
+  }
+
+  static getDisplayedFileNames(): string[] {
+    return this.getTableRows().map(row => row[0]);
   }
 
   static openItemMenu(name: string) {

@@ -10,7 +10,7 @@
           {{categoryTreeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
         </mat-icon>
       </button>
-      <div class="categoryName"> {{node.name}} </div>
+      <mat-chip-option class="categoryName" (selectionChange)="filterByCategory(node)"> {{node.name}} </mat-chip-option>
     </div>
     <div [hidden]="!categoryTreeControl.isExpanded(node)" role="group">
       <ng-container matTreeNodeOutlet></ng-container>
