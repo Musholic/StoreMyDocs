@@ -1,11 +1,5 @@
-<header class="smd-header">
-  <!--  TODO: refactor this? -->
-  <img ngSrc="smd_icon.png" alt="icon" height="771" width="771" class="logo-header">
-  <h1>Store My Docs</h1>
-  <h2>Store and centralize all your documents securely in one place!</h2>
-</header>
+<app-title-header></app-title-header>
 <div class="smd-main-content">
-  <!--  TODO: add a sign in button -->
   <span class="login-message" *ngIf="!isAuthenticated()">You must be logged in to use this application</span>
   <div *ngIf="isAuthenticated()">
     <span class="login-message">You need to authorize the access to your Google Drive files.

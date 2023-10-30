@@ -1,15 +1,3 @@
-@use '@angular/material' as mat;
-
-$pal: mat.define-palette(mat.$indigo-palette);
-
-.smd-header {
-  background: mat.get-color-from-palette($pal, 'default');
-  color: mat.get-color-from-palette($pal, 'default-contrast');
-  padding-top: 50px;
-  padding-bottom: 50px;
-  text-align: center;
-}
-
 .smd-main-content {
   padding: 20px 70px 0;
 }

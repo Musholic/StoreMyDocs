@@ -29,6 +29,7 @@ import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatTreeModule} from "@angular/material/tree";
 import {MatChipsModule} from "@angular/material/chips";
+import { TitleHeaderComponent } from './title-header/title-header.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import {MatChipsModule} from "@angular/material/chips";
     NavBarComponent,
     FooterComponent,
     FileListComponent,
-    LoginComponent
+    LoginComponent,
+    TitleHeaderComponent
   ],
   imports: [
     BrowserModule,
