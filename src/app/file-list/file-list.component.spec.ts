@@ -240,6 +240,21 @@ describe('FileListComponent', () => {
       // Assert
       expect(Page.getDisplayedFileNames()).toEqual(['nAme1']);
     })
+
+    it('should show a not found message when there is no document matching the filter', async () => {
+      // Arrange
+      let el1 = mockFileElement('name1');
+      mockListItemsAndCategories([el1]);
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      await page.setFilter('not found');
+
+      // Assert
+      expect(Page.getDisplayedFileNames()).toEqual([]);
+      expect(Page.getNotFoundMessage()).toEqual('No document matching the file name "not found"')
+    })
   })
 
   describe('Filter by file category', () => {
@@ -356,7 +371,6 @@ describe('FileListComponent', () => {
       expect(Page.isCategorySelectedOnFileRow('text.txt', 'TXT')).toBeTruthy();
     })
   })
-  // TODO: test when there is nothing to show with a given filter
 });
 
 function mockFileElement(name: string, parentId: string = 'baseFolderId', id: string | undefined = undefined, size: number = 0, date: string = ''): FileElement {
@@ -523,5 +537,9 @@ class Page {
     // The menu should be the one opened
     let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
     await matMenuHarness?.clickItem({selector: selector});
+  }
+
+  static getNotFoundMessage() {
+    return ngMocks.find('.not_found').nativeNode.textContent.trim();
   }
 }

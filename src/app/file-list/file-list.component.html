@@ -23,36 +23,36 @@
   <mat-label>Filter</mat-label>
   <input matInput placeholder="Filter" [(ngModel)]="nameFilter" (keyup)="refreshFilter()">
 </mat-form-field>
-<mat-table [dataSource]="fileDataSource" aria-label="List of uploaded files">
+<table mat-table [dataSource]="fileDataSource" aria-label="List of uploaded files">
   <ng-container matColumnDef="name">
-    <mat-header-cell *matHeaderCellDef> Name</mat-header-cell>
-    <mat-cell *matCellDef="let element"><img [ngSrc]="element.iconLink" alt="file icon" width="16" height="16">
-      &nbsp; {{element.name}} </mat-cell>
+    <th mat-header-cell *matHeaderCellDef> Name</th>
+    <td mat-cell *matCellDef="let element"><img [ngSrc]="element.iconLink" alt="file icon" width="16" height="16">
+      &nbsp; {{element.name}} </td>
   </ng-container>
 
   <ng-container matColumnDef="date">
-    <mat-header-cell *matHeaderCellDef> Date</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{element.date | date:'medium'}} </mat-cell>
+    <th mat-header-cell *matHeaderCellDef> Date</th>
+    <td mat-cell *matCellDef="let element"> {{element.date | date:'medium'}} </td>
   </ng-container>
 
   <ng-container matColumnDef="category">
-    <mat-header-cell *matHeaderCellDef> Category </mat-header-cell>
-    <mat-cell *matCellDef="let element">
+    <th mat-header-cell *matHeaderCellDef> Category </th>
+    <td mat-cell *matCellDef="let element">
       <mat-chip-listbox [multiple]="true">
         <mat-chip-option *ngFor="let cat of getCategories(element)" [selected]="isCategorySelected(cat)"
                          (selectionChange)="filterByCategory(cat, $event.selected)">{{cat}}</mat-chip-option>
       </mat-chip-listbox>
-    </mat-cell>
+    </td>
   </ng-container>
 
   <ng-container matColumnDef="size">
-    <mat-header-cell *matHeaderCellDef> Size</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{element.size | filesize}} </mat-cell>
+    <th mat-header-cell *matHeaderCellDef> Size</th>
+    <td mat-cell *matCellDef="let element"> {{element.size | filesize}} </td>
   </ng-container>
 
   <ng-container matColumnDef="actions">
-    <mat-header-cell *matHeaderCellDef></mat-header-cell>
-    <mat-cell *matCellDef="let element" [matMenuTriggerFor]="menu" mat-ripple>
+    <th mat-header-cell *matHeaderCellDef></th>
+    <td mat-cell *matCellDef="let element" [matMenuTriggerFor]="menu" mat-ripple>
       <mat-icon>more_vert</mat-icon>
       <mat-menu #menu="matMenu">
         <a [href]="element.dlLink" mat-menu-item>
@@ -68,9 +68,12 @@
           <span>Trash</span>
         </button>
       </mat-menu>
-    </mat-cell>
+    </td>
   </ng-container>
 
-  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-</mat-table>
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  <tr class="mat-row" *matNoDataRow>
+    <td class="mat-cell not_found" colspan="5">No document matching the file name "{{nameFilter}}"</td>
+  </tr>
+</table>
