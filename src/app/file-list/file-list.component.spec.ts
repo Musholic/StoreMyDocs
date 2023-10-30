@@ -227,6 +227,32 @@ describe('FileListComponent', () => {
       // No failure from mock setup
     }))
 
+    it('should remove trailing and leading spaces from a category', fakeAsync(async () => {
+      // Arrange
+      let fileElement = mockFileElement('name1');
+      let findAllMock = mockListItemsAndCategories([fileElement]);
+      // We expect a refresh
+      when(() => findAllMock()).thenReturn(of());
+
+      let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
+      when(() => setCategoryMock(fileElement.id, "parentCat45Id")).thenReturn(of(undefined));
+
+      let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
+      when(() => findOrCreateFolderMock('Cat45', 'baseFolderId')).thenReturn(of('parentCat45Id'));
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name1');
+      await page.clickMenuAssignCategory();
+      await page.setCategoryInDialog('   Cat45   ');
+      await page.clickOkInDialog();
+
+      // Assert
+      // No failure from mock setup
+    }))
+
     it('should create and assign a sub-category', fakeAsync(async () => {
       // Arrange
       let findAllMock = mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
