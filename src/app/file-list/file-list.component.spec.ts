@@ -242,6 +242,20 @@ describe('FileListComponent', () => {
       expect(Page.getDisplayedFileNames()).toEqual(['nAme1']);
     })
 
+    it('should ignore trailing and leading spaces in the filter', async () => {
+      // Arrange
+      let el1 = mockFileElement('name1');
+      mockListItemsAndCategories([el1]);
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      await page.setFilter(' name1 ');
+
+      // Assert
+      expect(Page.getDisplayedFileNames()).toEqual(['name1']);
+    })
+
     it('should show a not found message when there is no document matching the filter', async () => {
       // Arrange
       let el1 = mockFileElement('name1');
