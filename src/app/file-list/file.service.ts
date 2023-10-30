@@ -8,12 +8,13 @@ import {HttpClient} from "@angular/common/http";
   providedIn: 'root'
 })
 export class FileService {
+  static readonly DRIVE_API_FILES_BASE_URL = 'https://www.googleapis.com/drive/v3/files';
 
   constructor(private http: HttpClient) {
   }
 
   findAll(): Observable<FileOrFolderElement[]> {
-    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink,mimeType,parents)");
+    const url = FileService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink,mimeType,parents)");
     return this.http.get<gapi.client.drive.FileList>(url).pipe(map(res => {
       if (res.files) {
         return res.files.map(f => {
@@ -44,12 +45,12 @@ export class FileService {
   }
 
   trash(id: string) {
-    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '/' + id
+    const url = FileService.DRIVE_API_FILES_BASE_URL + '/' + id
     return this.http.patch<void>(url, {trashed: true});
   }
 
   setCategory(fileId: string, categoryId: string): Observable<void> {
-    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '/' + fileId + "?addParents=" + categoryId;
+    const url = FileService.DRIVE_API_FILES_BASE_URL + '/' + fileId + "?addParents=" + categoryId;
     return this.http.patch<void>(url, {});
   }
 
@@ -68,7 +69,7 @@ export class FileService {
     if (parentId) {
       query += " and '" + parentId + "' in parents";
     }
-    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI(query);
+    const url = FileService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI(query);
     return this.http.get<gapi.client.drive.FileList>(url).pipe(map(res => {
       if (res.files && res.files.length > 0) {
         return res.files[0].id;
@@ -85,7 +86,7 @@ export class FileService {
     if (parentId) {
       metadata['parents'] = [parentId];
     }
-    const url = BaseFolderService.DRIVE_API_FILES_BASE_URL;
+    const url = FileService.DRIVE_API_FILES_BASE_URL;
 
     return this.http.post<gapi.client.drive.File>(url, metadata)
       .pipe(map(res => {
