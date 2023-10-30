@@ -219,13 +219,26 @@ describe('FileListComponent', () => {
       let page = new Page(fixture);
 
       // Act
-      //TODO: test filters ignore case
       await page.setFilter('name1');
 
       // Assert
       let actionsRow = 'more_vert';
       let expected = [['name1', 'Cat1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
       expect(Page.getTableRows()).toEqual(expected);
+    })
+
+    it('should ignore case', async () => {
+      // Arrange
+      let el1 = mockFileElement('nAme1');
+      mockListItemsAndCategories([el1]);
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      await page.setFilter('NaMe1');
+
+      // Assert
+      expect(Page.getDisplayedFileNames()).toEqual(['nAme1']);
     })
   })
 
@@ -343,10 +356,10 @@ describe('FileListComponent', () => {
       expect(Page.isCategorySelectedOnFileRow('text.txt', 'TXT')).toBeTruthy();
     })
   })
-  // TODO: test when there is nothing to show with a given filter + test when filtering by selecting category (on file list + on category list + with multiple category + check category selection somewhere impact other places)
+  // TODO: test when there is nothing to show with a given filter
 });
 
-function mockFileElement(name: string, parentId: string, id: string | undefined = undefined, size: number = 0, date: string = ''): FileElement {
+function mockFileElement(name: string, parentId: string = 'baseFolderId', id: string | undefined = undefined, size: number = 0, date: string = ''): FileElement {
   if (!id) {
     id = uuid();
   }
