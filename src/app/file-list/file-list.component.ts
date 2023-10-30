@@ -123,6 +123,10 @@ export class FileListComponent implements OnInit {
     this.fileDataSource.filter = "true"
   }
 
+  isCategorySelected(name: string) {
+    return this.categoryFilters.has(name);
+  }
+
   /**
    * Filter by name (ignoring case) then filter by category
    */
@@ -186,10 +190,6 @@ export class FileListComponent implements OnInit {
     }
     return of(categoryId);
   }
-
-  isCategorySelected(name: string) {
-    return this.categoryFilters.has(name);
-  }
 }
 
 @Component({
@@ -225,9 +225,7 @@ export class SelectFileCategoryDialog {
 
   remove(category: string) {
     const index = this.categories.indexOf(category);
-
-    if (index >= 0) {
-      this.categories.splice(index, 1);
-    }
+    // The category always has an index in this context so no checking necessary
+    this.categories.splice(index, 1);
   }
 }

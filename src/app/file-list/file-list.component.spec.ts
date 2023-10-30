@@ -1,6 +1,6 @@
 import {fakeAsync, tick} from '@angular/core/testing';
 
-import {FileElement, FileListComponent, FolderElement} from './file-list.component';
+import {FileElement, FileListComponent, FolderElement, SelectFileCategoryDialog} from './file-list.component';
 import {MockBuilder, MockedComponentFixture, MockedDebugElement, MockInstance, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {MatTableModule} from "@angular/material/table";
@@ -221,6 +221,30 @@ describe('FileListComponent', () => {
       await page.clickMenuAssignCategory();
       // When we try to create this empty category, nothing happens actually
       await page.setCategoryInDialog('');
+      await page.clickOkInDialog();
+
+      // Assert
+      // No failure from mock setup
+    }))
+
+    it('should be able to remove a category', fakeAsync(async () => {
+      // Arrange
+      let fileElement = mockFileElement('name1');
+      let findAllMock = mockListItemsAndCategories([fileElement]);
+      // We expect a refresh
+      when(() => findAllMock()).thenReturn(of());
+
+      let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
+      when(() => setCategoryMock(fileElement.id, "baseFolderId")).thenReturn(of(undefined));
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name1');
+      await page.clickMenuAssignCategory();
+      await page.setCategoryInDialog('CatToRemove');
+      await page.removeCategoryInDialog('CatToRemove');
       await page.clickOkInDialog();
 
       // Assert
@@ -534,9 +558,11 @@ function mockListItemsAndCategoriesWithTwoItemsAndThreeCategories() {
 }
 
 class Page {
+  private fixture: MockedComponentFixture<FileListComponent, FileListComponent>;
   private loader: HarnessLoader;
 
   constructor(fixture: MockedComponentFixture<FileListComponent, FileListComponent>) {
+    this.fixture = fixture;
     this.loader = TestbedHarnessEnvironment.documentRootLoader(fixture);
   }
 
@@ -644,6 +670,11 @@ class Page {
   async setFilter(filter: string) {
     let inputHarness = await this.loader.getHarness(MatInputHarness.with({placeholder: 'Filter'}));
     await inputHarness.setValue(filter);
+  }
+
+  async removeCategoryInDialog(catToRemove: string) {
+    let selectFileCategoryDialog = this.fixture.debugElement.parent?.query(By.directive(SelectFileCategoryDialog)).componentInstance as SelectFileCategoryDialog;
+    selectFileCategoryDialog.remove(catToRemove);
   }
 
   private async clickMenu(selector: string) {
