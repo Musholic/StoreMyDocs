@@ -25,6 +25,7 @@ import {MatTreeModule} from "@angular/material/tree";
 import {MatChipsModule} from "@angular/material/chips";
 import {v4 as uuid} from 'uuid';
 import {By} from "@angular/platform-browser";
+import {DebugElement} from "@angular/core";
 
 describe('FileListComponent', () => {
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
@@ -370,6 +371,18 @@ describe('FileListComponent', () => {
       fixture.detectChanges()
       expect(Page.isCategorySelectedOnFileRow('text.txt', 'TXT')).toBeTruthy();
     })
+
+    it('in categories list, show a expand icon on parent category only', () => {
+      // Arrange
+      mockTxtAndImageFiles();
+
+      // Act
+      MockRender(FileListComponent);
+
+      // Assert
+      expect(Page.isCategoryWithExpandIcon('TXT')).toBeFalsy();
+      expect(Page.isCategoryWithExpandIcon('Image')).toBeTruthy();
+    })
   })
 });
 
@@ -482,6 +495,14 @@ class Page {
       .find(value => value.nativeNode.textContent.trim() === cat);
     return !!categoryChipElement?.classes['mat-mdc-chip-selected'];
   }
+  static isCategoryWithExpandIcon(cat: string) {
+    let categoryChipElement = ngMocks.findAll(".categoryName")
+      .find(value => value.nativeNode.textContent.trim() === cat);
+    let parent : DebugElement = <DebugElement>categoryChipElement?.parent;
+    // Check we have a button which is the expand icon
+    return parent.children.some(value => value.name === 'button');
+  }
+
 
   static isCategorySelectedOnFileRow(fileName: string, cat: string) {
     let categoryChipElement = this.getFileRow(fileName).queryAll(By.css("mat-chip-option"))
