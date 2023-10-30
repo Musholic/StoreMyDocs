@@ -184,6 +184,25 @@ describe('FileListComponent', () => {
       await page.clickCancelInDialog();
     }))
 
+    it('should cancel when clicking on cancel', fakeAsync(async () => {
+      // Arrange
+      mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+      Page.openItemMenu('name2');
+      // Open a dialog here
+      await page.clickMenuAssignCategory();
+
+      // Act
+      await page.clickCancelInDialog();
+
+      // Assert
+      tick();
+      // The dialog should be closed
+      expect(await page.hasDialogOpened()).toBeFalsy();
+    }))
+
     it('should create and assign a sub-category', fakeAsync(async () => {
       // Arrange
       let findAllMock = mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
@@ -560,6 +579,10 @@ class Page {
   async getDialogTitle() {
     let dialogHarness = await this.loader.getHarness(MatDialogHarness);
     return dialogHarness.getTitleText();
+  }
+  async hasDialogOpened() {
+    let dialogHarness = await this.loader.getHarnessOrNull(MatDialogHarness);
+    return dialogHarness !== null;
   }
 
   async setFilter(filter: string) {
