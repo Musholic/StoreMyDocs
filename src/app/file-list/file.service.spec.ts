@@ -179,6 +179,47 @@ describe('FileService', () => {
         // Finally, assert that there are no outstanding requests.
         httpTestingController.verify();
       }))
+
+      it('with no parent, should create root folder and return a new id', fakeAsync(() => {
+        // Arrange
+        const service = MockRender(FileService).point.componentInstance;
+        let httpTestingController = TestBed.inject(HttpTestingController);
+
+        // Act
+        let result = '';
+        service.findOrCreateFolder('folder78')
+          .subscribe(value => result = value)
+
+        // Assert
+        tick();
+
+        const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?" +
+          "q=mimeType='application/vnd.google-apps.folder'%20and%20name='folder78'");
+        expect(req.request.method).toEqual('GET');
+        req.flush({
+          "kind": "drive#fileList",
+          "incompleteSearch": false,
+          "files": []
+        });
+
+        const req2 = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files");
+        expect(req2.request.method).toEqual('POST');
+        expect(req2.request.body).toEqual({
+          mimeType: "application/vnd.google-apps.folder",
+          name: 'folder78'
+        });
+        req2.flush({
+          "kind": "drive#file",
+          "id": "folderId548545",
+          "name": "folder78",
+          "mimeType": "application/vnd.google-apps.folder"
+        });
+
+        expect(result).toEqual('folderId548545')
+
+        // Finally, assert that there are no outstanding requests.
+        httpTestingController.verify();
+      }))
     })
 
     describe('when folder already exist', () => {
