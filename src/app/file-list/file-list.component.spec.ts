@@ -445,7 +445,7 @@ class Page {
   }
 
   static getTableRows(): string[][] {
-    return ngMocks.findAll("mat-row")
+    return ngMocks.findAll("[mat-row]")
       .map(row => row.children
         .map(child => child.nativeNode.textContent.trim()));
   }
@@ -490,7 +490,7 @@ class Page {
   }
 
   private static getFileRow(name: string): MockedDebugElement {
-    return ngMocks.findAll("mat-row")
+    return ngMocks.findAll("[mat-row]")
       .filter(value => {
         let nameColumn = ngMocks.find(value, ".mat-column-name");
         return nameColumn.nativeNode.textContent.trim() === name;
