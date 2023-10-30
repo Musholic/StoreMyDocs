@@ -182,7 +182,7 @@ export class FileListComponent implements OnInit {
    */
   private findOrCreateCategories(categories: string[], categoryId: string): Observable<string> {
     let categoryName = categories.shift();
-    if (categoryName) {
+    if (categoryName !== undefined) {
       return this.fileService.findOrCreateFolder(categoryName, categoryId)
         .pipe(mergeMap(newCategoryId => {
           return this.findOrCreateCategories(categories, newCategoryId);
