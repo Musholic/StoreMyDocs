@@ -1,12 +1,10 @@
 import {FileService} from './file.service';
-import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
+import {MockBuilder, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {HttpClientModule} from "@angular/common/http";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {FileElement, FileOrFolderElement, FolderElement} from "./file-list.component";
-import {mock, when} from "strong-mock";
-import {of} from "rxjs";
 
 describe('FileService', () => {
   beforeEach(() => MockBuilder(FileService, AppModule)
