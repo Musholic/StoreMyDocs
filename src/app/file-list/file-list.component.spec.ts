@@ -203,6 +203,30 @@ describe('FileListComponent', () => {
       expect(await page.hasDialogOpened()).toBeFalsy();
     }))
 
+    it('should not accept empty category', fakeAsync(async () => {
+      // Arrange
+      let fileElement = mockFileElement('name1');
+      let findAllMock = mockListItemsAndCategories([fileElement]);
+      // We expect a refresh
+      when(() => findAllMock()).thenReturn(of());
+
+      let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
+      when(() => setCategoryMock(fileElement.id, "baseFolderId")).thenReturn(of(undefined));
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name1');
+      await page.clickMenuAssignCategory();
+      // When we try to create this empty category, nothing happens actually
+      await page.setCategoryInDialog('');
+      await page.clickOkInDialog();
+
+      // Assert
+      // No failure from mock setup
+    }))
+
     it('should create and assign a sub-category', fakeAsync(async () => {
       // Arrange
       let findAllMock = mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
@@ -528,10 +552,11 @@ class Page {
       .find(value => value.nativeNode.textContent.trim() === cat);
     return !!categoryChipElement?.classes['mat-mdc-chip-selected'];
   }
+
   static isCategoryWithExpandIcon(cat: string) {
     let categoryChipElement = ngMocks.findAll(".categoryName")
       .find(value => value.nativeNode.textContent.trim() === cat);
-    let parent : DebugElement = <DebugElement>categoryChipElement?.parent;
+    let parent: DebugElement = <DebugElement>categoryChipElement?.parent;
     // Check we have a button which is the expand icon
     return parent.children.some(value => value.name === 'button');
   }
@@ -541,6 +566,10 @@ class Page {
     let categoryChipElement = this.getFileRow(fileName).queryAll(By.css("mat-chip-option"))
       .find(value => value.nativeNode.textContent.trim() === cat);
     return !!categoryChipElement?.classes['mat-mdc-chip-selected'];
+  }
+
+  static getNotFoundMessage() {
+    return ngMocks.find('.not_found').nativeNode.textContent.trim();
   }
 
   private static getFileRow(name: string): MockedDebugElement {
@@ -580,6 +609,7 @@ class Page {
     let dialogHarness = await this.loader.getHarness(MatDialogHarness);
     return dialogHarness.getTitleText();
   }
+
   async hasDialogOpened() {
     let dialogHarness = await this.loader.getHarnessOrNull(MatDialogHarness);
     return dialogHarness !== null;
@@ -595,9 +625,5 @@ class Page {
     // The menu should be the one opened
     let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
     await matMenuHarness?.clickItem({selector: selector});
-  }
-
-  static getNotFoundMessage() {
-    return ngMocks.find('.not_found').nativeNode.textContent.trim();
   }
 }
