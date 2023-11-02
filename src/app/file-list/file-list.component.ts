@@ -5,13 +5,13 @@ import {BaseFolderService} from "../file-upload/base-folder.service";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef} from "@angular/material/dialog";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
-import {FormsModule} from "@angular/forms";
+import {FormControl, FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatChipInputEvent, MatChipsModule} from "@angular/material/chips";
 import {MatIconModule} from "@angular/material/icon";
 import {ENTER} from "@angular/cdk/keycodes";
-import {NgForOf} from "@angular/common";
-import {mergeMap, Observable, of} from "rxjs";
+import {AsyncPipe, NgForOf} from "@angular/common";
+import {map, mergeMap, Observable, of, startWith} from "rxjs";
 import {NestedTreeControl} from "@angular/cdk/tree";
 import {MatTreeNestedDataSource} from "@angular/material/tree";
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
@@ -204,23 +204,30 @@ export class FileListComponent implements OnInit {
   styleUrls: ['./select-file-category.dialog.scss'],
   standalone: true,
   imports: [MatDialogModule, MatFormFieldModule, MatInputModule, FormsModule, MatButtonModule, MatChipsModule,
-    MatIconModule, NgForOf, MatAutocompleteModule],
+    MatIconModule, NgForOf, MatAutocompleteModule, ReactiveFormsModule, AsyncPipe],
 })
 export class SelectFileCategoryDialog {
   readonly separatorKeysCodes = [ENTER] as const;
   categories: string[] = [];
-  suggestedCategories: string[];
+  suggestedCategories: Observable<string[]>;
   public fileName: string;
+  categoryFormControl = new FormControl('');
+
+  private existingCategories: Map<string, FolderElement>;
+  private baseFolderId: string;
 
   constructor(
     public dialogRef: MatDialogRef<SelectFileCategoryDialog>,
     @Inject(MAT_DIALOG_DATA) public data: SelectFileCategoryDialogData,
   ) {
     this.fileName = data.fileName;
-    this.suggestedCategories = Array.from(data.categories.values())
-      // We need the root categories only
-      .filter(value => value.parentId === data.baseFolderId)
-      .map(value => value.name)
+    this.suggestedCategories = this.categoryFormControl.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        return this.filterSuggestedOptions(value ?? '');
+      }));
+    this.existingCategories = data.categories;
+    this.baseFolderId = data.baseFolderId;
   }
 
   onNoClick(): void {
@@ -244,6 +251,14 @@ export class SelectFileCategoryDialog {
   }
 
   selected($event: MatAutocompleteSelectedEvent) {
+  }
+
+  private filterSuggestedOptions(currentInput: string) {
+    return Array.from(this.existingCategories.values())
+      // We need the root categories only
+      .filter(value => value.parentId === this.baseFolderId)
+      .map(value => value.name)
+      .filter(value => value.toLowerCase().includes(currentInput.toLowerCase()))
   }
 }
 

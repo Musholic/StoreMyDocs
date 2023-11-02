@@ -10,11 +10,12 @@
     </mat-chip-grid>
       <input matInput placeholder="Select category..."
              [matAutocomplete]="autoComplete"
+             [formControl]="categoryFormControl"
              [matChipInputFor]="chipGrid"
              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
              (matChipInputTokenEnd)="add($event)"/>
     <mat-autocomplete #autoComplete="matAutocomplete" (optionSelected)="selected($event)">
-      <mat-option *ngFor="let suggestedCat of suggestedCategories" [value]="suggestedCat">
+      <mat-option *ngFor="let suggestedCat of suggestedCategories | async" [value]="suggestedCat">
         {{suggestedCat}}
       </mat-option>
     </mat-autocomplete>

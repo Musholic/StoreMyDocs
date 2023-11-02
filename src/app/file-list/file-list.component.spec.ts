@@ -324,6 +324,27 @@ describe('FileListComponent', () => {
       let expected = await page.getSuggestedCategoryInDialog();
       expect(expected).toEqual(['cat1', 'cat2'])
     })
+
+    it('should suggest root categories and filter them by the current input', async () => {
+      // Arrange
+      let cat1Folder = mockFolderElement('cat1');
+      let cat2Folder = mockFolderElement('cat2');
+      let cat1bFolder = mockFolderElement('cat1b', cat1Folder.id);
+      let fileElement1 = mockFileElement('name1');
+      mockListItemsAndCategories([cat1Folder, cat2Folder, cat1bFolder, fileElement1]);
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name1');
+      await page.clickMenuAssignCategory();
+      await page.typeCategoryInDialog('1');
+
+      // Assert
+      let expected = await page.getSuggestedCategoryInDialog();
+      expect(expected).toEqual(['cat1'])
+    })
   })
 
   describe('Filter by file name', () => {
@@ -662,10 +683,14 @@ class Page {
   }
 
   async setCategoryInDialog(category: string) {
+    let testElement = await this.typeCategoryInDialog(category);
+    await testElement.sendKeys(TestKey.ENTER)
+  }
+
+  async typeCategoryInDialog(category: string) {
     let inputHarness = await this.loader.getHarness(MatInputHarness.with({placeholder: 'Select category...'}));
     await inputHarness.setValue(category);
-    let testElement = await inputHarness.host();
-    await testElement.sendKeys(TestKey.ENTER)
+    return await inputHarness.host();
   }
 
   async clickOkInDialog() {
