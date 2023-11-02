@@ -345,6 +345,37 @@ describe('FileListComponent', () => {
       let expected = await page.getSuggestedCategoryInDialog();
       expect(expected).toEqual(['cat1'])
     })
+
+    it('should be able to select a suggested category', async () => {
+      // Arrange
+      let cat1Folder = mockFolderElement('cat1');
+      let cat2Folder = mockFolderElement('cat2');
+      let cat1bFolder = mockFolderElement('cat1b', cat1Folder.id);
+      let fileElement1 = mockFileElement('name1');
+      let findAllMock = mockListItemsAndCategories([cat1Folder, cat2Folder, cat1bFolder, fileElement1]);
+
+      // We expect a refresh
+      when(() => findAllMock()).thenReturn(of());
+
+      let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
+      when(() => setCategoryMock(fileElement1.id, cat1Folder.id)).thenReturn(of(undefined));
+
+      let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
+      when(() => findOrCreateFolderMock(cat1Folder.name, 'baseFolderId')).thenReturn(of(cat1Folder.id));
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name1');
+      await page.clickMenuAssignCategory();
+      // First suggested category should be 'cat1'
+      await page.clickFirstSuggestedCategoryInDialog();
+      await page.clickOkInDialog();
+
+      // Assert
+      // No failure from mock setup
+    })
   })
 
   describe('Filter by file name', () => {
@@ -717,6 +748,12 @@ class Page {
     let matAutocompleteHarness = await this.loader.getHarness(MatAutocompleteHarness);
     let options = await matAutocompleteHarness.getOptions();
     return Promise.all(options.map(value => value.getText()));
+  }
+
+  async clickFirstSuggestedCategoryInDialog() {
+    let matAutocompleteHarness = await this.loader.getHarness(MatAutocompleteHarness);
+    let options = await matAutocompleteHarness.getOptions();
+    await options[0].click();
   }
 
   async setFilter(filter: string) {

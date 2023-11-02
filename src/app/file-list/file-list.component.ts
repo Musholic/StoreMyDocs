@@ -234,14 +234,10 @@ export class SelectFileCategoryDialog {
     this.dialogRef.close();
   }
 
-  add(event: MatChipInputEvent): void {
+  addFromInput(event: MatChipInputEvent): void {
     const value = (event.value || '').trim();
-    if (value) {
-      this.categories.push(value);
-    }
+    this.add(value);
 
-    // Clear the input value
-    event.chipInput.clear();
   }
 
   remove(category: string) {
@@ -250,7 +246,16 @@ export class SelectFileCategoryDialog {
     this.categories.splice(index, 1);
   }
 
-  selected($event: MatAutocompleteSelectedEvent) {
+  addFromAutoComplete(event: MatAutocompleteSelectedEvent) {
+    this.add(event.option.viewValue);
+  }
+
+  private add(value: string) {
+    if (value) {
+      this.categories.push(value);
+      // Clear the input value
+      this.categoryFormControl.setValue(null);
+    }
   }
 
   private filterSuggestedOptions(currentInput: string) {

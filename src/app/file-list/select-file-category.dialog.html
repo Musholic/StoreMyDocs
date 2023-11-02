@@ -13,8 +13,8 @@
              [formControl]="categoryFormControl"
              [matChipInputFor]="chipGrid"
              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-             (matChipInputTokenEnd)="add($event)"/>
-    <mat-autocomplete #autoComplete="matAutocomplete" (optionSelected)="selected($event)">
+             (matChipInputTokenEnd)="addFromInput($event)"/>
+    <mat-autocomplete #autoComplete="matAutocomplete" (optionSelected)="addFromAutoComplete($event)">
       <mat-option *ngFor="let suggestedCat of suggestedCategories | async" [value]="suggestedCat">
         {{suggestedCat}}
       </mat-option>
