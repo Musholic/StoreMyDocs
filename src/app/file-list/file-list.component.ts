@@ -14,6 +14,7 @@ import {NgForOf} from "@angular/common";
 import {mergeMap, Observable, of} from "rxjs";
 import {NestedTreeControl} from "@angular/cdk/tree";
 import {MatTreeNestedDataSource} from "@angular/material/tree";
+import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
 
 export interface FileOrFolderElement {
   id: string;
@@ -85,8 +86,13 @@ export class FileListComponent implements OnInit {
   }
 
   setCategory(element: FileElement) {
+    let data: SelectFileCategoryDialogData = {
+      fileName: element.name,
+      categories: this.categories,
+      baseFolderId: this.baseFolderId
+    };
     let dialogRef = this.dialog.open(SelectFileCategoryDialog, {
-      data: element.name,
+      data: data,
       // False otherwise tests are failing abnormally...
       closeOnNavigation: false
     });
@@ -197,16 +203,24 @@ export class FileListComponent implements OnInit {
   templateUrl: './select-file-category.dialog.html',
   styleUrls: ['./select-file-category.dialog.scss'],
   standalone: true,
-  imports: [MatDialogModule, MatFormFieldModule, MatInputModule, FormsModule, MatButtonModule, MatChipsModule, MatIconModule, NgForOf],
+  imports: [MatDialogModule, MatFormFieldModule, MatInputModule, FormsModule, MatButtonModule, MatChipsModule,
+    MatIconModule, NgForOf, MatAutocompleteModule],
 })
 export class SelectFileCategoryDialog {
   readonly separatorKeysCodes = [ENTER] as const;
   categories: string[] = [];
+  suggestedCategories: string[];
+  public fileName: string;
 
   constructor(
     public dialogRef: MatDialogRef<SelectFileCategoryDialog>,
-    @Inject(MAT_DIALOG_DATA) public fileName: string,
+    @Inject(MAT_DIALOG_DATA) public data: SelectFileCategoryDialogData,
   ) {
+    this.fileName = data.fileName;
+    this.suggestedCategories = Array.from(data.categories.values())
+      // We need the root categories only
+      .filter(value => value.parentId === data.baseFolderId)
+      .map(value => value.name)
   }
 
   onNoClick(): void {
@@ -228,4 +242,13 @@ export class SelectFileCategoryDialog {
     // The category always has an index in this context so no checking necessary
     this.categories.splice(index, 1);
   }
+
+  selected($event: MatAutocompleteSelectedEvent) {
+  }
+}
+
+export interface SelectFileCategoryDialogData {
+  fileName: string;
+  categories: Map<string, FolderElement>;
+  baseFolderId: string;
 }

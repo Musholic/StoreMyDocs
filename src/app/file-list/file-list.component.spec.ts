@@ -26,6 +26,7 @@ import {MatChipsModule} from "@angular/material/chips";
 import {v4 as uuid} from 'uuid';
 import {By} from "@angular/platform-browser";
 import {DebugElement} from "@angular/core";
+import {MatAutocompleteHarness} from "@angular/material/autocomplete/testing";
 
 describe('FileListComponent', () => {
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
@@ -303,6 +304,26 @@ describe('FileListComponent', () => {
       // Assert
       // No failure from mock setup
     }))
+
+    it('should suggest root categories', async () => {
+      // Arrange
+      let cat1Folder = mockFolderElement('cat1');
+      let cat2Folder = mockFolderElement('cat2');
+      let cat1bFolder = mockFolderElement('cat1b', cat1Folder.id);
+      let fileElement1 = mockFileElement('name1');
+      mockListItemsAndCategories([cat1Folder, cat2Folder, cat1bFolder, fileElement1]);
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name1');
+      await page.clickMenuAssignCategory();
+
+      // Assert
+      let expected = await page.getSuggestedCategoryInDialog();
+      expect(expected).toEqual(['cat1', 'cat2'])
+    })
   })
 
   describe('Filter by file name', () => {
@@ -665,6 +686,12 @@ class Page {
   async hasDialogOpened() {
     let dialogHarness = await this.loader.getHarnessOrNull(MatDialogHarness);
     return dialogHarness !== null;
+  }
+
+  async getSuggestedCategoryInDialog() {
+    let matAutocompleteHarness = await this.loader.getHarness(MatAutocompleteHarness);
+    let options = await matAutocompleteHarness.getOptions();
+    return Promise.all(options.map(value => value.getText()));
   }
 
   async setFilter(filter: string) {

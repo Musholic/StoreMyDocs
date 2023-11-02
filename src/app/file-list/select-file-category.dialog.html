@@ -7,11 +7,17 @@
                     (removed)="remove(category)">
         {{category}}
       </mat-chip-row>
+    </mat-chip-grid>
       <input matInput placeholder="Select category..."
+             [matAutocomplete]="autoComplete"
              [matChipInputFor]="chipGrid"
              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
              (matChipInputTokenEnd)="add($event)"/>
-    </mat-chip-grid>
+    <mat-autocomplete #autoComplete="matAutocomplete" (optionSelected)="selected($event)">
+      <mat-option *ngFor="let suggestedCat of suggestedCategories" [value]="suggestedCat">
+        {{suggestedCat}}
+      </mat-option>
+    </mat-autocomplete>
   </mat-form-field>
 </div>
 <div mat-dialog-actions>
