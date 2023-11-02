@@ -22,7 +22,7 @@ export class GooglePickerService {
 
         const picker = new google.picker.PickerBuilder()
           .addView(view)
-          .setOAuthToken(this.authService.getApiToken() || '')
+          .setOAuthToken(this.authService.getApiToken() ?? '')
           .setAppId(this.APP_ID)
           .setDeveloperKey(this.PICKER_DEV_KEY)
           .setCallback(result => {

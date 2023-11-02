@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
 import {FileElement, FileOrFolderElement, FolderElement} from "./file-list.component";
 import {map, mergeMap, Observable, of} from "rxjs";
-import {BaseFolderService} from "../file-upload/base-folder.service";
 import {HttpClient} from "@angular/common/http";
 
 @Injectable({
