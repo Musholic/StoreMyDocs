@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component, Inject, OnInit, ViewChild} from '@angular/core';
 import {MatTableDataSource} from "@angular/material/table";
 import {FileService} from "./file.service";
 import {BaseFolderService} from "../file-upload/base-folder.service";
@@ -14,7 +14,11 @@ import {AsyncPipe, NgForOf} from "@angular/common";
 import {map, mergeMap, Observable, of, startWith} from "rxjs";
 import {NestedTreeControl} from "@angular/cdk/tree";
 import {MatTreeNestedDataSource} from "@angular/material/tree";
-import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+  MatAutocompleteTrigger
+} from "@angular/material/autocomplete";
 
 export interface FileOrFolderElement {
   id: string;
@@ -213,6 +217,9 @@ export class SelectFileCategoryDialog {
   public fileName: string;
   categoryFormControl = new FormControl('');
 
+  // @ViewChild('categoryInput') categoryInput?: ElementRef<HTMLInputElement>;
+  @ViewChild(MatAutocompleteTrigger, {read: MatAutocompleteTrigger}) categoryAutoComplete?: MatAutocompleteTrigger;
+
   private existingCategories: Map<string, FolderElement>;
   private baseFolderId: string;
 
@@ -248,22 +255,49 @@ export class SelectFileCategoryDialog {
 
   addFromAutoComplete(event: MatAutocompleteSelectedEvent) {
     this.add(event.option.viewValue);
+    // After adding from autocomplete, the panel is automatically closed, but we want to keep it open for
+    // faster and easier selection
+    setTimeout(() => this.categoryAutoComplete?.openPanel());
   }
 
   private add(value: string) {
     if (value) {
       this.categories.push(value);
       // Clear the input value
-      this.categoryFormControl.setValue(null);
+      this.categoryFormControl.patchValue(null);
+      // TODO: test this
+      // if (this.categoryInput) {
+      //   this.categoryInput.nativeElement.value = '';
+      // }
     }
   }
 
   private filterSuggestedOptions(currentInput: string) {
+    // Filter on the last selected category as we want to suggest the children only
+    let parentIdFilter = this.getIdOfLastSelectedCategory();
     return Array.from(this.existingCategories.values())
       // We need the root categories only
-      .filter(value => value.parentId === this.baseFolderId)
+      .filter(value => value.parentId === parentIdFilter)
       .map(value => value.name)
       .filter(value => value.toLowerCase().includes(currentInput.toLowerCase()))
+  }
+
+  /**
+   * If there is no selected category, it returns the base folder id.
+   * Returns undefined if the last selected category does not have an id
+   */
+  private getIdOfLastSelectedCategory() {
+    let parentIdFilter = this.baseFolderId;
+    for (const category of this.categories) {
+      let match = Array.from(this.existingCategories.values())
+        .filter(value => value.parentId === parentIdFilter)
+        .find(value => value.name === category);
+      if (!match) {
+        return undefined;
+      }
+      parentIdFilter = match.id;
+    }
+    return parentIdFilter;
   }
 }
 

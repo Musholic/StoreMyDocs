@@ -14,7 +14,8 @@
              [matChipInputFor]="chipGrid"
              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
              (matChipInputTokenEnd)="addFromInput($event)"/>
-    <mat-autocomplete #autoComplete="matAutocomplete" (optionSelected)="addFromAutoComplete($event)">
+    <mat-autocomplete #autoComplete="matAutocomplete" (optionSelected)="addFromAutoComplete($event)"
+                      [hideSingleSelectionIndicator]="true">
       <mat-option *ngFor="let suggestedCat of suggestedCategories | async" [value]="suggestedCat">
         {{suggestedCat}}
       </mat-option>

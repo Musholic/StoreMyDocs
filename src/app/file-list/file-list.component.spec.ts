@@ -376,6 +376,30 @@ describe('FileListComponent', () => {
       // Assert
       // No failure from mock setup
     })
+
+    it('should suggest sub-categories', async () => {
+      // Arrange
+      let cat1Folder = mockFolderElement('cat1');
+      let cat2Folder = mockFolderElement('cat2');
+      let cat1bFolder = mockFolderElement('cat1b', cat1Folder.id);
+      let fileElement1 = mockFileElement('name1');
+      mockListItemsAndCategories([cat1Folder, cat2Folder, cat1bFolder, fileElement1]);
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name1');
+      await page.clickMenuAssignCategory();
+      // First suggested category should be 'cat1'
+      await page.clickFirstSuggestedCategoryInDialog();
+
+      // Assert
+      let expected = await page.getSuggestedCategoryInDialog();
+      expect(expected).toEqual(['cat1b'])
+    })
+
+    // TODO: test autocomplete options refresh after deleting a category
   })
 
   describe('Filter by file name', () => {
