@@ -399,6 +399,24 @@ describe('FileListComponent', () => {
       expect(expected).toEqual(['cat1b'])
     })
 
+    it('should clear category input after selecting a category', fakeAsync(async () => {
+      // Arrange
+      let cat1Folder = mockFolderElement('cat1');
+      let fileElement1 = mockFileElement('name1');
+      mockListItemsAndCategories([cat1Folder, fileElement1]);
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name1');
+      await page.clickMenuAssignCategory();
+      await page.setCategoryInDialog('cat1');
+
+      // Assert
+      expect(await page.getInputCategoryValue()).toEqual('');
+    }))
+
     // TODO: test autocomplete options refresh after deleting a category
   })
 
@@ -743,9 +761,18 @@ class Page {
   }
 
   async typeCategoryInDialog(category: string) {
-    let inputHarness = await this.loader.getHarness(MatInputHarness.with({placeholder: 'Select category...'}));
+    let inputHarness = await this.getCategoryInput();
     await inputHarness.setValue(category);
     return await inputHarness.host();
+  }
+
+  async getInputCategoryValue() {
+    let inputHarness = await this.getCategoryInput();
+    return inputHarness.getValue();
+  }
+
+  private getCategoryInput() {
+    return this.loader.getHarness(MatInputHarness.with({placeholder: 'Select category...'}));
   }
 
   async clickOkInDialog() {
@@ -796,4 +823,5 @@ class Page {
     let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
     await matMenuHarness?.clickItem({selector: selector});
   }
+
 }

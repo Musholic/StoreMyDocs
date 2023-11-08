@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, Inject, OnInit, ViewChild} from '@angular/core';
 import {MatTableDataSource} from "@angular/material/table";
 import {FileService} from "./file.service";
 import {BaseFolderService} from "../file-upload/base-folder.service";
@@ -217,7 +217,7 @@ export class SelectFileCategoryDialog {
   public fileName: string;
   categoryFormControl = new FormControl('');
 
-  // @ViewChild('categoryInput') categoryInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('categoryInput') categoryInput?: ElementRef<HTMLInputElement>;
   @ViewChild(MatAutocompleteTrigger, {read: MatAutocompleteTrigger}) categoryAutoComplete?: MatAutocompleteTrigger;
 
   private existingCategories: Map<string, FolderElement>;
@@ -265,10 +265,9 @@ export class SelectFileCategoryDialog {
       this.categories.push(value);
       // Clear the input value
       this.categoryFormControl.patchValue(null);
-      // TODO: test this
-      // if (this.categoryInput) {
-      //   this.categoryInput.nativeElement.value = '';
-      // }
+      if (this.categoryInput) {
+        this.categoryInput.nativeElement.value = '';
+      }
     }
   }
 

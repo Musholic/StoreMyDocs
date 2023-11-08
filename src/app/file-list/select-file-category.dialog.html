@@ -8,7 +8,7 @@
         {{category}}
       </mat-chip-row>
     </mat-chip-grid>
-      <input matInput placeholder="Select category..."
+    <input #categoryInput matInput placeholder="Select category..."
              [matAutocomplete]="autoComplete"
              [formControl]="categoryFormControl"
              [matChipInputFor]="chipGrid"
