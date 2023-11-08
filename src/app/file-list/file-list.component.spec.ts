@@ -417,7 +417,30 @@ describe('FileListComponent', () => {
       expect(await page.getInputCategoryValue()).toEqual('');
     }))
 
-    // TODO: test autocomplete options refresh after deleting a category
+
+    it('should refresh category suggestion after removing a category', fakeAsync(async () => {
+      // Arrange
+      let cat1Folder = mockFolderElement('cat1');
+      let cat1bFolder = mockFolderElement('cat1b', cat1Folder.id);
+      let fileElement = mockFileElement('name1');
+      mockListItemsAndCategories([cat1Folder, cat1bFolder, fileElement]);
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name1');
+      await page.clickMenuAssignCategory();
+      await page.setCategoryInDialog('cat1');
+      await page.removeCategoryInDialog('cat1');
+
+      // Assert
+      fixture.detectChanges();
+      tick();
+
+      let result = await page.getSuggestedCategoryInDialog();
+      expect(result).toEqual(['cat1'])
+    }))
   })
 
   describe('Filter by file name', () => {

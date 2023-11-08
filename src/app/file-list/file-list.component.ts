@@ -251,6 +251,7 @@ export class SelectFileCategoryDialog {
     const index = this.categories.indexOf(category);
     // The category always has an index in this context so no checking necessary
     this.categories.splice(index, 1);
+    this.categoryFormControl.setValue(this.categoryFormControl.value);
   }
 
   addFromAutoComplete(event: MatAutocompleteSelectedEvent) {
