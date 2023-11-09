@@ -27,6 +27,7 @@ import {v4 as uuid} from 'uuid';
 import {By} from "@angular/platform-browser";
 import {DebugElement} from "@angular/core";
 import {MatAutocompleteHarness} from "@angular/material/autocomplete/testing";
+import {MatChipGridHarness} from "@angular/material/chips/testing";
 
 describe('FileListComponent', () => {
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
@@ -134,7 +135,9 @@ describe('FileListComponent', () => {
   describe('Category assignment', () => {
     it('should refresh after assigning a category to a file', fakeAsync(async () => {
       // Arrange
-      let listMock = mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
+      let el2 = mockFileElement('name2');
+      let listMock = mockListItemsAndCategories([el2]);
+
       let el1: FileElement = {
         id: 'id1',
         size: 1421315,
@@ -148,7 +151,7 @@ describe('FileListComponent', () => {
       let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
       when(() => findOrCreateFolderMock('Cat848', 'baseFolderId')).thenReturn(of('cat848Id'));
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
-      when(() => setCategoryMock('id2', 'cat848Id')).thenReturn(of(undefined));
+      when(() => setCategoryMock(el2.id, 'cat848Id')).thenReturn(of(undefined));
 
       let fixture = MockRender(FileListComponent);
       let page = new Page(fixture);
@@ -280,12 +283,13 @@ describe('FileListComponent', () => {
 
     it('should create and assign a sub-category', fakeAsync(async () => {
       // Arrange
-      let findAllMock = mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
+      let el2 = mockFileElement('name2');
+      let findAllMock = mockListItemsAndCategories([el2]);
       // We expect a refresh
       when(() => findAllMock()).thenReturn(of());
 
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
-      when(() => setCategoryMock('id2', 'cat7Id')).thenReturn(of(undefined));
+      when(() => setCategoryMock(el2.id, 'cat7Id')).thenReturn(of(undefined));
 
       let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
       when(() => findOrCreateFolderMock('ParentCat8', 'baseFolderId')).thenReturn(of('parentCat8Id'));
@@ -441,6 +445,25 @@ describe('FileListComponent', () => {
       let result = await page.getSuggestedCategoryInDialog();
       expect(result).toEqual(['cat1'])
     }))
+
+    it('should initialize the category with the existing one', async () => {
+      // Arrange
+      let cat1Folder = mockFolderElement('cat1');
+      let cat1bFolder = mockFolderElement('cat1b', cat1Folder.id);
+      let fileElement1 = mockFileElement('name1', cat1bFolder.id);
+      mockListItemsAndCategories([cat1Folder, cat1bFolder, fileElement1]);
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name1');
+      await page.clickMenuAssignCategory();
+
+      // Assert
+      let result = await page.getCategoriesInDialog();
+      expect(result).toEqual(['cat1', 'cat1b'])
+    })
   })
 
   describe('Filter by file name', () => {
@@ -783,6 +806,13 @@ class Page {
     await testElement.sendKeys(TestKey.ENTER)
   }
 
+  async getCategoriesInDialog() {
+    let dialogHarness = await this.loader.getHarness(MatDialogHarness);
+    let matChipGridHarness = await dialogHarness.getHarness(MatChipGridHarness);
+    let matChipRowHarnesses = await matChipGridHarness.getRows();
+    return Promise.all(matChipRowHarnesses.map(value => value.getText()));
+  }
+
   async typeCategoryInDialog(category: string) {
     let inputHarness = await this.getCategoryInput();
     await inputHarness.setValue(category);
@@ -836,8 +866,12 @@ class Page {
   }
 
   async removeCategoryInDialog(catToRemove: string) {
-    let selectFileCategoryDialog = this.fixture.debugElement.parent?.query(By.directive(SelectFileCategoryDialog)).componentInstance as SelectFileCategoryDialog;
+    let selectFileCategoryDialog = this.getSelectFileCategoryDialog();
     selectFileCategoryDialog.remove(catToRemove);
+  }
+
+  private getSelectFileCategoryDialog() {
+    return this.fixture.debugElement.parent?.query(By.directive(SelectFileCategoryDialog)).componentInstance as SelectFileCategoryDialog;
   }
 
   private async clickMenu(selector: string) {

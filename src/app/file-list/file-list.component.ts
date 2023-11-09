@@ -91,9 +91,8 @@ export class FileListComponent implements OnInit {
 
   setCategory(element: FileElement) {
     let data: SelectFileCategoryDialogData = {
-      fileName: element.name,
-      categories: this.categories,
-      baseFolderId: this.baseFolderId
+      file: element,
+      componentRef: this
     };
     let dialogRef = this.dialog.open(SelectFileCategoryDialog, {
       data: data,
@@ -157,7 +156,7 @@ export class FileListComponent implements OnInit {
     return true;
   }
 
-  private getAncestorCategories(catId: string): string[] {
+  getAncestorCategories(catId: string): string[] {
     let category = this.categories.get(catId);
     // We should not include the base folder which is not to be considered as a category
     if (category && category.id !== this.baseFolderId) {
@@ -227,14 +226,18 @@ export class SelectFileCategoryDialog {
     public dialogRef: MatDialogRef<SelectFileCategoryDialog>,
     @Inject(MAT_DIALOG_DATA) public data: SelectFileCategoryDialogData,
   ) {
-    this.fileName = data.fileName;
+    this.fileName = data.file.name;
+
+    this.existingCategories = data.componentRef.categories;
+    this.baseFolderId = data.componentRef.baseFolderId;
+    // Initialize categories with the current one of the file
+    this.categories = data.componentRef.getAncestorCategories(data.file.parentId);
+
     this.suggestedCategories = this.categoryFormControl.valueChanges.pipe(
       startWith(''),
       map(value => {
         return this.filterSuggestedOptions(value ?? '');
       }));
-    this.existingCategories = data.categories;
-    this.baseFolderId = data.baseFolderId;
   }
 
   onNoClick(): void {
@@ -302,7 +305,6 @@ export class SelectFileCategoryDialog {
 }
 
 export interface SelectFileCategoryDialogData {
-  fileName: string;
-  categories: Map<string, FolderElement>;
-  baseFolderId: string;
+  file: FileElement;
+  componentRef: FileListComponent
 }
