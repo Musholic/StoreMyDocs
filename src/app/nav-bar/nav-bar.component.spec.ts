@@ -5,9 +5,6 @@ import {It, mock, when} from "strong-mock";
 import {GoogleDriveAuthService} from "../file-upload/google-drive-auth.service";
 
 describe('NavBarComponent', () => {
-
-  MockInstance.scope();
-
   beforeEach(() => {
 
     return MockBuilder(NavBarComponent, AppModule);

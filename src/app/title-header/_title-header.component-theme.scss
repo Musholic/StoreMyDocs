@@ -1,0 +1,18 @@
+@use '../../../node_modules/@angular/material/index' as mat;
+@use 'sass:map';
+
+@mixin color($theme) {
+  // Get the color config from the theme.
+  $color-config: mat.get-color-config($theme);
+
+  // Get the primary color palette from the color-config.
+  $pal: map.get($color-config, 'primary');
+
+  .smd-header {
+    background: mat.get-color-from-palette($pal, 'default');
+    color: mat.get-color-from-palette($pal, 'default-contrast');
+    padding-top: 20px;
+    padding-bottom: 50px;
+    text-align: center;
+  }
+}
