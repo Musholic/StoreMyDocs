@@ -71,6 +71,14 @@ describe('FileService', () => {
           "createdTime": "2023-10-13T08:47:32.059Z",
           parents: ['pId4']
         },
+        {
+          "id": "id5",
+          "mimeType": "application/vnd.google-apps.folder",
+          "name": "storemydocs.ovh",
+          iconLink: "link",
+          "createdTime": "2022-10-13T08:47:32.059Z",
+          parents: ['rootFolderId']
+        },
       ]
     });
 

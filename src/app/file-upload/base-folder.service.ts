@@ -5,12 +5,12 @@ import {FileService} from "../file-list/file.service";
   providedIn: 'root'
 })
 export class BaseFolderService {
-  private readonly BASE_FOLDER_NAME = 'storemydocs.ovh';
+  public static readonly BASE_FOLDER_NAME = 'storemydocs.ovh';
 
   constructor(private fileService: FileService) {
   }
 
   findOrCreateBaseFolder() {
-    return this.fileService.findOrCreateFolder(this.BASE_FOLDER_NAME);
+    return this.fileService.findOrCreateFolder(BaseFolderService.BASE_FOLDER_NAME);
   }
 }

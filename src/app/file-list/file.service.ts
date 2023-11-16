@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {FileElement, FileOrFolderElement, FolderElement} from "./file-list.component";
 import {map, mergeMap, Observable, of} from "rxjs";
 import {HttpClient} from "@angular/common/http";
+import {BaseFolderService} from "../file-upload/base-folder.service";
 
 @Injectable({
   providedIn: 'root'
@@ -12,31 +13,37 @@ export class FileService {
   constructor(private http: HttpClient) {
   }
 
+  /**
+   * Return all files managed by the app, except for the base folder
+   */
   findAll(): Observable<FileOrFolderElement[]> {
     const url = FileService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink,mimeType,parents)");
     return this.http.get<gapi.client.drive.FileList>(url).pipe(map(res => {
       if (res.files) {
-        return res.files.map(f => {
-          if (f.mimeType == 'application/vnd.google-apps.folder') {
-            return {
-              id: f.id,
-              name: f.name,
-              date: f.createdTime,
-              iconLink: f.iconLink,
-              parentId: f.parents?.[0]
-            } as FolderElement;
-          } else {
-            return {
-              id: f.id,
-              name: f.name,
-              date: f.createdTime,
-              size: Number(f.size),
-              iconLink: f.iconLink,
-              parentId: f.parents?.[0],
-              dlLink: f.webContentLink
-            } as FileElement;
-          }
-        })
+        return res.files
+          // Filter out the base folder
+          .filter(f => f.name !== BaseFolderService.BASE_FOLDER_NAME)
+          .map(f => {
+            if (f.mimeType == 'application/vnd.google-apps.folder') {
+              return {
+                id: f.id,
+                name: f.name,
+                date: f.createdTime,
+                iconLink: f.iconLink,
+                parentId: f.parents?.[0]
+              } as FolderElement;
+            } else {
+              return {
+                id: f.id,
+                name: f.name,
+                date: f.createdTime,
+                size: Number(f.size),
+                iconLink: f.iconLink,
+                parentId: f.parents?.[0],
+                dlLink: f.webContentLink
+              } as FileElement;
+            }
+          })
       } else {
         return []
       }
