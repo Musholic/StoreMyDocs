@@ -1,16 +1,10 @@
 import {BaseFolderService} from './base-folder.service';
-import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
+import {MockBuilder, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {fakeAsync, tick} from "@angular/core/testing";
-import {FileService} from "../file-list/file.service";
-import {mock, when} from "strong-mock";
+import {when} from "strong-mock";
 import {of} from "rxjs";
-
-function mockFindOrCreateFolder() {
-  let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
-  when(() => findOrCreateFolderMock('storemydocs.ovh'))
-    .thenReturn(of('folderId51'))
-}
+import {mockFileService} from "../file-list/file.service.spec";
 
 describe('BaseFolderService', () => {
   beforeEach(() => MockBuilder(BaseFolderService, AppModule));
@@ -25,7 +19,11 @@ describe('BaseFolderService', () => {
 
   it('should find or create base folder', fakeAsync(() => {
     // Arrange
-    mockFindOrCreateFolder();
+    let fileServiceMock = mockFileService();
+    mockFileService();
+
+    when(() => fileServiceMock.findOrCreateFolder('storemydocs.ovh'))
+      .thenReturn(of('folderId51'))
     const service = MockRender(BaseFolderService).point.componentInstance;
 
     // Act

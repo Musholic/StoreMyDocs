@@ -13,7 +13,7 @@ import {HarnessLoader, TestKey} from "@angular/cdk/testing";
 import {MatMenuHarness} from "@angular/material/menu/testing";
 import {MatMenuModule} from "@angular/material/menu";
 import {BrowserAnimationsModule, NoopAnimationsModule} from "@angular/platform-browser/animations";
-import {findAsyncSequential, mustBeConsumedObservable} from "../../testing/common-testing-function.spec";
+import {findAsyncSequential, mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
 import {BaseFolderService} from "../file-upload/base-folder.service";
 import {MatInputHarness} from "@angular/material/input/testing";
 import {MatButtonHarness} from "@angular/material/button/testing";
@@ -28,6 +28,7 @@ import {By} from "@angular/platform-browser";
 import {DebugElement} from "@angular/core";
 import {MatAutocompleteHarness} from "@angular/material/autocomplete/testing";
 import {MatChipGridHarness} from "@angular/material/chips/testing";
+import {mockFileService} from "./file.service.spec";
 
 describe('FileListComponent', () => {
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
@@ -49,12 +50,13 @@ describe('FileListComponent', () => {
     when(() => findOrCreateBaseFolderMock()).thenReturn(of('baseFolderId'));
 
     let listMock = MockInstance(FileService, 'findAll', mock<FileService['findAll']>());
-    when(() => listMock()).thenReturn(mustBeConsumedObservable(of([])));
+    when(() => listMock()).thenReturn(mustBeConsumedAsyncObservable([]));
 
     // Act
     const component = MockRender(FileListComponent).point.componentInstance;
 
     // Assert
+    tick();
     expect(component).toBeTruthy();
     expect(Page.getTableRows()).toEqual([]);
   }));
@@ -75,13 +77,9 @@ describe('FileListComponent', () => {
 
   it('should trash an item then refresh', fakeAsync(async () => {
     // Arrange
-    let listMock = mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
-    let trashMock = MockInstance(FileService, 'trash', mock<FileService['trash']>());
-    when(() => trashMock('id2'))
-      .thenReturn(mustBeConsumedObservable(of(undefined)));
-    let fixture = MockRender(FileListComponent);
-    let page = new Page(fixture);
-    tick();
+    let fileService = mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
+    when(() => fileService.trash('id2'))
+      .thenReturn(mustBeConsumedAsyncObservable(undefined));
     let el1: FileElement = {
       id: 'id1',
       size: 1421315,
@@ -91,7 +89,10 @@ describe('FileListComponent', () => {
       dlLink: "dlLink",
       parentId: "rootId"
     };
-    when(() => listMock()).thenReturn(of([el1]))
+    when(() => fileService.findAll()).thenReturn(of([el1]))
+
+    let fixture = MockRender(FileListComponent);
+    let page = new Page(fixture);
 
     // Act
     Page.openItemMenu('name2');
@@ -136,7 +137,7 @@ describe('FileListComponent', () => {
     it('should refresh after assigning a category to a file', fakeAsync(async () => {
       // Arrange
       let el2 = mockFileElement('name2');
-      let listMock = mockListItemsAndCategories([el2]);
+      let fileService = mockListItemsAndCategories([el2]);
 
       let el1: FileElement = {
         id: 'id1',
@@ -147,7 +148,7 @@ describe('FileListComponent', () => {
         dlLink: "dlLink",
         parentId: "rootId"
       };
-      when(() => listMock()).thenReturn(of([el1]))
+      when(() => fileService.findAll()).thenReturn(of([el1]))
       let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
       when(() => findOrCreateFolderMock('Cat848', 'baseFolderId')).thenReturn(of('cat848Id'));
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
@@ -210,9 +211,9 @@ describe('FileListComponent', () => {
     it('should not accept empty category', fakeAsync(async () => {
       // Arrange
       let fileElement = mockFileElement('name1');
-      let findAllMock = mockListItemsAndCategories([fileElement]);
+      let fileService = mockListItemsAndCategories([fileElement]);
       // We expect a refresh
-      when(() => findAllMock()).thenReturn(of());
+      when(() => fileService.findAll()).thenReturn(of());
 
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
       when(() => setCategoryMock(fileElement.id, "baseFolderId")).thenReturn(of(undefined));
@@ -234,9 +235,9 @@ describe('FileListComponent', () => {
     it('should be able to remove a category', fakeAsync(async () => {
       // Arrange
       let fileElement = mockFileElement('name1');
-      let findAllMock = mockListItemsAndCategories([fileElement]);
+      let fileService = mockListItemsAndCategories([fileElement]);
       // We expect a refresh
-      when(() => findAllMock()).thenReturn(of());
+      when(() => fileService.findAll()).thenReturn(of());
 
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
       when(() => setCategoryMock(fileElement.id, "baseFolderId")).thenReturn(of(undefined));
@@ -258,9 +259,9 @@ describe('FileListComponent', () => {
     it('should remove trailing and leading spaces from a category', fakeAsync(async () => {
       // Arrange
       let fileElement = mockFileElement('name1');
-      let findAllMock = mockListItemsAndCategories([fileElement]);
+      let fileService = mockListItemsAndCategories([fileElement]);
       // We expect a refresh
-      when(() => findAllMock()).thenReturn(of());
+      when(() => fileService.findAll()).thenReturn(of());
 
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
       when(() => setCategoryMock(fileElement.id, "parentCat45Id")).thenReturn(of(undefined));
@@ -284,9 +285,9 @@ describe('FileListComponent', () => {
     it('should create and assign a sub-category', fakeAsync(async () => {
       // Arrange
       let el2 = mockFileElement('name2');
-      let findAllMock = mockListItemsAndCategories([el2]);
+      let fileService = mockListItemsAndCategories([el2]);
       // We expect a refresh
-      when(() => findAllMock()).thenReturn(of());
+      when(() => fileService.findAll()).thenReturn(of());
 
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
       when(() => setCategoryMock(el2.id, 'cat7Id')).thenReturn(of(undefined));
@@ -356,10 +357,10 @@ describe('FileListComponent', () => {
       let cat2Folder = mockFolderElement('cat2');
       let cat1bFolder = mockFolderElement('cat1b', cat1Folder.id);
       let fileElement1 = mockFileElement('name1');
-      let findAllMock = mockListItemsAndCategories([cat1Folder, cat2Folder, cat1bFolder, fileElement1]);
+      let fileService = mockListItemsAndCategories([cat1Folder, cat2Folder, cat1bFolder, fileElement1]);
 
       // We expect a refresh
-      when(() => findAllMock()).thenReturn(of());
+      when(() => fileService.findAll()).thenReturn(of([]));
 
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
       when(() => setCategoryMock(fileElement1.id, cat1Folder.id)).thenReturn(of(undefined));
@@ -464,6 +465,37 @@ describe('FileListComponent', () => {
       let result = await page.getCategoriesInDialog();
       expect(result).toEqual(['cat1', 'cat1b'])
     })
+
+    it('When removing the last file from a category, should also remove the category', fakeAsync(async () => {
+      // Arrange
+      let cat1Folder = mockFolderElement('Cat1');
+      let fileElement = mockFileElement('name1', cat1Folder.id);
+      let fileService = mockListItemsAndCategories([fileElement, cat1Folder]);
+      // We expect a refresh, the refresh should include the folder and the file which have moved
+      let fileElementAfterRefresh = mockFileElement('name1');
+      when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([fileElementAfterRefresh, cat1Folder]));
+
+      when(() => fileService.setCategory(fileElement.id, "baseFolderId")).thenReturn(mustBeConsumedAsyncObservable(undefined));
+
+      let trashObservable = mustBeConsumedAsyncObservable(undefined);
+      when(() => fileService.trash(cat1Folder.id))
+        .thenReturn(trashObservable);
+      // After removing the category, we expect another refresh
+      when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([fileElementAfterRefresh], trashObservable));
+
+      let fixture = MockRender(FileListComponent);
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name1');
+      // We need to remove the existing category
+      await page.clickMenuAssignCategory();
+      await page.removeCategoryInDialog('Cat1');
+      await page.clickOkInDialog();
+
+      // Assert
+      // No failure from mock setup
+    }))
   })
 
   describe('Filter by file name', () => {
@@ -687,9 +719,9 @@ function mockListItemsAndCategories(itemsAndCategories: (FileElement | FolderEle
     mock<BaseFolderService['findOrCreateBaseFolder']>());
 
   when(() => findOrCreateBaseFolderMock()).thenReturn(of('baseFolderId'));
-  let listMock = MockInstance(FileService, 'findAll', mock<FileService['findAll']>());
-  when(() => listMock()).thenReturn(of(itemsAndCategories));
-  return listMock;
+  let fileServiceMock = mockFileService();
+  when(() => fileServiceMock.findAll()).thenReturn(of(itemsAndCategories));
+  return fileServiceMock;
 }
 
 function mockTxtAndImageFiles() {
@@ -824,10 +856,6 @@ class Page {
     return inputHarness.getValue();
   }
 
-  private getCategoryInput() {
-    return this.loader.getHarness(MatInputHarness.with({placeholder: 'Select category...'}));
-  }
-
   async clickOkInDialog() {
     let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Ok'}));
     await button.click();
@@ -868,6 +896,10 @@ class Page {
   async removeCategoryInDialog(catToRemove: string) {
     let selectFileCategoryDialog = this.getSelectFileCategoryDialog();
     selectFileCategoryDialog.remove(catToRemove);
+  }
+
+  private getCategoryInput() {
+    return this.loader.getHarness(MatInputHarness.with({placeholder: 'Select category...'}));
   }
 
   private getSelectFileCategoryDialog() {

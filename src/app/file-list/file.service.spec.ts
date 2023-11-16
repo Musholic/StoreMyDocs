@@ -1,10 +1,11 @@
 import {FileService} from './file.service';
-import {MockBuilder, MockRender} from "ng-mocks";
+import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {HttpClientModule} from "@angular/common/http";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {FileElement, FileOrFolderElement, FolderElement} from "./file-list.component";
+import {mock} from "strong-mock";
 
 describe('FileService', () => {
   beforeEach(() => MockBuilder(FileService, AppModule)
@@ -293,3 +294,16 @@ describe('FileService', () => {
     });
   })
 });
+
+export function mockFileService() {
+  let fileServiceMock: FileService = mock<FileService>();
+  MockInstance(FileService, (instance, injector) => {
+    return {
+      findOrCreateFolder: fileServiceMock.findOrCreateFolder,
+      findAll: fileServiceMock.findAll,
+      trash: fileServiceMock.trash,
+      setCategory: fileServiceMock.setCategory
+    }
+  });
+  return fileServiceMock;
+}

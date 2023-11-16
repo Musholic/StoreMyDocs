@@ -11,7 +11,7 @@ import {MatChipInputEvent, MatChipsModule} from "@angular/material/chips";
 import {MatIconModule} from "@angular/material/icon";
 import {ENTER} from "@angular/cdk/keycodes";
 import {AsyncPipe, NgForOf} from "@angular/common";
-import {map, mergeMap, Observable, of, startWith} from "rxjs";
+import {map, mergeMap, Observable, of, startWith, zip} from "rxjs";
 import {NestedTreeControl} from "@angular/cdk/tree";
 import {MatTreeNestedDataSource} from "@angular/material/tree";
 import {
@@ -57,7 +57,7 @@ export class FileListComponent implements OnInit {
 
   categoryDataSource = new MatTreeNestedDataSource<FolderElement>();
   categoryTreeControl = new NestedTreeControl<FolderElement>(node => this.getChildren(node.id));
-  private categoryFilters = new Set<string>();
+  private categoryFilters = new Set<FolderElement>();
 
   constructor(private fileService: FileService, private baseFolderService: BaseFolderService, public dialog: MatDialog) {
     this.fileDataSource.filterPredicate = data => {
@@ -68,25 +68,26 @@ export class FileListComponent implements OnInit {
   ngOnInit(): void {
     this.baseFolderService.findOrCreateBaseFolder().subscribe(baseFolderId => {
       this.baseFolderId = baseFolderId;
-      this.refresh();
+      this.refresh().subscribe();
     });
   }
 
   trashFile(element: FileElement) {
     this.fileService.trash(element.id)
-      .subscribe(() => this.refresh());
+      .subscribe(() => this.refresh().subscribe());
   }
 
   refresh() {
-    this.fileService.findAll().subscribe(filesOrFolders => {
-      this.fileDataSource.data = filesOrFolders.filter(value => isFileElement(value))
-        .map(value => value as FileElement);
-      this.categories.clear();
-      filesOrFolders.filter(value => !isFileElement(value))
-        .forEach(category => this.categories.set(category.id, category));
+    return this.fileService.findAll()
+      .pipe(map(filesOrFolders => {
+        this.fileDataSource.data = filesOrFolders.filter(value => isFileElement(value))
+          .map(value => value as FileElement);
+        this.categories.clear();
+        filesOrFolders.filter(value => !isFileElement(value))
+          .forEach(category => this.categories.set(category.id, category));
 
-      this.constructCategoryTree();
-    })
+        this.constructCategoryTree();
+      }));
   }
 
   setCategory(element: FileElement) {
@@ -104,9 +105,20 @@ export class FileListComponent implements OnInit {
       if (categories) {
         this.findOrCreateCategories(categories, this.baseFolderId)
           .pipe(mergeMap(categoryId => {
-            return this.fileService.setCategory(element.id, categoryId)
-          }))
-          .subscribe(_ => this.refresh());
+              return this.fileService.setCategory(element.id, categoryId)
+            }),
+            mergeMap(() => this.refresh()))
+          .subscribe(_ => {
+            // Also remove empty categories which can happen when removing a category from a file
+            let removeCategoryRequests = this.removeEmptyCategories();
+            if (removeCategoryRequests) {
+              zip(removeCategoryRequests)
+                // Do a refresh when all categories were removed
+                .pipe(mergeMap(() => this.refresh()))
+                .subscribe(() => {
+                })
+            }
+          });
       }
     })
   }
@@ -119,11 +131,11 @@ export class FileListComponent implements OnInit {
     return this.getAncestorCategories(element.parentId);
   }
 
-  filterByCategory(categoryName: string, selected: boolean) {
+  filterByCategory(category: FolderElement, selected: boolean) {
     if (selected) {
-      this.categoryFilters.add(categoryName);
+      this.categoryFilters.add(category);
     } else {
-      this.categoryFilters.delete(categoryName);
+      this.categoryFilters.delete(category);
     }
     this.refreshFilter();
   }
@@ -132,8 +144,20 @@ export class FileListComponent implements OnInit {
     this.fileDataSource.filter = "true"
   }
 
-  isCategorySelected(name: string) {
-    return this.categoryFilters.has(name);
+  isCategorySelected(category: FolderElement) {
+    return this.categoryFilters.has(category);
+  }
+
+  getAncestorCategories(catId: string): FolderElement[] {
+    let category = this.categories.get(catId);
+    // We should not include the base folder which is not to be considered as a category
+    if (category && category.id !== this.baseFolderId) {
+      let categories = this.getAncestorCategories(category.parentId);
+      categories.push(category);
+      return categories;
+    } else {
+      return [];
+    }
   }
 
   /**
@@ -154,18 +178,6 @@ export class FileListComponent implements OnInit {
       return false;
     }
     return true;
-  }
-
-  getAncestorCategories(catId: string): string[] {
-    let category = this.categories.get(catId);
-    // We should not include the base folder which is not to be considered as a category
-    if (category && category.id !== this.baseFolderId) {
-      let categories = this.getAncestorCategories(category.parentId);
-      categories.push(category.name);
-      return categories;
-    } else {
-      return [];
-    }
   }
 
   private getChildren(catId: string) {
@@ -199,6 +211,20 @@ export class FileListComponent implements OnInit {
     }
     return of(categoryId);
   }
+
+  private removeEmptyCategories() {
+    return Array.from(this.categories.values())
+      .filter(category => this.isCategoryEmpty(category))
+      .map(category => {
+        return this.fileService.trash(category.id)
+      })
+  }
+
+  private isCategoryEmpty(category: FolderElement) {
+    return !this.fileDataSource.data.some(fileEl => {
+      return this.getCategories(fileEl).includes(category);
+    })
+  }
 }
 
 @Component({
@@ -231,7 +257,7 @@ export class SelectFileCategoryDialog {
     this.existingCategories = data.componentRef.categories;
     this.baseFolderId = data.componentRef.baseFolderId;
     // Initialize categories with the current one of the file
-    this.categories = data.componentRef.getAncestorCategories(data.file.parentId);
+    this.categories = data.componentRef.getAncestorCategories(data.file.parentId).map(value => value.name);
 
     this.suggestedCategories = this.categoryFormControl.valueChanges.pipe(
       startWith(''),
