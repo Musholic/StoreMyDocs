@@ -20,7 +20,6 @@ describe('BaseFolderService', () => {
   it('should find or create base folder', fakeAsync(() => {
     // Arrange
     let fileServiceMock = mockFileService();
-    mockFileService();
 
     when(() => fileServiceMock.findOrCreateFolder('storemydocs.ovh'))
       .thenReturn(of('folderId51'))
