@@ -14,8 +14,6 @@ import {MatButtonHarness} from "@angular/material/button/testing";
 import {GooglePickerService} from "./google-picker.service";
 
 describe('FileUploadComponent', () => {
-  MockInstance.scope();
-
   beforeEach(() => {
     return MockBuilder(FileUploadComponent, AppModule)
       .keep(MatIconModule);

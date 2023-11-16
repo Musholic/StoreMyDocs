@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
 import {JwtHelperService} from "@auth0/angular-jwt";
+import {Router} from "@angular/router";
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,7 @@ export class GoogleDriveAuthService {
   private apiToken: string | null = null;
   private jwtHelper: JwtHelperService;
 
-  constructor() {
+  constructor(private router: Router) {
     this.jwtHelper = new JwtHelperService();
     let encodedAuthToken = localStorage.getItem(GoogleDriveAuthService.LOCAL_STORAGE_AUTH_TOKEN);
     this.setAuthTokenFromEncodedToken(encodedAuthToken);
@@ -50,14 +51,8 @@ export class GoogleDriveAuthService {
     this.apiToken = tokenResponse.access_token;
   }
 
-  async getApiToken() {
-    if (this.apiToken) {
-      let expires_at = Number(localStorage.getItem(GoogleDriveAuthService.LOCAL_STORAGE_API_TOKEN_EXPIRES_AT));
-      if (expires_at < new Date().getTime()) {
-        this.apiToken = null;
-      }
-    }
-    if (!this.apiToken) {
+  async requestApiToken() {
+    if (!this.hasValidApiToken()) {
       await this.auth();
     }
 
@@ -68,8 +63,22 @@ export class GoogleDriveAuthService {
     return this.apiToken;
   }
 
+  private hasValidApiToken(): boolean {
+    if (this.apiToken) {
+      let expires_at = Number(localStorage.getItem(GoogleDriveAuthService.LOCAL_STORAGE_API_TOKEN_EXPIRES_AT));
+      if (expires_at < new Date().getTime()) {
+        this.apiToken = null;
+      }
+    }
+    return !!this.apiToken;
+  }
+
   isAuthenticated(): boolean {
     return this.authToken !== null;
+  }
+
+  isAuthenticatedAndHasValidApiToken(): boolean {
+    return this.authToken !== null && this.hasValidApiToken();
   }
 
   authenticate(credential: string) {
@@ -87,6 +96,11 @@ export class GoogleDriveAuthService {
     this.apiToken = null;
     localStorage.removeItem(GoogleDriveAuthService.LOCAL_STORAGE_AUTH_TOKEN);
     localStorage.removeItem(GoogleDriveAuthService.LOCAL_STORAGE_API_TOKEN);
+    this.router.navigateByUrl('/login');
+  }
+
+  getApiToken() {
+    return this.apiToken;
   }
 }
 

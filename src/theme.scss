@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
 @use './app/file-list/file-list.component-theme' as file-list;
+@use './app/title-header/title-header.component-theme' as title-header;
 
 // Include non-theme styles for core.
 @include mat.core();
@@ -21,3 +22,4 @@ $theme: mat.define-light-theme((
 @include mat.all-component-themes($theme);
 @include mat.typography-hierarchy($theme);
 @include file-list.color($theme);
+@include title-header.color($theme);

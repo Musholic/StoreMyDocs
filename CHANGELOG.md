@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2023-11-16
+### Added
+- [us14](https://tree.taiga.io/project/musholic-storemydocs/us/14) Categorize and search files
+
 ## [0.2.0] - 2023-09-29
 ### Added
 - [us13](https://tree.taiga.io/project/musholic-storemydocs/us/13) List, download and remove files

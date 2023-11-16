@@ -9,7 +9,7 @@ import {
   HttpRequest,
   HttpResponse
 } from "@angular/common/http";
-import {catchError, filter, from, mergeMap, Observable, of} from "rxjs";
+import {catchError, filter, mergeMap, Observable, of} from "rxjs";
 import {BaseFolderService} from "./base-folder.service";
 
 @Injectable({
@@ -24,24 +24,20 @@ export class FileUploadService {
 
   upload(file: File): Observable<HttpProgressEvent | HttpResponse<any>> {
     const contentType = file.type || 'application/octet-stream';
-    let unknownFolder = true;
 
-    return from(this.authService.getApiToken()).pipe(
-      mergeMap(accessToken => {
-        return this.baseFolderService.findOrCreateBaseFolder(accessToken)
-          .pipe(mergeMap(baseFolderId => {
-            return this.createUploadFileRequest(accessToken, file, contentType, baseFolderId);
-          }))
-      }),
-      mergeMap(metadataRes => {
-        const locationUrl = metadataRes.headers.get('Location') ?? '';
-        return this.uploadFileToUrl(locationUrl, contentType, file);
-      }),
-      filter((e: HttpEvent<any>): e is HttpProgressEvent | HttpResponse<any> => e.type === HttpEventType.UploadProgress || e.type === HttpEventType.Response),
-      catchError(err => {
-        console.log(err)
-        return of();
-      }))
+    return this.baseFolderService.findOrCreateBaseFolder()
+      .pipe(mergeMap(baseFolderId => {
+          return this.createUploadFileRequest(file, contentType, baseFolderId);
+        }),
+        mergeMap(metadataRes => {
+          const locationUrl = metadataRes.headers.get('Location') ?? '';
+          return this.uploadFileToUrl(locationUrl, contentType, file);
+        }),
+        filter((e: HttpEvent<any>): e is HttpProgressEvent | HttpResponse<any> => e.type === HttpEventType.UploadProgress || e.type === HttpEventType.Response),
+        catchError(err => {
+          console.log(err)
+          return of();
+        }))
   }
 
   private uploadFileToUrl(url: string, contentType: string, file: File) {
@@ -56,12 +52,9 @@ export class FileUploadService {
     }))
   }
 
-  private createUploadFileRequest(accessToken: string, file: File, contentType: string, baseFolderId: string) {
-    const authHeader = `Bearer ${accessToken}`;
+  private createUploadFileRequest(file: File, contentType: string, baseFolderId: string) {
 
     const metadataHeaders = {
-      'Authorization': authHeader,
-      'Content-Type': 'application/json',
       'X-Upload-Content-Length': file.size,
       'X-Upload-Content-Type': contentType
     };
