@@ -71,7 +71,7 @@ export class FileService {
   }
 
   private findFolder(folderName: string, parentId: string | null) {
-    let query = "mimeType='application/vnd.google-apps.folder' and name='" + folderName + "'";
+    let query = "trashed=false and mimeType='application/vnd.google-apps.folder' and name='" + folderName + "'";
     if (parentId) {
       query += " and '" + parentId + "' in parents";
     }

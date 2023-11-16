@@ -161,7 +161,8 @@ describe('FileService', () => {
         tick();
 
         const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?" +
-          "q=mimeType='application/vnd.google-apps.folder'%20and%20name='folder78'%20and%20'parentFolder98'%20in%20parents");
+          "q=trashed=false%20and%20mimeType='application/vnd.google-apps.folder'%20and%20name='folder78'%20and%20" +
+          "'parentFolder98'%20in%20parents");
         expect(req.request.method).toEqual('GET');
         req.flush({
           "kind": "drive#fileList",
