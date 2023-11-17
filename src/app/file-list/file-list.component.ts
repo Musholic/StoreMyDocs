@@ -19,6 +19,7 @@ import {
   MatAutocompleteSelectedEvent,
   MatAutocompleteTrigger
 } from "@angular/material/autocomplete";
+import {MatSort, MatSortable} from "@angular/material/sort";
 
 export interface FileOrFolderElement {
   id: string;
@@ -57,6 +58,8 @@ export class FileListComponent implements OnInit {
 
   categoryDataSource = new MatTreeNestedDataSource<FolderElement>();
   categoryTreeControl = new NestedTreeControl<FolderElement>(node => this.getChildren(node.id));
+  // Static is simpler here to avoid change detection stability issues
+  @ViewChild(MatSort, {static: true}) fileSort?: MatSort;
   private categoryFilters = new Set<FolderElement>();
 
   constructor(private fileService: FileService, private baseFolderService: BaseFolderService, public dialog: MatDialog) {
@@ -70,11 +73,16 @@ export class FileListComponent implements OnInit {
       this.baseFolderId = baseFolderId;
       this.refresh().subscribe();
     });
+    if (this.fileSort) {
+      this.fileSort.sort(({id: 'name', start: 'asc'}) as MatSortable);
+      this.fileDataSource.sort = this.fileSort;
+    }
   }
 
   trashFile(element: FileElement) {
     this.fileService.trash(element.id)
-      .subscribe(() => this.refresh().subscribe());
+      .pipe(mergeMap(() => this.refresh()))
+      .subscribe(() => this.checkForEmptyCategoriesToRemove());
   }
 
   refresh() {
@@ -109,18 +117,22 @@ export class FileListComponent implements OnInit {
             }),
             mergeMap(() => this.refresh()))
           .subscribe(_ => {
-            // Also remove empty categories which can happen when removing a category from a file
-            let removeCategoryRequests = this.removeEmptyCategories();
-            if (removeCategoryRequests) {
-              zip(removeCategoryRequests)
-                // Do a refresh when all categories were removed
-                .pipe(mergeMap(() => this.refresh()))
-                .subscribe(() => {
-                })
-            }
+            this.checkForEmptyCategoriesToRemove();
           });
       }
     })
+  }
+
+  private checkForEmptyCategoriesToRemove() {
+    // Also remove empty categories which can happen when removing a category from a file
+    let removeCategoryRequests = this.removeEmptyCategories();
+    if (removeCategoryRequests) {
+      zip(removeCategoryRequests)
+        // Do a refresh when all categories were removed
+        .pipe(mergeMap(() => this.refresh()))
+        .subscribe(() => {
+        })
+    }
   }
 
   categoryHasChild = (_: number, node: FolderElement) => {
@@ -194,6 +206,10 @@ export class FileListComponent implements OnInit {
       this.parentToCategoryMap.get(category.parentId)?.push(category);
     }
 
+    // Sort each children categories by name
+    for (const categories of this.parentToCategoryMap.values()) {
+      categories.sort((a, b) => a.name.localeCompare(b.name));
+    }
     // Add the root categories
     this.categoryDataSource.data = this.getChildren(this.baseFolderId);
   }
