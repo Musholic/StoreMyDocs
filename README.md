@@ -3,7 +3,7 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Musholic_StoreMyDocs&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Musholic_StoreMyDocs)
 [![Known Vulnerabilities](https://snyk.io/test/github/Musholic/StoreMyDocs/badge.svg)](https://snyk.io/test/github/Musholic/StoreMyDocs)
 
-# StoreMyDocs (Work in Progress)
+# StoreMyDocs
 
 StoreMyDocs is a web application designed with the primary purpose of effortlessly centralizing and storing all of your documents. It offers:
 
@@ -12,7 +12,11 @@ StoreMyDocs is a web application designed with the primary purpose of effortless
 
 ## Current Features
 
-* Upload files to a specific folder on Google Drive
+* Upload, list and donwload files on Google Drive
+* Set categories on files
+* Filter files by name and/or categories
+
+![Preview](./features_preview.png)
 
 ## Contributing
 
