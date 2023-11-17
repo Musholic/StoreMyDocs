@@ -22,14 +22,15 @@ import {MatTableModule} from "@angular/material/table";
 import {NgxFilesizeModule} from "ngx-filesize";
 import {MatRippleModule} from "@angular/material/core";
 import {NgOptimizedImage} from "@angular/common";
-import { LoginComponent } from './login/login.component';
+import {LoginComponent} from './login/login.component';
 import {httpInterceptorProviders} from "./auth/auth.interceptor";
 import {MatDialogModule} from "@angular/material/dialog";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatTreeModule} from "@angular/material/tree";
 import {MatChipsModule} from "@angular/material/chips";
-import { TitleHeaderComponent } from './title-header/title-header.component';
+import {TitleHeaderComponent} from './title-header/title-header.component';
+import {MatSortModule} from "@angular/material/sort";
 
 @NgModule({
   declarations: [
@@ -64,7 +65,8 @@ import { TitleHeaderComponent } from './title-header/title-header.component';
     MatInputModule,
     FormsModule,
     MatTreeModule,
-    MatChipsModule
+    MatChipsModule,
+    MatSortModule
   ],
   providers: [
     httpInterceptorProviders

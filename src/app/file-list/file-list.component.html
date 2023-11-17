@@ -23,15 +23,15 @@
   <mat-label>Filter</mat-label>
   <input matInput placeholder="Filter" [(ngModel)]="nameFilter" (keyup)="refreshFilter()">
 </mat-form-field>
-<table mat-table [dataSource]="fileDataSource" aria-label="List of uploaded files">
+<table [dataSource]="fileDataSource" aria-label="List of uploaded files" mat-table matSort>
   <ng-container matColumnDef="name">
-    <th mat-header-cell *matHeaderCellDef> Name</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header> Name</th>
     <td mat-cell *matCellDef="let element"><img [ngSrc]="element.iconLink" alt="file icon" width="16" height="16">
       &nbsp; {{element.name}} </td>
   </ng-container>
 
   <ng-container matColumnDef="date">
-    <th mat-header-cell *matHeaderCellDef> Date</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header> Date</th>
     <td mat-cell *matCellDef="let element"> {{element.date | date:'medium'}} </td>
   </ng-container>
 
@@ -46,7 +46,7 @@
   </ng-container>
 
   <ng-container matColumnDef="size">
-    <th mat-header-cell *matHeaderCellDef> Size</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header> Size</th>
     <td mat-cell *matCellDef="let element"> {{element.size | filesize}} </td>
   </ng-container>
 
