@@ -19,6 +19,7 @@ import {
   MatAutocompleteSelectedEvent,
   MatAutocompleteTrigger
 } from "@angular/material/autocomplete";
+import {MatSort, MatSortable} from "@angular/material/sort";
 
 export interface FileOrFolderElement {
   id: string;
@@ -57,6 +58,8 @@ export class FileListComponent implements OnInit {
 
   categoryDataSource = new MatTreeNestedDataSource<FolderElement>();
   categoryTreeControl = new NestedTreeControl<FolderElement>(node => this.getChildren(node.id));
+  // Static is simpler here to avoid change detection stability issues
+  @ViewChild(MatSort, {static: true}) fileSort?: MatSort;
   private categoryFilters = new Set<FolderElement>();
 
   constructor(private fileService: FileService, private baseFolderService: BaseFolderService, public dialog: MatDialog) {
@@ -70,6 +73,10 @@ export class FileListComponent implements OnInit {
       this.baseFolderId = baseFolderId;
       this.refresh().subscribe();
     });
+    if (this.fileSort) {
+      this.fileSort.sort(({id: 'name', start: 'asc'}) as MatSortable);
+      this.fileDataSource.sort = this.fileSort;
+    }
   }
 
   trashFile(element: FileElement) {

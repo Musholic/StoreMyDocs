@@ -29,6 +29,7 @@ import {DebugElement} from "@angular/core";
 import {MatAutocompleteHarness} from "@angular/material/autocomplete/testing";
 import {MatChipGridHarness} from "@angular/material/chips/testing";
 import {mockFileService} from "./file.service.spec";
+import {MatSortModule} from "@angular/material/sort";
 
 describe('FileListComponent', () => {
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
@@ -40,6 +41,7 @@ describe('FileListComponent', () => {
     .keep(FormsModule)
     .keep(MatTreeModule)
     .keep(MatChipsModule)
+    .keep(MatSortModule)
     .replace(BrowserAnimationsModule, NoopAnimationsModule)
   );
 
@@ -73,6 +75,22 @@ describe('FileListComponent', () => {
     let expected = [['name1', 'Cat1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow],
       ['name2', 'Cat1Cat1Child', 'Aug 3, 2023, 2:54:55 PM', '1.75 kB', actionsRow]];
     expect(Page.getTableRows()).toEqual(expected);
+  })
+
+  it('should sort items by name', () => {
+    // Arrange
+    let itemsAndCategories = [];
+    itemsAndCategories.push(mockFileElement('za1'));
+    itemsAndCategories.push(mockFileElement('ab5'));
+    itemsAndCategories.push(mockFileElement('cd5'));
+    itemsAndCategories.push(mockFileElement('cd4'));
+    mockListItemsAndCategories(itemsAndCategories);
+
+    // Act
+    MockRender(FileListComponent)
+
+    // Assert
+    expect(Page.getDisplayedFileNames()).toEqual(['ab5', 'cd4', 'cd5', 'za1']);
   })
 
   it('should trash an item then refresh', fakeAsync(async () => {
@@ -583,7 +601,7 @@ describe('FileListComponent', () => {
       Page.selectCategoryFilter('Image');
 
       // Assert
-      expect(Page.getDisplayedFileNames()).toEqual(['funny.png', 'default.png', 'avatar.png'])
+      expect(Page.getDisplayedFileNames()).toEqual(['avatar.png', 'default.png', 'funny.png'])
     })
 
     it('should filter on two unrelated categories', () => {
@@ -598,7 +616,7 @@ describe('FileListComponent', () => {
 
       // Assert
       fixture.detectChanges()
-      expect(Page.getDisplayedFileNames()).toEqual(['text.txt', 'avatar.png'])
+      expect(Page.getDisplayedFileNames()).toEqual(['avatar.png', 'text.txt'])
     })
 
     it('should allow removing a category filter', () => {
@@ -613,7 +631,7 @@ describe('FileListComponent', () => {
 
       // Assert
       fixture.detectChanges()
-      expect(Page.getDisplayedFileNames()).toEqual(['text.txt', 'funny.png', 'default.png', 'avatar.png'])
+      expect(Page.getDisplayedFileNames()).toEqual(['avatar.png', 'default.png', 'funny.png', 'text.txt'])
     })
 
     it('should allow filtering on the file categories, from a row of the table list', () => {
