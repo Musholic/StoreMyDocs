@@ -201,6 +201,10 @@ export class FileListComponent implements OnInit {
       this.parentToCategoryMap.get(category.parentId)?.push(category);
     }
 
+    // Sort each children categories by name
+    for (const categories of this.parentToCategoryMap.values()) {
+      categories.sort((a, b) => a.name.localeCompare(b.name));
+    }
     // Add the root categories
     this.categoryDataSource.data = this.getChildren(this.baseFolderId);
   }

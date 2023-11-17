@@ -93,6 +93,23 @@ describe('FileListComponent', () => {
     expect(Page.getDisplayedFileNames()).toEqual(['ab5', 'cd4', 'cd5', 'za1']);
   })
 
+  it('should sort categories by name', () => {
+    // Arrange
+    let itemsAndCategories = [];
+    itemsAndCategories.push(mockFolderElement('za1'));
+    let ab5Cat = mockFolderElement('ab5');
+    itemsAndCategories.push(ab5Cat);
+    itemsAndCategories.push(mockFolderElement('cd5', ab5Cat.id));
+    itemsAndCategories.push(mockFolderElement('cd4', ab5Cat.id));
+    mockListItemsAndCategories(itemsAndCategories);
+
+    // Act
+    MockRender(FileListComponent)
+
+    // Assert
+    expect(Page.getCategories()).toEqual(['ab5', 'cd4', 'cd5', 'za1']);
+  })
+
   it('should trash an item then refresh', fakeAsync(async () => {
     // Arrange
     let fileService = mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
