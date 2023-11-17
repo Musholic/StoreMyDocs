@@ -140,6 +140,36 @@ describe('FileListComponent', () => {
     expect(Page.getTableRows()).toEqual(expected);
   }))
 
+  it('When trashing the last file from a category, should also remove the category', fakeAsync(async () => {
+    // Arrange
+    let cat1Folder = mockFolderElement('Cat1');
+    let fileElement = mockFileElement('name1', cat1Folder.id);
+    let fileService = mockListItemsAndCategories([fileElement, cat1Folder]);
+    // We expect a refresh, the refresh should include the folder and the file which have moved
+    let fileElementAfterRefresh = mockFileElement('name1');
+    when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([fileElementAfterRefresh, cat1Folder]));
+
+    when(() => fileService.trash(fileElement.id))
+      .thenReturn(mustBeConsumedAsyncObservable(undefined));
+
+    // We expect the category to be trashed since there is no file in it anymore
+    when(() => fileService.trash(cat1Folder.id))
+      .thenReturn(mustBeConsumedAsyncObservable(undefined));
+
+    // We expect a last refresh after trashing the category
+    when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([fileElementAfterRefresh]));
+
+    let fixture = MockRender(FileListComponent);
+    let page = new Page(fixture);
+
+    // Act
+    Page.openItemMenu('name1');
+    await page.clickMenuTrash();
+
+    // Assert
+    // No failure from mock setup
+  }))
+
   it('should list two categories and one sub-category', fakeAsync(() => {
     // Arrange
     mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
@@ -501,7 +531,7 @@ describe('FileListComponent', () => {
       expect(result).toEqual(['cat1', 'cat1b'])
     })
 
-    it('When removing the last file from a category, should also remove the category', fakeAsync(async () => {
+    it('When moving the last file from a category, should also remove the category', fakeAsync(async () => {
       // Arrange
       let cat1Folder = mockFolderElement('Cat1');
       let fileElement = mockFileElement('name1', cat1Folder.id);
@@ -723,7 +753,7 @@ describe('FileListComponent', () => {
 
 function mockFileElement(name: string, parentId: string = 'baseFolderId', id: string | undefined = undefined, size: number = 0, date: string = ''): FileElement {
   if (!id) {
-    id = uuid();
+    id = name + '-' + uuid();
   }
   return {
     id: id,
@@ -738,7 +768,7 @@ function mockFileElement(name: string, parentId: string = 'baseFolderId', id: st
 
 function mockFolderElement(name: string, parentId: string = 'baseFolderId', id: string | undefined = undefined): FolderElement {
   if (!id) {
-    id = uuid();
+    id = name + '-' + uuid();
   }
   return {
     id: id,

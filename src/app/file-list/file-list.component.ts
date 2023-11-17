@@ -81,7 +81,8 @@ export class FileListComponent implements OnInit {
 
   trashFile(element: FileElement) {
     this.fileService.trash(element.id)
-      .subscribe(() => this.refresh().subscribe());
+      .pipe(mergeMap(() => this.refresh()))
+      .subscribe(() => this.checkForEmptyCategoriesToRemove());
   }
 
   refresh() {
@@ -116,18 +117,22 @@ export class FileListComponent implements OnInit {
             }),
             mergeMap(() => this.refresh()))
           .subscribe(_ => {
-            // Also remove empty categories which can happen when removing a category from a file
-            let removeCategoryRequests = this.removeEmptyCategories();
-            if (removeCategoryRequests) {
-              zip(removeCategoryRequests)
-                // Do a refresh when all categories were removed
-                .pipe(mergeMap(() => this.refresh()))
-                .subscribe(() => {
-                })
-            }
+            this.checkForEmptyCategoriesToRemove();
           });
       }
     })
+  }
+
+  private checkForEmptyCategoriesToRemove() {
+    // Also remove empty categories which can happen when removing a category from a file
+    let removeCategoryRequests = this.removeEmptyCategories();
+    if (removeCategoryRequests) {
+      zip(removeCategoryRequests)
+        // Do a refresh when all categories were removed
+        .pipe(mergeMap(() => this.refresh()))
+        .subscribe(() => {
+        })
+    }
   }
 
   categoryHasChild = (_: number, node: FolderElement) => {
