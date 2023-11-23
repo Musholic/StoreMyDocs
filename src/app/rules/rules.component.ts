@@ -1,4 +1,5 @@
 import {Component} from '@angular/core';
+import {RuleService} from "./rule.service";
 
 interface Rule {
   name: string;
@@ -22,4 +23,10 @@ export class RulesComponent {
     script: 'return fileName === "bank_account_statement.pdf"'
   }];
 
+  constructor(private ruleService: RuleService) {
+  }
+
+  runAll() {
+    this.ruleService.runAll();
+  }
 }
