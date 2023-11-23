@@ -1,5 +1,7 @@
 <app-title-header></app-title-header>
 <div class="smd-main-content">
+  <a href="/rules" mat-raised-button>Setup rules</a>
+  &nbsp;
   <app-file-upload (onRefreshRequest)="fileList.refresh().subscribe()"></app-file-upload>
 </div>
 <app-file-list #fileList></app-file-list>

@@ -31,6 +31,7 @@ import {MatTreeModule} from "@angular/material/tree";
 import {MatChipsModule} from "@angular/material/chips";
 import {TitleHeaderComponent} from './title-header/title-header.component';
 import {MatSortModule} from "@angular/material/sort";
+import {RulesComponent} from './rules/rules.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import {MatSortModule} from "@angular/material/sort";
     FooterComponent,
     FileListComponent,
     LoginComponent,
-    TitleHeaderComponent
+    TitleHeaderComponent,
+    RulesComponent
   ],
   imports: [
     BrowserModule,
