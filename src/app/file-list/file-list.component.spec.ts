@@ -627,12 +627,13 @@ describe('FileListComponent', () => {
     it('should filter out one item out of two items', () => {
       // Arrange
       mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
-      MockRender(FileListComponent);
+      let fixture = MockRender(FileListComponent);
 
       // Act
       Page.selectCategoryFilter('Cat1Child');
 
       // Assert
+      fixture.detectChanges();
       let actionsRow = 'more_vert';
       let expected = [['name2', 'Cat1Cat1Child', 'Aug 3, 2023, 2:54:55 PM', '1.75 kB', actionsRow]];
       expect(Page.getTableRows()).toEqual(expected);
@@ -642,12 +643,13 @@ describe('FileListComponent', () => {
       // Arrange
       mockTxtAndImageFiles();
 
-      MockRender(FileListComponent);
+      let fixture = MockRender(FileListComponent);
 
       // Act
       Page.selectCategoryFilter('Image');
 
       // Assert
+      fixture.detectChanges();
       expect(Page.getDisplayedFileNames()).toEqual(['avatar.png', 'default.png', 'funny.png'])
     })
 
