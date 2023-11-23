@@ -4,4 +4,19 @@
 </div>
 <div class="smd-main-content">
   <h1>Setup rules</h1>
+  <mat-accordion [multi]="true">
+    <mat-expansion-panel *ngFor="let rule of rules">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{rule.name}}
+        </mat-panel-title>
+        <mat-panel-description>
+          {{rule.description}}
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <div class="ruleScript">
+        {{rule.script}}
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
 </div>

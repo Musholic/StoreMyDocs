@@ -32,6 +32,7 @@ import {MatChipsModule} from "@angular/material/chips";
 import {TitleHeaderComponent} from './title-header/title-header.component';
 import {MatSortModule} from "@angular/material/sort";
 import {RulesComponent} from './rules/rules.component';
+import {MatExpansionModule} from "@angular/material/expansion";
 
 @NgModule({
   declarations: [
@@ -68,7 +69,8 @@ import {RulesComponent} from './rules/rules.component';
     FormsModule,
     MatTreeModule,
     MatChipsModule,
-    MatSortModule
+    MatSortModule,
+    MatExpansionModule
   ],
   providers: [
     httpInterceptorProviders
