@@ -27,3 +27,35 @@ mat-tree-node {
 .not_found {
   padding: 28px;
 }
+
+.categoryFilters {
+  padding-right: 20px;
+}
+
+.example-spacer {
+  flex: 1 1 auto;
+}
+
+.categoryExpand {
+  display: flex;
+}
+
+.categoryFilterHeader {
+  padding: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.files-list {
+  min-height: 800px;
+  flex-grow: 1;
+}
+
+.file-list-and-categories {
+  display: flex;
+}
+
+.category-filter-panel {
+  background-color: white;
+}
+
