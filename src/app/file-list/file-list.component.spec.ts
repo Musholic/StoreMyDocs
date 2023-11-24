@@ -14,7 +14,6 @@ import {MatMenuHarness} from "@angular/material/menu/testing";
 import {MatMenuModule} from "@angular/material/menu";
 import {BrowserAnimationsModule, NoopAnimationsModule} from "@angular/platform-browser/animations";
 import {findAsyncSequential, mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
-import {BaseFolderService} from "../file-upload/base-folder.service";
 import {MatInputHarness} from "@angular/material/input/testing";
 import {MatButtonHarness} from "@angular/material/button/testing";
 import {MatDialogModule} from "@angular/material/dialog";
@@ -30,6 +29,14 @@ import {MatAutocompleteHarness} from "@angular/material/autocomplete/testing";
 import {MatChipGridHarness} from "@angular/material/chips/testing";
 import {mockFileService} from "./file.service.spec";
 import {MatSortModule} from "@angular/material/sort";
+import {mockBaseFolderService} from "../file-upload/base-folder.service.spec";
+
+function mockRenderAndWaitForChanges() {
+  let fixture = MockRender(FileListComponent);
+  tick();
+  fixture.detectChanges();
+  return fixture;
+}
 
 describe('FileListComponent', () => {
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
@@ -47,9 +54,7 @@ describe('FileListComponent', () => {
 
   it('should create (no element)', fakeAsync(() => {
     // Arrange
-    let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
-      mock<BaseFolderService['findOrCreateBaseFolder']>());
-    when(() => findOrCreateBaseFolderMock()).thenReturn(of('baseFolderId'));
+    mockBaseFolderService();
 
     let listMock = MockInstance(FileService, 'findAll', mock<FileService['findAll']>());
     when(() => listMock()).thenReturn(mustBeConsumedAsyncObservable([]));
@@ -63,21 +68,21 @@ describe('FileListComponent', () => {
     expect(Page.getTableRows()).toEqual([]);
   }));
 
-  it('should list two items', () => {
+  it('should list two items', fakeAsync(() => {
     // Arrange
     mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
 
     // Act
-    MockRender(FileListComponent)
+    mockRenderAndWaitForChanges()
 
     // Assert
     let actionsRow = 'more_vert';
     let expected = [['name1', 'Cat1', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow],
       ['name2', 'Cat1Cat1Child', 'Aug 3, 2023, 2:54:55 PM', '1.75 kB', actionsRow]];
     expect(Page.getTableRows()).toEqual(expected);
-  })
+  }))
 
-  it('should sort items by name', () => {
+  it('should sort items by name', fakeAsync(() => {
     // Arrange
     let itemsAndCategories = [];
     itemsAndCategories.push(mockFileElement('za1'));
@@ -87,13 +92,13 @@ describe('FileListComponent', () => {
     mockListItemsAndCategories(itemsAndCategories);
 
     // Act
-    MockRender(FileListComponent)
+    mockRenderAndWaitForChanges();
 
     // Assert
     expect(Page.getDisplayedFileNames()).toEqual(['ab5', 'cd4', 'cd5', 'za1']);
-  })
+  }))
 
-  it('should sort categories by name', () => {
+  it('should sort categories by name', fakeAsync(() => {
     // Arrange
     let itemsAndCategories = [];
     itemsAndCategories.push(mockFolderElement('za1'));
@@ -104,11 +109,11 @@ describe('FileListComponent', () => {
     mockListItemsAndCategories(itemsAndCategories);
 
     // Act
-    MockRender(FileListComponent)
+    mockRenderAndWaitForChanges();
 
     // Assert
     expect(Page.getCategories()).toEqual(['ab5', 'cd4', 'cd5', 'za1']);
-  })
+  }))
 
   it('should trash an item then refresh', fakeAsync(async () => {
     // Arrange
@@ -126,7 +131,7 @@ describe('FileListComponent', () => {
     };
     when(() => fileService.findAll()).thenReturn(of([el1]))
 
-    let fixture = MockRender(FileListComponent);
+    let fixture = mockRenderAndWaitForChanges();
     let page = new Page(fixture);
 
     // Act
@@ -159,7 +164,7 @@ describe('FileListComponent', () => {
     // We expect a last refresh after trashing the category
     when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([fileElementAfterRefresh]));
 
-    let fixture = MockRender(FileListComponent);
+    let fixture = mockRenderAndWaitForChanges();
     let page = new Page(fixture);
 
     // Act
@@ -182,21 +187,20 @@ describe('FileListComponent', () => {
     expect(Page.getCategories()).toEqual(['Cat1', 'Cat1Child', 'Cat2'])
   }))
 
-  it('should not list base folder as category in row categories', () => {
+  it('should not list base folder as category in row categories', fakeAsync(() => {
     // Arrange
     let baseFolder = mockFolderElement('BaseFolder', 'rootId', 'baseFolderId');
     let el1 = mockFileElement('name1', baseFolder.id, 'id1', 1421315, '2023-08-14T14:48:44.928Z');
     mockListItemsAndCategories([baseFolder, el1]);
 
     // Act
-    let fixture = MockRender(FileListComponent);
+    let fixture = mockRenderAndWaitForChanges();
 
     // Assert
-    fixture.detectChanges();
     let actionsRow = 'more_vert';
     let expected = [['name1', '', 'Aug 14, 2023, 2:48:44 PM', '1.42 MB', actionsRow]];
     expect(Page.getTableRows()).toEqual(expected);
-  })
+  }))
 
   describe('Category assignment', () => {
     it('should refresh after assigning a category to a file', fakeAsync(async () => {
@@ -219,7 +223,7 @@ describe('FileListComponent', () => {
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
       when(() => setCategoryMock(el2.id, 'cat848Id')).thenReturn(of(undefined));
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
 
       // Act
@@ -239,7 +243,7 @@ describe('FileListComponent', () => {
       // Arrange
       mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
 
       // Act
@@ -258,7 +262,7 @@ describe('FileListComponent', () => {
       // Arrange
       mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
       Page.openItemMenu('name2');
       // Open a dialog here
@@ -283,7 +287,7 @@ describe('FileListComponent', () => {
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
       when(() => setCategoryMock(fileElement.id, "baseFolderId")).thenReturn(of(undefined));
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
 
       // Act
@@ -307,7 +311,7 @@ describe('FileListComponent', () => {
       let setCategoryMock = MockInstance(FileService, 'setCategory', mock<FileService['setCategory']>());
       when(() => setCategoryMock(fileElement.id, "baseFolderId")).thenReturn(of(undefined));
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
 
       // Act
@@ -334,7 +338,7 @@ describe('FileListComponent', () => {
       let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
       when(() => findOrCreateFolderMock('Cat45', 'baseFolderId')).thenReturn(of('parentCat45Id'));
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
 
       // Act
@@ -361,7 +365,7 @@ describe('FileListComponent', () => {
       when(() => findOrCreateFolderMock('ParentCat8', 'baseFolderId')).thenReturn(of('parentCat8Id'));
       when(() => findOrCreateFolderMock('Cat7', 'parentCat8Id')).thenReturn(of('cat7Id'));
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
 
       // Act
@@ -375,7 +379,7 @@ describe('FileListComponent', () => {
       // No failure from mock setup
     }))
 
-    it('should suggest root categories', async () => {
+    it('should suggest root categories', fakeAsync(async () => {
       // Arrange
       let cat1Folder = mockFolderElement('cat1');
       let cat2Folder = mockFolderElement('cat2');
@@ -383,7 +387,7 @@ describe('FileListComponent', () => {
       let fileElement1 = mockFileElement('name1');
       mockListItemsAndCategories([cat1Folder, cat2Folder, cat1bFolder, fileElement1]);
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
 
       // Act
@@ -393,9 +397,9 @@ describe('FileListComponent', () => {
       // Assert
       let expected = await page.getSuggestedCategoryInDialog();
       expect(expected).toEqual(['cat1', 'cat2'])
-    })
+    }))
 
-    it('should suggest root categories and filter them by the current input', async () => {
+    it('should suggest root categories and filter them by the current input', fakeAsync(async () => {
       // Arrange
       let cat1Folder = mockFolderElement('cat1');
       let cat2Folder = mockFolderElement('cat2');
@@ -403,7 +407,7 @@ describe('FileListComponent', () => {
       let fileElement1 = mockFileElement('name1');
       mockListItemsAndCategories([cat1Folder, cat2Folder, cat1bFolder, fileElement1]);
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
 
       // Act
@@ -414,9 +418,9 @@ describe('FileListComponent', () => {
       // Assert
       let expected = await page.getSuggestedCategoryInDialog();
       expect(expected).toEqual(['cat1'])
-    })
+    }))
 
-    it('should be able to select a suggested category', async () => {
+    it('should be able to select a suggested category', fakeAsync(async () => {
       // Arrange
       let cat1Folder = mockFolderElement('cat1');
       let cat2Folder = mockFolderElement('cat2');
@@ -433,7 +437,7 @@ describe('FileListComponent', () => {
       let findOrCreateFolderMock = MockInstance(FileService, 'findOrCreateFolder', mock<FileService['findOrCreateFolder']>());
       when(() => findOrCreateFolderMock(cat1Folder.name, 'baseFolderId')).thenReturn(of(cat1Folder.id));
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
 
       // Act
@@ -445,9 +449,9 @@ describe('FileListComponent', () => {
 
       // Assert
       // No failure from mock setup
-    })
+    }))
 
-    it('should suggest sub-categories', async () => {
+    it('should suggest sub-categories', fakeAsync(async () => {
       // Arrange
       let cat1Folder = mockFolderElement('cat1');
       let cat2Folder = mockFolderElement('cat2');
@@ -455,7 +459,7 @@ describe('FileListComponent', () => {
       let fileElement1 = mockFileElement('name1');
       mockListItemsAndCategories([cat1Folder, cat2Folder, cat1bFolder, fileElement1]);
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
 
       // Act
@@ -467,7 +471,7 @@ describe('FileListComponent', () => {
       // Assert
       let expected = await page.getSuggestedCategoryInDialog();
       expect(expected).toEqual(['cat1b'])
-    })
+    }))
 
     it('should clear category input after selecting a category', fakeAsync(async () => {
       // Arrange
@@ -475,7 +479,7 @@ describe('FileListComponent', () => {
       let fileElement1 = mockFileElement('name1');
       mockListItemsAndCategories([cat1Folder, fileElement1]);
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges()
       let page = new Page(fixture);
 
       // Act
@@ -495,7 +499,7 @@ describe('FileListComponent', () => {
       let fileElement = mockFileElement('name1');
       mockListItemsAndCategories([cat1Folder, cat1bFolder, fileElement]);
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
 
       // Act
@@ -512,14 +516,14 @@ describe('FileListComponent', () => {
       expect(result).toEqual(['cat1'])
     }))
 
-    it('should initialize the category with the existing one', async () => {
+    it('should initialize the category with the existing one', fakeAsync(async () => {
       // Arrange
       let cat1Folder = mockFolderElement('cat1');
       let cat1bFolder = mockFolderElement('cat1b', cat1Folder.id);
       let fileElement1 = mockFileElement('name1', cat1bFolder.id);
       mockListItemsAndCategories([cat1Folder, cat1bFolder, fileElement1]);
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
 
       // Act
@@ -529,7 +533,7 @@ describe('FileListComponent', () => {
       // Assert
       let result = await page.getCategoriesInDialog();
       expect(result).toEqual(['cat1', 'cat1b'])
-    })
+    }))
 
     it('When moving the last file from a category, should also remove the category', fakeAsync(async () => {
       // Arrange
@@ -548,7 +552,7 @@ describe('FileListComponent', () => {
       // After removing the category, we expect another refresh
       when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([fileElementAfterRefresh], trashObservable));
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
       let page = new Page(fixture);
 
       // Act
@@ -624,10 +628,10 @@ describe('FileListComponent', () => {
   })
 
   describe('Filter by file category', () => {
-    it('should filter out one item out of two items', () => {
+    it('should filter out one item out of two items', fakeAsync(() => {
       // Arrange
       mockListItemsAndCategoriesWithTwoItemsAndThreeCategories();
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
 
       // Act
       Page.selectCategoryFilter('Cat1Child');
@@ -637,13 +641,13 @@ describe('FileListComponent', () => {
       let actionsRow = 'more_vert';
       let expected = [['name2', 'Cat1Cat1Child', 'Aug 3, 2023, 2:54:55 PM', '1.75 kB', actionsRow]];
       expect(Page.getTableRows()).toEqual(expected);
-    })
+    }))
 
-    it('should filter based on root category', () => {
+    it('should filter based on root category', fakeAsync(() => {
       // Arrange
       mockTxtAndImageFiles();
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
 
       // Act
       Page.selectCategoryFilter('Image');
@@ -651,13 +655,13 @@ describe('FileListComponent', () => {
       // Assert
       fixture.detectChanges();
       expect(Page.getDisplayedFileNames()).toEqual(['avatar.png', 'default.png', 'funny.png'])
-    })
+    }))
 
-    it('should filter on two unrelated categories', () => {
+    it('should filter on two unrelated categories', fakeAsync(() => {
       // Arrange
       mockTxtAndImageFiles();
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
 
       // Act
       Page.selectCategoryFilter('TXT');
@@ -666,13 +670,13 @@ describe('FileListComponent', () => {
       // Assert
       fixture.detectChanges()
       expect(Page.getDisplayedFileNames()).toEqual(['avatar.png', 'text.txt'])
-    })
+    }))
 
-    it('should allow removing a category filter', () => {
+    it('should allow removing a category filter', fakeAsync(() => {
       // Arrange
       mockTxtAndImageFiles();
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
 
       // Act
       Page.selectCategoryFilter('TXT');
@@ -681,13 +685,13 @@ describe('FileListComponent', () => {
       // Assert
       fixture.detectChanges()
       expect(Page.getDisplayedFileNames()).toEqual(['avatar.png', 'default.png', 'funny.png', 'text.txt'])
-    })
+    }))
 
-    it('should allow filtering on the file categories, from a row of the table list', () => {
+    it('should allow filtering on the file categories, from a row of the table list', fakeAsync(() => {
       // Arrange
       mockTxtAndImageFiles();
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges()
 
       // Act
       Page.selectCategoryFilterOnFileRow('avatar.png', 'Avatar');
@@ -695,13 +699,13 @@ describe('FileListComponent', () => {
       // Assert
       fixture.detectChanges()
       expect(Page.getDisplayedFileNames()).toEqual(['avatar.png'])
-    })
+    }))
 
-    it('when filtering from a row, should change the filter state on the categories list (for leaf category)', () => {
+    it('when filtering from a row, should change the filter state on the categories list (for leaf category)', fakeAsync(() => {
       // Arrange
       mockTxtAndImageFiles();
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
 
       // Act
       Page.selectCategoryFilterOnFileRow('avatar.png', 'Avatar');
@@ -709,27 +713,28 @@ describe('FileListComponent', () => {
       // Assert
       fixture.detectChanges()
       expect(Page.isCategorySelectedOnCategoriesList('Avatar')).toBeTruthy();
-    })
+    }))
 
-    it('when filtering from a row, should change the filter state on the categories list (for parent category)', () => {
+    it('when filtering from a row, should change the filter state on the categories list (for parent category)', fakeAsync(() => {
       // Arrange
       mockTxtAndImageFiles();
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
 
       // Act
       Page.selectCategoryFilterOnFileRow('avatar.png', 'Image');
 
       // Assert
+      tick();
       fixture.detectChanges()
       expect(Page.isCategorySelectedOnCategoriesList('Image')).toBeTruthy();
-    })
+    }))
 
-    it('when filtering from the categories list, should change the filter state on the rows', () => {
+    it('when filtering from the categories list, should change the filter state on the rows', fakeAsync(() => {
       // Arrange
       mockTxtAndImageFiles();
 
-      let fixture = MockRender(FileListComponent);
+      let fixture = mockRenderAndWaitForChanges();
 
       // Act
       Page.selectCategoryFilter('TXT');
@@ -737,19 +742,19 @@ describe('FileListComponent', () => {
       // Assert
       fixture.detectChanges()
       expect(Page.isCategorySelectedOnFileRow('text.txt', 'TXT')).toBeTruthy();
-    })
+    }))
 
-    it('in categories list, show a expand icon on parent category only', () => {
+    it('in categories list, show a expand icon on parent category only', fakeAsync(() => {
       // Arrange
       mockTxtAndImageFiles();
 
       // Act
-      MockRender(FileListComponent);
+      mockRenderAndWaitForChanges();
 
       // Assert
       expect(Page.isCategoryWithExpandIcon('TXT')).toBeFalsy();
       expect(Page.isCategoryWithExpandIcon('Image')).toBeTruthy();
-    })
+    }))
   })
 });
 
@@ -782,10 +787,7 @@ function mockFolderElement(name: string, parentId: string = 'baseFolderId', id: 
 }
 
 function mockListItemsAndCategories(itemsAndCategories: (FileElement | FolderElement)[]) {
-  let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
-    mock<BaseFolderService['findOrCreateBaseFolder']>());
-
-  when(() => findOrCreateBaseFolderMock()).thenReturn(of('baseFolderId'));
+  mockBaseFolderService();
   let fileServiceMock = mockFileService();
   when(() => fileServiceMock.findAll()).thenReturn(of(itemsAndCategories));
   return fileServiceMock;

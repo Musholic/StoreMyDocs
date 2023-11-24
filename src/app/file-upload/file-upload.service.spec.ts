@@ -4,7 +4,7 @@ import {AppModule} from "../app.module";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {HttpClientModule, HttpEventType, HttpProgressEvent, HttpSentEvent} from "@angular/common/http";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
-import {mockFindOrCreateBaseFolder} from "../../testing/common-testing-function.spec";
+import {mockBaseFolderService} from "./base-folder.service.spec";
 
 describe('FileUploadService', () => {
   beforeEach(() =>
@@ -23,7 +23,7 @@ describe('FileUploadService', () => {
   it('should upload', fakeAsync(() => {
     // Arrange
     let f = new File(["test_content"], "test.txt", {type: 'application/txt'});
-    mockFindOrCreateBaseFolder();
+    mockBaseFolderService()
     const service = MockRender(FileUploadService).point.componentInstance;
     let httpTestingController = TestBed.inject(HttpTestingController);
 
@@ -39,7 +39,7 @@ describe('FileUploadService', () => {
     expect(req.request.method).toEqual('POST');
     expect(req.request.body).toEqual({
       name: 'test.txt',
-      parents: ['parentId7854'],
+      parents: ['baseFolderId'],
       mimeType: 'application/txt',
       'Content-Type': 'application/txt',
       'Content-Length': 12
@@ -64,7 +64,7 @@ describe('FileUploadService', () => {
   it('should filter out unwanted http events when uploading', fakeAsync(() => {
     // Arrange
     let f = new File(["test_content"], "test.txt", {type: 'application/txt'});
-    mockFindOrCreateBaseFolder();
+    mockBaseFolderService();
     const service = MockRender(FileUploadService).point.componentInstance;
     let httpTestingController = TestBed.inject(HttpTestingController);
 
@@ -85,7 +85,7 @@ describe('FileUploadService', () => {
     expect(req.request.method).toEqual('POST');
     expect(req.request.body).toEqual({
       name: 'test.txt',
-      parents: ['parentId7854'],
+      parents: ['baseFolderId'],
       mimeType: 'application/txt',
       'Content-Type': 'application/txt',
       'Content-Length': 12

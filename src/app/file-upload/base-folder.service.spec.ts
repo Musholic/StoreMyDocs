@@ -1,10 +1,11 @@
 import {BaseFolderService} from './base-folder.service';
-import {MockBuilder, MockRender} from "ng-mocks";
+import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {fakeAsync, tick} from "@angular/core/testing";
-import {when} from "strong-mock";
+import {mock, when} from "strong-mock";
 import {of} from "rxjs";
 import {mockFileService} from "../file-list/file.service.spec";
+import {mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
 
 describe('BaseFolderService', () => {
   beforeEach(() => MockBuilder(BaseFolderService, AppModule));
@@ -35,3 +36,15 @@ describe('BaseFolderService', () => {
     expect(result).toBe('folderId51');
   }));
 });
+
+export function mockBaseFolderService() {
+  let baseFolderService = mock<BaseFolderService>();
+  MockInstance(BaseFolderService, () => {
+    return {
+      findOrCreateBaseFolder: baseFolderService.findOrCreateBaseFolder
+    }
+  });
+  when(() => baseFolderService.findOrCreateBaseFolder())
+    .thenReturn(mustBeConsumedAsyncObservable('baseFolderId'));
+  return baseFolderService;
+}

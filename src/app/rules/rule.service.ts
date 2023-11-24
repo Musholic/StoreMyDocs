@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {Rule, SAMPLE_RULES} from "./rules.component";
 import {FileService} from "../file-list/file.service";
-import {map, mergeMap, Observable, of, zip} from "rxjs";
+import {filter, map, mergeMap, Observable, of, zip} from "rxjs";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {BaseFolderService} from "../file-upload/base-folder.service";
 
@@ -13,7 +13,13 @@ export class RuleService {
   }
 
   runAll(): Observable<void> {
-    let rules = SAMPLE_RULES;
+    let rules = SAMPLE_RULES
+      .map(rule => {
+        let copy = {...rule};
+        copy.category = Object.assign([], rule.category);
+        return copy;
+      });
+
     return this.fileService.findAll()
       .pipe(mergeMap(fileOrFolders => {
         // Get all files
@@ -61,9 +67,11 @@ export class RuleService {
         fileToCategoryMap
           .forEach((category, file) => {
             categoryRequests.push(this.findOrCreateCategories(category, baseFolderId)
-              .pipe(mergeMap(categoryId => {
-                return this.fileService.setCategory(file.id, categoryId);
-              })));
+              // There is no need to set the category if the current category is correct
+              .pipe(filter(categoryId => file.parentId !== categoryId),
+                mergeMap(categoryId => {
+                  return this.fileService.setCategory(file.id, categoryId);
+                })));
           });
         let observable = zip(categoryRequests);
         return observable
