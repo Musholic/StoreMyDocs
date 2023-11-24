@@ -13,7 +13,7 @@
           {{rule.name}}
         </mat-panel-title>
         <mat-panel-description>
-          {{rule.description}}
+          <span *ngFor="let cat of rule.category; first as first"><span *ngIf="!first"> &nbsp;&gt; </span>{{cat}}</span>
         </mat-panel-description>
       </mat-expansion-panel-header>
       <div class="ruleScript">

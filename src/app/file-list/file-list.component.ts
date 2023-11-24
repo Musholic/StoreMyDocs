@@ -34,7 +34,7 @@ export interface FileElement extends FileOrFolderElement {
   dlLink: string;
 }
 
-function isFileElement(object: FileOrFolderElement): object is FileElement {
+export function isFileElement(object: FileOrFolderElement): object is FileElement {
   return 'size' in object;
 }
 

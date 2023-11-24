@@ -753,7 +753,7 @@ describe('FileListComponent', () => {
   })
 });
 
-function mockFileElement(name: string, parentId: string = 'baseFolderId', id: string | undefined = undefined, size: number = 0, date: string = ''): FileElement {
+export function mockFileElement(name: string, parentId: string = 'baseFolderId', id: string | undefined = undefined, size: number = 0, date: string = ''): FileElement {
   if (!id) {
     id = name + '-' + uuid();
   }

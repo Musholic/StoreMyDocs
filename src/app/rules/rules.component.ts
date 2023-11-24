@@ -1,11 +1,21 @@
 import {Component} from '@angular/core';
 import {RuleService} from "./rule.service";
 
-interface Rule {
+export interface Rule {
   name: string;
-  description: string;
+  category: string[];
   script: string;
 }
+
+export const SAMPLE_RULES: Rule[] = [{
+  name: 'Electric bill',
+  category: ['Electricity', 'Bills'],
+  script: 'return fileName === "electricity_bill.pdf"'
+}, {
+  name: 'Bank account statement',
+  category: ['Bank', 'Account statement'],
+  script: 'return false'
+}];
 
 @Component({
   selector: 'app-rules',
@@ -13,20 +23,12 @@ interface Rule {
   styleUrls: ['./rules.component.scss']
 })
 export class RulesComponent {
-  rules: Rule[] = [{
-    name: 'Electric bill',
-    description: 'Detect electric bills',
-    script: 'return fileName === "electric_bill.pdf"'
-  }, {
-    name: 'Bank account statement',
-    description: '...',
-    script: 'return fileName === "bank_account_statement.pdf"'
-  }];
+  rules = SAMPLE_RULES;
 
   constructor(private ruleService: RuleService) {
   }
 
   runAll() {
-    this.ruleService.runAll();
+    this.ruleService.runAll().subscribe();
   }
 }

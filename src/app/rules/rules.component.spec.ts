@@ -7,6 +7,7 @@ import {MatButtonHarness} from "@angular/material/button/testing";
 import {HarnessLoader} from "@angular/cdk/testing";
 import {ComponentFixture} from "@angular/core/testing";
 import {TestbedHarnessEnvironment} from "@angular/cdk/testing/testbed";
+import {mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
 
 describe('RulesComponent', () => {
   beforeEach(() => MockBuilder(RulesComponent, AppModule));
@@ -22,8 +23,8 @@ describe('RulesComponent', () => {
 
     // Assert
     expect(Page.getRuleNames()).toEqual(['Electric bill', 'Bank account statement']);
-    expect(Page.getRuleDescription('Electric bill')).toEqual('Detect electric bills');
-    expect(Page.getRuleScript('Electric bill')).toEqual('return fileName === "electric_bill.pdf"');
+    expect(Page.getRuleCategory('Electric bill')).toEqual('Electricity  > Bills');
+    expect(Page.getRuleScript('Electric bill')).toEqual('return fileName === "electricity_bill.pdf"');
   })
 
   it('should run all the rules when clicking on "run rules" button', async () => {
@@ -34,7 +35,7 @@ describe('RulesComponent', () => {
         runAll: ruleService.runAll
       }
     });
-    when(() => ruleService.runAll()).thenReturn(undefined);
+    when(() => ruleService.runAll()).thenReturn(mustBeConsumedAsyncObservable(undefined));
     let fixture = MockRender(RulesComponent);
     let page = new Page(fixture);
 
@@ -58,7 +59,7 @@ class Page {
       .map(row => row.nativeNode.textContent.trim());
   }
 
-  static getRuleDescription(name: string): string {
+  static getRuleCategory(name: string): string {
     let rule = ngMocks.findAll("mat-panel-title")
       .find(row => row.nativeNode.textContent.trim() === name)
       ?.parent;
