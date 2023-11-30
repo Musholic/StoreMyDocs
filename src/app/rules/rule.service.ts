@@ -95,4 +95,8 @@ export class RuleService {
     }
     return of(categoryId);
   }
+
+  delete(rule: Rule) {
+    return this.ruleRepository.delete(rule);
+  }
 }

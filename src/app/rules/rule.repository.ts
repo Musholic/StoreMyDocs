@@ -23,4 +23,11 @@ export class RuleRepository {
   findAll(): Promise<Rule[]> {
     return db.rules.toArray();
   }
+
+  delete(rule: Rule): Promise<void> {
+    if (rule.id) {
+      return db.rules.delete(rule.id);
+    }
+    return Promise.resolve();
+  }
 }

@@ -83,6 +83,26 @@ describe('RuleRepository', () => {
         }]);
     })
   })
+
+  describe('delete', () => {
+    it('should delete one rule', async () => {
+      // Arrange
+      const ruleRepository = MockRender(RuleRepository).point.componentInstance;
+      let rule: Rule = {
+        name: 'TestRule',
+        category: ['Test1', 'ChildTest1'],
+        script: 'return true'
+      };
+      await ruleRepository.create(rule)
+
+      // Act
+      await ruleRepository.delete(rule);
+
+      // Assert
+      let rules = await db.rules.toArray();
+      expect(rules).toEqual([]);
+    });
+  });
 });
 
 export function mockRuleRepository() {

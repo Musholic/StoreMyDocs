@@ -53,4 +53,11 @@ export class RulesComponent {
         this.rules = rules;
       })
   }
+
+  delete(rule: Rule) {
+    this.ruleService.delete(rule)
+      .then(() => {
+        this.refresh();
+      })
+  }
 }

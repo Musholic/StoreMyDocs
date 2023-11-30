@@ -101,6 +101,38 @@ describe('RulesComponent', () => {
     expect(Page.getRuleNames())
       .toEqual(['New rule']);
   }))
+
+  it('should delete an existing rule', fakeAsync(async () => {
+    // Arrange
+    let ruleService = mockRuleService();
+
+    let rule: Rule = {
+      name: 'Rule1',
+      category: ['Cat1', 'ChildCat1'],
+      script: 'return fileName === "child_cat_1.txt"'
+    };
+    when(() => ruleService.findAll()).thenResolve([rule]);
+
+    // A refresh is expected after delete
+    when(() => ruleService.findAll()).thenResolve([]);
+
+    when(() => ruleService.delete(rule)).thenResolve();
+
+    let fixture = MockRender(RulesComponent);
+    tick();
+
+    let page = new Page(fixture);
+
+    // Act
+    await page.deleteFirstRule();
+
+    // Assert
+    // No failure in mock setup
+    tick();
+    fixture.detectChanges();
+    expect(Page.getRuleNames())
+      .toEqual([]);
+  }))
 });
 
 
@@ -194,5 +226,10 @@ class Page {
       return control as MatInputHarness;
     }
     throw Error("No input found with floating label '" + floatingLabelText + "'");
+  }
+
+  async deleteFirstRule() {
+    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Delete'}));
+    await button.click();
   }
 }

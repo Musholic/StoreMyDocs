@@ -97,7 +97,8 @@ export function mockRuleService() {
     return {
       runAll: ruleServiceMock.runAll,
       create: ruleServiceMock.create,
-      findAll: ruleServiceMock.findAll
+      findAll: ruleServiceMock.findAll,
+      delete: ruleServiceMock.delete
     }
   });
   return ruleServiceMock;
