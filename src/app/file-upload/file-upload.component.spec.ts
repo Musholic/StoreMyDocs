@@ -32,12 +32,12 @@ describe('FileUploadComponent', () => {
   describe('When selecting a file to upload', () => {
     it('Should shows the file as being uploaded', () => {
       // Arrange
-      const fixture = MockRender(FileUploadComponent);
-      const page = new Page(fixture);
       let fileUploadService = mockFileUploadService();
-
       let file = new File([''], 'TestFile.txt');
       when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(new Observable())
+
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
 
       // Act
       page.uploadFile(file);
@@ -49,16 +49,16 @@ describe('FileUploadComponent', () => {
 
     it('Should update upload progress', () => {
       // Arrange
-      const fixture = MockRender(FileUploadComponent);
-      const page = new Page(fixture);
       let fileUploadService = mockFileUploadService();
-
       let file = new File([''], 'TestFile.txt');
       when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(of({
         loaded: 50,
         total: 100,
         type: HttpEventType.UploadProgress
       }))
+
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
 
       // Act
       page.uploadFile(file);
@@ -73,14 +73,14 @@ describe('FileUploadComponent', () => {
 
     it('Should trigger upload finish event', () => {
       // Arrange
-      const fixture = MockRender(FileUploadComponent);
-      const page = new Page(fixture);
       let fileUploadService = mockFileUploadService();
-
       let file = new File([''], 'TestFile.txt');
       when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(of({
         type: HttpEventType.Response
       } as HttpResponse<any>))
+
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
       let component = fixture.point.componentInstance;
       let finishedEventReceived = false;
       component.onRefreshRequest.subscribe(() => finishedEventReceived = true)
