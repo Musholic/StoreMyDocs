@@ -33,12 +33,12 @@ export class FileUploadService {
   constructor(private http: HttpClient, private baseFolderService: BaseFolderService) {
   }
 
-  upload(file: FileOrBlob): Observable<HttpProgressEvent | HttpResponse<any>> {
+  upload(file: FileOrBlob, fileId?: string): Observable<HttpProgressEvent | HttpResponse<any>> {
     const contentType = file.blob.type || 'application/octet-stream';
 
     return this.baseFolderService.findOrCreateBaseFolder()
       .pipe(mergeMap(baseFolderId => {
-          return this.createUploadFileRequest(file, contentType, baseFolderId);
+          return this.createUploadFileRequest(file, contentType, baseFolderId, fileId);
         }),
         mergeMap(metadataRes => {
           const locationUrl = metadataRes.headers.get('Location') ?? '';
@@ -63,25 +63,37 @@ export class FileUploadService {
     }))
   }
 
-  private createUploadFileRequest(file: FileOrBlob, contentType: string, baseFolderId: string) {
+  private createUploadFileRequest(file: FileOrBlob, contentType: string, baseFolderId: string, fileId?: string) {
 
     const metadataHeaders = {
       'X-Upload-Content-Length': file.blob.size,
       'X-Upload-Content-Type': contentType
     };
-    const url = this.DRIVE_API_UPLOAD_FILES_BASE_URL + '?uploadType=resumable';
+    let url = this.DRIVE_API_UPLOAD_FILES_BASE_URL;
+    if (fileId) {
+      url += '/' + fileId;
+    }
+    url += '?uploadType=resumable';
 
-    const metadata = {
-      'name': file.name,
-      'parents': [baseFolderId],
-      'mimeType': contentType,
+    let metadata: any = {
       'Content-Type': contentType,
       'Content-Length': file.blob.size,
     };
 
-    return this.http.post<any>(url, metadata, {
-      headers: new HttpHeaders(metadataHeaders),
-      observe: 'response'
-    });
+    if (fileId) {
+      return this.http.patch<any>(url, metadata, {
+        headers: new HttpHeaders(metadataHeaders),
+        observe: 'response'
+      });
+    } else {
+      metadata.name = file.name;
+      metadata.parents = [baseFolderId];
+      metadata.mimeType = contentType;
+
+      return this.http.post<any>(url, metadata, {
+        headers: new HttpHeaders(metadataHeaders),
+        observe: 'response'
+      });
+    }
   }
 }
