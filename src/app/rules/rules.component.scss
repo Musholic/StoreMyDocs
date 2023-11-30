@@ -6,6 +6,28 @@
   padding: 20px;
 }
 
+.actionButtons {
+  padding: 20px 0;
+}
+
 .scriptFormField {
+  width: 100%;
+}
+
+form {
+  width: 100%;
+  max-width: 800px;
+}
+
+.nameAndCategoryFields {
+  width: 100%;
+  display: flex;
+}
+
+mat-form-field {
+  flex-grow: 1;
+}
+
+.fullWidth {
   width: 100%;
 }

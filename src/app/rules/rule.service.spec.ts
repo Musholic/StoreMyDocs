@@ -1,8 +1,8 @@
 import {RuleService} from './rule.service';
-import {MockBuilder, MockRender} from "ng-mocks";
+import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {mockFileService} from "../file-list/file.service.spec";
-import {when} from "strong-mock";
+import {mock, when} from "strong-mock";
 import {mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
 import {fakeAsync, tick} from "@angular/core/testing";
 import {mockFileElement} from "../file-list/file-list.component.spec";
@@ -77,3 +77,14 @@ describe('RuleService', () => {
     }));
   })
 });
+
+export function mockRuleService() {
+  let ruleService = mock<RuleService>();
+  MockInstance(RuleService, () => {
+    return {
+      runAll: ruleService.runAll,
+      create: ruleService.create
+    }
+  });
+  return ruleService;
+}

@@ -1,11 +1,47 @@
 <app-title-header></app-title-header>
 <div class="goBackButton">
   <a href="/" mat-raised-button>Go back</a>
-  &nbsp;
-  <button (click)="runAll()" color="primary" mat-raised-button>Run all</button>
 </div>
 <div class="smd-main-content">
   <h1>Setup rules</h1>
+  <div class="actionButtons">
+    <button (click)="showCreate = true" [disabled]="showCreate" mat-raised-button>Create new rule</button>
+    &nbsp;
+    <button (click)="runAll()" color="primary" mat-raised-button>Run all</button>
+  </div>
+  <form (ngSubmit)="createNewRule()" *ngIf="showCreate">
+    <div class="nameAndCategoryFields">
+      <mat-form-field>
+        <mat-label>Name</mat-label>
+        <input [(ngModel)]="ruleToCreate.name" matInput name="name" required>
+      </mat-form-field>
+      &nbsp;
+      <mat-form-field>
+        <mat-label>Category</mat-label>
+        <mat-chip-grid #chipGrid aria-label="Enter category">
+          <mat-chip-row *ngFor="let cat of ruleToCreate.category">
+            {{cat}}
+            <button matChipRemove>
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+          <input (matChipInputTokenEnd)="add($event)"
+                 [matChipInputFor]="chipGrid"
+                 [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                 placeholder="Select category..."/>
+        </mat-chip-grid>
+      </mat-form-field>
+    </div>
+    <mat-form-field class="fullWidth">
+      <mat-label>Script</mat-label>
+      <textarea [(ngModel)]="ruleToCreate.script" matInput name="script" required></textarea>
+    </mat-form-field>
+    <div class="actionButtons">
+      <button (click)="showCreate = false" mat-raised-button>Cancel</button>
+      &nbsp;
+      <button color="primary" mat-raised-button type="submit">Create</button>
+    </div>
+  </form>
   <mat-accordion [multi]="true">
     <mat-expansion-panel *ngFor="let rule of rules">
       <mat-expansion-panel-header>

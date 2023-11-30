@@ -91,4 +91,8 @@ export class RuleService {
     }
     return of(categoryId);
   }
+
+  create(rule: Rule) {
+    return undefined;
+  }
 }
