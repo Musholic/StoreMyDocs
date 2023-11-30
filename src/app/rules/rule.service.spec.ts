@@ -8,6 +8,8 @@ import {fakeAsync, tick} from "@angular/core/testing";
 import {mockFileElement} from "../file-list/file-list.component.spec";
 import {mockBaseFolderService} from "../file-upload/base-folder.service.spec";
 import {FileService} from "../file-list/file.service";
+import {mockRuleRepository} from "./rule.repository.spec";
+import {getSampleRules} from "./rules.component.spec";
 
 
 function mockBillCategoryFindOrCreate(fileService: FileService) {
@@ -37,6 +39,10 @@ describe('RuleService', () => {
       let fileService = mockFileService();
       mockBillCategoryFindOrCreate(fileService);
 
+      let ruleRepository = mockRuleRepository();
+      when(() => ruleRepository.findAll())
+        .thenResolve(getSampleRules());
+
       let file = mockFileElement('electricity_bill.pdf');
       when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([file]))
 
@@ -65,6 +71,9 @@ describe('RuleService', () => {
       let file = mockFileElement('electricity_bill.pdf', 'billsCatId489');
       when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([file]))
 
+      let ruleRepository = mockRuleRepository();
+      when(() => ruleRepository.findAll())
+        .thenResolve(getSampleRules());
 
       const service = MockRender(RuleService).point.componentInstance;
 
@@ -78,13 +87,18 @@ describe('RuleService', () => {
   })
 });
 
+let ruleServiceMock: RuleService;
+
 export function mockRuleService() {
-  let ruleService = mock<RuleService>();
+  if (!ruleServiceMock) {
+    ruleServiceMock = mock<RuleService>();
+  }
   MockInstance(RuleService, () => {
     return {
-      runAll: ruleService.runAll,
-      create: ruleService.create
+      runAll: ruleServiceMock.runAll,
+      create: ruleServiceMock.create,
+      findAll: ruleServiceMock.findAll
     }
   });
-  return ruleService;
+  return ruleServiceMock;
 }

@@ -5,16 +5,6 @@ import {MatChipInputEvent} from "@angular/material/chips";
 import {Rule} from "./rule.repository";
 
 
-export const SAMPLE_RULES: Rule[] = [{
-  name: 'Electric bill',
-  category: ['Electricity', 'Bills'],
-  script: 'return fileName === "electricity_bill.pdf"'
-}, {
-  name: 'Bank account statement',
-  category: ['Bank', 'Account statement'],
-  script: 'return false'
-}];
-
 @Component({
   selector: 'app-rules',
   templateUrl: './rules.component.html',
@@ -23,7 +13,7 @@ export const SAMPLE_RULES: Rule[] = [{
 export class RulesComponent {
   readonly separatorKeysCodes = [ENTER] as const;
 
-  rules = SAMPLE_RULES;
+  rules: Rule[] = [];
   showCreate: boolean = false;
   ruleToCreate: Rule = {
     name: '',
@@ -32,6 +22,10 @@ export class RulesComponent {
   };
 
   constructor(private ruleService: RuleService) {
+    ruleService.findAll()
+      .then(rules => {
+        this.rules = rules;
+      })
   }
 
   runAll() {

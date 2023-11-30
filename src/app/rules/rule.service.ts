@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
-import {SAMPLE_RULES} from "./rules.component";
 import {FileService} from "../file-list/file.service";
-import {filter, map, mergeMap, Observable, of, zip} from "rxjs";
+import {filter, from, map, mergeMap, Observable, of, zip} from "rxjs";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {BaseFolderService} from "../file-upload/base-folder.service";
 import {Rule, RuleRepository} from "./rule.repository";
@@ -14,29 +13,29 @@ export class RuleService {
   }
 
   runAll(): Observable<void> {
-    let rules = SAMPLE_RULES
-      .map(rule => {
-        let copy = {...rule};
-        copy.category = Object.assign([], rule.category);
-        return copy;
-      });
+    return from(this.ruleRepository.findAll())
+      .pipe(mergeMap(rules => {
+        return this.fileService.findAll()
+          .pipe(mergeMap(fileOrFolders => {
+            // Get all files
+            let files = fileOrFolders.filter(file => isFileElement(file))
+              .map(value => value as FileElement);
 
-    return this.fileService.findAll()
-      .pipe(mergeMap(fileOrFolders => {
-        // Get all files
-        let files = fileOrFolders.filter(file => isFileElement(file))
-          .map(value => value as FileElement);
+            // Run the script for each file to get the associated category
+            let fileToCategoryMap = this.computeFileToCategoryMap(files, rules);
 
-        // Run the script for each file to get the associated category
-        let fileToCategoryMap = this.computeFileToCategoryMap(files, rules);
-
-        // Set the computed category for each files
-        return this.setAllFileCategory(fileToCategoryMap);
+            // Set the computed category for each files
+            return this.setAllFileCategory(fileToCategoryMap);
+          }))
       }));
   }
 
   create(rule: Rule) {
     return this.ruleRepository.create(rule);
+  }
+
+  findAll(): Promise<Rule[]> {
+    return this.ruleRepository.findAll();
   }
 
   /**

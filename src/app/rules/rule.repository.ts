@@ -19,4 +19,8 @@ export class RuleRepository {
   create(rule: Rule) {
     db.rules.add(rule);
   }
+
+  findAll(): Promise<Rule[]> {
+    return db.rules.toArray();
+  }
 }

@@ -4,7 +4,7 @@ import {AppModule} from "../app.module";
 import {when} from "strong-mock";
 import {MatButtonHarness} from "@angular/material/button/testing";
 import {HarnessLoader, TestKey} from "@angular/cdk/testing";
-import {ComponentFixture} from "@angular/core/testing";
+import {ComponentFixture, fakeAsync, tick} from "@angular/core/testing";
 import {TestbedHarnessEnvironment} from "@angular/cdk/testing/testbed";
 import {mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
 import {mockRuleService} from "./rule.service.spec";
@@ -28,22 +28,34 @@ describe('RulesComponent', () => {
   );
 
   it('should create', () => {
+    // Arrange
+    mockSampleRules()
+
+    // Act
     let component = MockRender(RulesComponent).point.componentInstance;
+
+    // Assert
     expect(component).toBeTruthy();
   });
 
-  it('should list two rules', () => {
+  it('should list two rules', fakeAsync(() => {
+    // Arrange
+    mockSampleRules();
+
     // Act
-    MockRender(RulesComponent);
+    let fixture = MockRender(RulesComponent);
 
     // Assert
+    tick();
+    fixture.detectChanges();
     expect(Page.getRuleNames()).toEqual(['Electric bill', 'Bank account statement']);
     expect(Page.getRuleCategory('Electric bill')).toEqual('Electricity  > Bills');
     expect(Page.getRuleScript('Electric bill')).toEqual('return fileName === "electricity_bill.pdf"');
-  })
+  }))
 
   it('should run all the rules when clicking on "run rules" button', async () => {
     // Arrange
+    mockSampleRules();
     let ruleService = mockRuleService();
     when(() => ruleService.runAll()).thenReturn(mustBeConsumedAsyncObservable(undefined));
     let fixture = MockRender(RulesComponent);
@@ -59,6 +71,7 @@ describe('RulesComponent', () => {
   it('should create a new rule', async () => {
     // Arrange
     let ruleService = mockRuleService();
+    mockSampleRules();
 
     let expectedRule: Rule = {
       name: 'New rule',
@@ -83,6 +96,24 @@ describe('RulesComponent', () => {
     // No failure in mock setup
   })
 });
+
+
+function mockSampleRules() {
+  let ruleService = mockRuleService();
+  when(() => ruleService.findAll()).thenResolve(getSampleRules());
+}
+
+export function getSampleRules(): Rule[] {
+  return [{
+    name: 'Electric bill',
+    category: ['Electricity', 'Bills'],
+    script: 'return fileName === "electricity_bill.pdf"'
+  }, {
+    name: 'Bank account statement',
+    category: ['Bank', 'Account statement'],
+    script: 'return false'
+  }];
+}
 
 class Page {
   private loader: HarnessLoader;
