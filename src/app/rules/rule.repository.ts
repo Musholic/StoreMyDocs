@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
 import {db} from "../database/db";
+import {DatabaseBackupAndRestoreService} from "../database/database-backup-and-restore.service";
 
 export interface Rule {
   id?: number;
@@ -13,21 +14,22 @@ export interface Rule {
 })
 export class RuleRepository {
 
-  constructor() {
+  constructor(private databaseBackupAndRestoreService: DatabaseBackupAndRestoreService) {
   }
 
-  create(rule: Rule): Promise<void> {
-    return db.rules.add(rule).then();
+  async create(rule: Rule) {
+    await db.rules.add(rule);
+    await this.databaseBackupAndRestoreService.backup();
   }
 
   findAll(): Promise<Rule[]> {
     return db.rules.toArray();
   }
 
-  delete(rule: Rule): Promise<void> {
+  async delete(rule: Rule) {
     if (rule.id) {
-      return db.rules.delete(rule.id);
+      await db.rules.delete(rule.id);
+      await this.databaseBackupAndRestoreService.backup();
     }
-    return Promise.resolve();
   }
 }

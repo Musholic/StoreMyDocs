@@ -5,7 +5,7 @@ export class AppDB extends Dexie {
   rules!: Table<Rule, number>;
 
   constructor() {
-    super('ngdexieliveQuery');
+    super('StoreMyDocsDB');
     this.createSchema();
   }
 

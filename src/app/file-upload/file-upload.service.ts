@@ -1,5 +1,4 @@
 import {Injectable} from '@angular/core';
-import {GoogleDriveAuthService} from "./google-drive-auth.service";
 import {
   HttpClient,
   HttpEvent,
@@ -12,6 +11,18 @@ import {
 import {catchError, filter, mergeMap, Observable, of} from "rxjs";
 import {BaseFolderService} from "./base-folder.service";
 
+export interface FileOrBlob {
+  name: string;
+  blob: Blob;
+}
+
+export function toFileOrBlob(file: File) {
+  return {
+    name: file.name,
+    blob: file
+  }
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -19,11 +30,11 @@ export class FileUploadService {
 
   private readonly DRIVE_API_UPLOAD_FILES_BASE_URL = 'https://www.googleapis.com/upload/drive/v3/files';
 
-  constructor(private authService: GoogleDriveAuthService, private http: HttpClient, private baseFolderService: BaseFolderService) {
+  constructor(private http: HttpClient, private baseFolderService: BaseFolderService) {
   }
 
-  upload(file: File): Observable<HttpProgressEvent | HttpResponse<any>> {
-    const contentType = file.type || 'application/octet-stream';
+  upload(file: FileOrBlob): Observable<HttpProgressEvent | HttpResponse<any>> {
+    const contentType = file.blob.type || 'application/octet-stream';
 
     return this.baseFolderService.findOrCreateBaseFolder()
       .pipe(mergeMap(baseFolderId => {
@@ -40,22 +51,22 @@ export class FileUploadService {
         }))
   }
 
-  private uploadFileToUrl(url: string, contentType: string, file: File) {
+  private uploadFileToUrl(url: string, contentType: string, file: FileOrBlob) {
 
     const uploadHeaders = {
       'Content-Type': contentType,
       'X-Upload-Content-Type': contentType
     };
-    return this.http.request(new HttpRequest('PUT', url, file, {
+    return this.http.request(new HttpRequest('PUT', url, file.blob, {
       headers: new HttpHeaders(uploadHeaders),
       reportProgress: true
     }))
   }
 
-  private createUploadFileRequest(file: File, contentType: string, baseFolderId: string) {
+  private createUploadFileRequest(file: FileOrBlob, contentType: string, baseFolderId: string) {
 
     const metadataHeaders = {
-      'X-Upload-Content-Length': file.size,
+      'X-Upload-Content-Length': file.blob.size,
       'X-Upload-Content-Type': contentType
     };
     const url = this.DRIVE_API_UPLOAD_FILES_BASE_URL + '?uploadType=resumable';
@@ -65,7 +76,7 @@ export class FileUploadService {
       'parents': [baseFolderId],
       'mimeType': contentType,
       'Content-Type': contentType,
-      'Content-Length': file.size,
+      'Content-Length': file.blob.size,
     };
 
     return this.http.post<any>(url, metadata, {

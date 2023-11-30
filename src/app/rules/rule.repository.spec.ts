@@ -2,7 +2,8 @@ import {Rule, RuleRepository} from "./rule.repository";
 import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {db} from "../database/db";
-import {mock} from "strong-mock";
+import {mock, when} from "strong-mock";
+import {mockDatabaseBackupAndRestoreService} from "../database/database-backup-and-restore.service.spec";
 
 
 describe('RuleRepository', () => {
@@ -62,6 +63,9 @@ describe('RuleRepository', () => {
   describe('create', () => {
     it('should persist a new rule', async () => {
       // Arrange
+      let databaseBackupAndRestoreService = mockDatabaseBackupAndRestoreService();
+      when(() => databaseBackupAndRestoreService.backup()).thenResolve();
+
       const ruleRepository = MockRender(RuleRepository).point.componentInstance;
       let rule: Rule = {
         name: 'TestRule',
@@ -87,6 +91,10 @@ describe('RuleRepository', () => {
   describe('delete', () => {
     it('should delete one rule', async () => {
       // Arrange
+      let databaseBackupAndRestoreService = mockDatabaseBackupAndRestoreService();
+      // 2 calls to 'backup' expected, from create, and then from delete
+      when(() => databaseBackupAndRestoreService.backup()).thenResolve().times(2);
+
       const ruleRepository = MockRender(RuleRepository).point.componentInstance;
       let rule: Rule = {
         name: 'TestRule',

@@ -1,10 +1,11 @@
-import {FileUploadService} from './file-upload.service';
-import {MockBuilder, MockRender} from "ng-mocks";
+import {FileUploadService, toFileOrBlob} from './file-upload.service';
+import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {HttpClientModule, HttpEventType, HttpProgressEvent, HttpSentEvent} from "@angular/common/http";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {mockBaseFolderService} from "./base-folder.service.spec";
+import {mock} from "strong-mock";
 
 describe('FileUploadService', () => {
   beforeEach(() =>
@@ -29,7 +30,7 @@ describe('FileUploadService', () => {
 
     // Act
     let completedRequest = false;
-    service.upload(f).subscribe(() => completedRequest = true);
+    service.upload(toFileOrBlob(f)).subscribe(() => completedRequest = true);
 
     // Assert
     tick();
@@ -70,7 +71,7 @@ describe('FileUploadService', () => {
 
     // Act
     let result: any = undefined;
-    service.upload(f)
+    service.upload(toFileOrBlob(f))
       .subscribe(e => {
         // Get only the first result
         if (!result) {
@@ -107,3 +108,13 @@ describe('FileUploadService', () => {
   }))
 
 });
+
+export function mockFileUploadService() {
+  let fileUploadServiceMock = mock<FileUploadService>();
+  MockInstance(FileUploadService, () => {
+    return {
+      upload: fileUploadServiceMock.upload
+    }
+  });
+  return fileUploadServiceMock;
+}
