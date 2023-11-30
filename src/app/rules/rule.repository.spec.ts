@@ -9,7 +9,11 @@ describe('RuleRepository', () => {
   beforeEach(() => MockBuilder(RuleRepository, AppModule));
 
   // Db cleanup after each test
-  afterEach(() => db.delete());
+  afterEach(async () => {
+    await db.delete();
+    db.createSchema();
+    await db.open();
+  });
 
   it('should be created', () => {
     // Act
@@ -28,13 +32,13 @@ describe('RuleRepository', () => {
         category: ['Test1', 'ChildTest1'],
         script: 'return true'
       };
-      ruleRepository.create(rule1)
+      await ruleRepository.create(rule1)
       let rule2: Rule = {
         name: 'TestRule2',
         category: ['Test2', 'ChildTest2'],
         script: 'return false'
       };
-      ruleRepository.create(rule2)
+      await ruleRepository.create(rule2)
 
       // Act
       let result = await ruleRepository.findAll();
@@ -66,7 +70,7 @@ describe('RuleRepository', () => {
       };
 
       // Act
-      ruleRepository.create(rule)
+      await ruleRepository.create(rule)
 
       // Assert
       let rules = await db.rules.toArray();

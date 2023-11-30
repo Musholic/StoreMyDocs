@@ -6,6 +6,11 @@ export class AppDB extends Dexie {
 
   constructor() {
     super('ngdexieliveQuery');
+    this.createSchema();
+  }
+
+  // Public for testing
+  createSchema() {
     this.version(3).stores({
       rules: '++id',
     });

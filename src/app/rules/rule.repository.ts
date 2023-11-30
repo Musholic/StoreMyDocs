@@ -16,8 +16,8 @@ export class RuleRepository {
   constructor() {
   }
 
-  create(rule: Rule) {
-    db.rules.add(rule);
+  create(rule: Rule): Promise<void> {
+    return db.rules.add(rule).then();
   }
 
   findAll(): Promise<Rule[]> {

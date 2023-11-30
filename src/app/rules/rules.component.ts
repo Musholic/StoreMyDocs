@@ -22,9 +22,19 @@ export class RulesComponent {
   };
 
   constructor(private ruleService: RuleService) {
-    ruleService.findAll()
-      .then(rules => {
-        this.rules = rules;
+    this.refresh();
+  }
+
+  createNewRule() {
+    this.ruleService.create(this.ruleToCreate)
+      .then(() => {
+        this.showCreate = false;
+        this.ruleToCreate = {
+          name: '',
+          category: [],
+          script: ''
+        };
+        this.refresh();
       })
   }
 
@@ -37,7 +47,10 @@ export class RulesComponent {
     event.chipInput.clear();
   }
 
-  createNewRule() {
-    this.ruleService.create(this.ruleToCreate);
+  private refresh() {
+    this.ruleService.findAll()
+      .then(rules => {
+        this.rules = rules;
+      })
   }
 }

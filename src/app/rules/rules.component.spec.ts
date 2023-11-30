@@ -68,18 +68,20 @@ describe('RulesComponent', () => {
     // no failure from mock setup
   })
 
-  it('should create a new rule', async () => {
+  it('should create a new rule', fakeAsync(async () => {
     // Arrange
     let ruleService = mockRuleService();
-    mockSampleRules();
+    when(() => ruleService.findAll()).thenResolve([]);
 
     let expectedRule: Rule = {
       name: 'New rule',
       category: ['Cat1', 'ChildCat1'],
       script: 'return fileName === "child_cat_1.txt"'
     };
-    when(() => ruleService.create(expectedRule)).thenReturn(undefined);
+    when(() => ruleService.create(expectedRule)).thenResolve(undefined);
 
+    // After refresh, there should be the new rule
+    when(() => ruleService.findAll()).thenResolve([expectedRule]);
     let fixture = MockRender(RulesComponent);
 
     let page = new Page(fixture);
@@ -94,7 +96,11 @@ describe('RulesComponent', () => {
 
     // Assert
     // No failure in mock setup
-  })
+    tick();
+    fixture.detectChanges();
+    expect(Page.getRuleNames())
+      .toEqual(['New rule']);
+  }))
 });
 
 
