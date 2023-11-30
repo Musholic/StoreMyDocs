@@ -1,4 +1,4 @@
-import {Rule, RulesComponent} from './rules.component';
+import {RulesComponent} from './rules.component';
 import {MockBuilder, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {when} from "strong-mock";
@@ -16,6 +16,7 @@ import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatChipsModule} from "@angular/material/chips";
 import {MatChipGridHarness} from "@angular/material/chips/testing";
+import {Rule} from "./rule.repository";
 
 describe('RulesComponent', () => {
   beforeEach(() => MockBuilder(RulesComponent, AppModule)

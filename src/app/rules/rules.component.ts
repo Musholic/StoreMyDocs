@@ -2,12 +2,8 @@ import {Component} from '@angular/core';
 import {RuleService} from "./rule.service";
 import {ENTER} from "@angular/cdk/keycodes";
 import {MatChipInputEvent} from "@angular/material/chips";
+import {Rule} from "./rule.repository";
 
-export interface Rule {
-  name: string;
-  category: string[];
-  script: string;
-}
 
 export const SAMPLE_RULES: Rule[] = [{
   name: 'Electric bill',

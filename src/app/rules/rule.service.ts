@@ -1,15 +1,16 @@
 import {Injectable} from '@angular/core';
-import {Rule, SAMPLE_RULES} from "./rules.component";
+import {SAMPLE_RULES} from "./rules.component";
 import {FileService} from "../file-list/file.service";
 import {filter, map, mergeMap, Observable, of, zip} from "rxjs";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {BaseFolderService} from "../file-upload/base-folder.service";
+import {Rule, RuleRepository} from "./rule.repository";
 
 @Injectable({
   providedIn: 'root'
 })
 export class RuleService {
-  constructor(private fileService: FileService, private baseFolderService: BaseFolderService) {
+  constructor(private fileService: FileService, private baseFolderService: BaseFolderService, private ruleRepository: RuleRepository) {
   }
 
   runAll(): Observable<void> {
@@ -32,6 +33,10 @@ export class RuleService {
         // Set the computed category for each files
         return this.setAllFileCategory(fileToCategoryMap);
       }));
+  }
+
+  create(rule: Rule) {
+    return this.ruleRepository.create(rule);
   }
 
   /**
@@ -90,9 +95,5 @@ export class RuleService {
         }));
     }
     return of(categoryId);
-  }
-
-  create(rule: Rule) {
-    return undefined;
   }
 }
