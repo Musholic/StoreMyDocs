@@ -1,4 +1,5 @@
 import {Observable, Subscriber, TeardownLogic} from "rxjs";
+import {db} from "../app/database/db";
 
 export async function findAsyncSequential<T>(
   array: T[],
@@ -60,4 +61,10 @@ class TestObservable<T> extends Observable<T> {
   getId() {
     return this.id;
   }
+}
+
+export async function dbCleanUp() {
+  await db.delete();
+  db.createSchema();
+  await db.open();
 }

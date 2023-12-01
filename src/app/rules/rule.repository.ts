@@ -19,7 +19,7 @@ export class RuleRepository {
 
   async create(rule: Rule) {
     await db.rules.add(rule);
-    await this.databaseBackupAndRestoreService.backup();
+    this.databaseBackupAndRestoreService.backup().subscribe();
   }
 
   findAll(): Promise<Rule[]> {
@@ -29,7 +29,7 @@ export class RuleRepository {
   async delete(rule: Rule) {
     if (rule.id) {
       await db.rules.delete(rule.id);
-      await this.databaseBackupAndRestoreService.backup();
+      this.databaseBackupAndRestoreService.backup().subscribe();
     }
   }
 }

@@ -4,16 +4,22 @@ import {AppModule} from "../app.module";
 import {db} from "../database/db";
 import {mock, when} from "strong-mock";
 import {mockDatabaseBackupAndRestoreService} from "../database/database-backup-and-restore.service.spec";
+import {dbCleanUp, mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
+import {HttpEventType, HttpResponse} from "@angular/common/http";
 
+
+function mockBackupCall() {
+  let databaseBackupAndRestoreService = mockDatabaseBackupAndRestoreService();
+  return when(() => databaseBackupAndRestoreService.backup())
+    .thenReturn(mustBeConsumedAsyncObservable({type: HttpEventType.Response} as HttpResponse<any>));
+}
 
 describe('RuleRepository', () => {
   beforeEach(() => MockBuilder(RuleRepository, AppModule));
 
   // Db cleanup after each test
   afterEach(async () => {
-    await db.delete();
-    db.createSchema();
-    await db.open();
+    await dbCleanUp();
   });
 
   it('should be created', () => {
@@ -27,6 +33,7 @@ describe('RuleRepository', () => {
   describe('findAll', () => {
     it('should list two rules', async () => {
       // Arrange
+      mockBackupCall().times(2);
       const ruleRepository = MockRender(RuleRepository).point.componentInstance;
       let rule1: Rule = {
         name: 'TestRule',
@@ -63,8 +70,7 @@ describe('RuleRepository', () => {
   describe('create', () => {
     it('should persist a new rule', async () => {
       // Arrange
-      let databaseBackupAndRestoreService = mockDatabaseBackupAndRestoreService();
-      when(() => databaseBackupAndRestoreService.backup()).thenResolve();
+      mockBackupCall();
 
       const ruleRepository = MockRender(RuleRepository).point.componentInstance;
       let rule: Rule = {
@@ -91,9 +97,8 @@ describe('RuleRepository', () => {
   describe('delete', () => {
     it('should delete one rule', async () => {
       // Arrange
-      let databaseBackupAndRestoreService = mockDatabaseBackupAndRestoreService();
       // 2 calls to 'backup' expected, from create, and then from delete
-      when(() => databaseBackupAndRestoreService.backup()).thenResolve().times(2);
+      mockBackupCall().times(2);
 
       const ruleRepository = MockRender(RuleRepository).point.componentInstance;
       let rule: Rule = {
