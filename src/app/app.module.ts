@@ -33,6 +33,7 @@ import {TitleHeaderComponent} from './title-header/title-header.component';
 import {MatSortModule} from "@angular/material/sort";
 import {RulesComponent} from './rules/rules.component';
 import {MatExpansionModule} from "@angular/material/expansion";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
 
 @NgModule({
   declarations: [
@@ -70,7 +71,8 @@ import {MatExpansionModule} from "@angular/material/expansion";
     MatTreeModule,
     MatChipsModule,
     MatSortModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatSnackBarModule
   ],
   providers: [
     httpInterceptorProviders

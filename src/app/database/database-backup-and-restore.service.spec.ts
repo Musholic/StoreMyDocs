@@ -11,6 +11,7 @@ import {HttpClientTestingModule, HttpTestingController} from "@angular/common/ht
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {db} from "./db";
 import {lastValueFrom} from "rxjs";
+import {mockBackgroundTaskService} from "../background-task/background-task.service.spec";
 
 describe('DatabaseBackupAndRestoreService', () => {
   beforeEach(() => MockBuilder(DatabaseBackupAndRestoreService, AppModule)
@@ -97,6 +98,9 @@ describe('DatabaseBackupAndRestoreService', () => {
         .thenReturn(mustBeConsumedAsyncObservable({
           type: HttpEventType.Response
         } as HttpResponse<any>));
+
+      let backgroundTaskService = mockBackgroundTaskService();
+      when(() => backgroundTaskService.showProgress(It.isAny())).thenReturn();
 
       const databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
 

@@ -6,6 +6,7 @@ import {from, map, mergeMap, Observable, of} from "rxjs";
 import {FileService} from "../file-list/file.service";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {HttpClient} from "@angular/common/http";
+import {BackgroundTaskService} from "../background-task/background-task.service";
 
 @Injectable({
   providedIn: 'root'
@@ -14,17 +15,21 @@ export class DatabaseBackupAndRestoreService {
 
   private static readonly DB_NAME = 'db.backup';
 
-  constructor(private fileUploadService: FileUploadService, private fileService: FileService, private http: HttpClient) {
+  constructor(private fileUploadService: FileUploadService, private fileService: FileService, private http: HttpClient,
+              private backgroundTaskService: BackgroundTaskService) {
   }
 
   backup() {
-    return from(exportDB(db))
+    let observable = from(exportDB(db))
       .pipe(mergeMap(blob => {
         return this.findExistingDbFile()
           .pipe(mergeMap(dbFile => {
             return this.fileUploadService.upload({name: DatabaseBackupAndRestoreService.DB_NAME, blob}, dbFile?.id);
           }));
       }));
+    // TODO: move this to a pipe function?
+    this.backgroundTaskService.showProgress(observable);
+    return observable;
   }
 
   restore(): Observable<void> {
