@@ -13,11 +13,13 @@ import {HarnessLoader} from "@angular/cdk/testing";
 import {MatButtonHarness} from "@angular/material/button/testing";
 import {GooglePickerService} from "./google-picker.service";
 import {mockFileUploadService} from "./file-upload.service.spec";
+import {BreakpointObserver} from "@angular/cdk/layout";
 
 describe('FileUploadComponent', () => {
   beforeEach(() => {
     return MockBuilder(FileUploadComponent, AppModule)
-      .keep(MatIconModule);
+      .keep(MatIconModule)
+      .keep(BreakpointObserver)
   });
 
   it('should create', () => {

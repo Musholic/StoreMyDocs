@@ -30,6 +30,7 @@ import {MatChipGridHarness} from "@angular/material/chips/testing";
 import {mockFileService} from "./file.service.spec";
 import {MatSortModule} from "@angular/material/sort";
 import {mockBaseFolderService} from "../file-upload/base-folder.service.spec";
+import {BreakpointObserver} from "@angular/cdk/layout";
 
 function mockRenderAndWaitForChanges() {
   let fixture = MockRender(FileListComponent);
@@ -49,6 +50,7 @@ describe('FileListComponent', () => {
     .keep(MatTreeModule)
     .keep(MatChipsModule)
     .keep(MatSortModule)
+    .keep(BreakpointObserver)
     .replace(BrowserAnimationsModule, NoopAnimationsModule)
   );
 
