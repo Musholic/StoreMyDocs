@@ -1,8 +1,8 @@
 import {Component, Inject, Injectable} from '@angular/core';
-import {BehaviorSubject, Observable} from "rxjs";
-import {HttpEventType, HttpProgressEvent, HttpResponse} from "@angular/common/http";
+import {BehaviorSubject} from "rxjs";
 import {MAT_SNACK_BAR_DATA, MatSnackBar, MatSnackBarModule, MatSnackBarRef} from "@angular/material/snack-bar";
 import {NgIf} from "@angular/common";
+import {HttpProgressEvent, HttpResponse} from "@angular/common/http";
 
 @Injectable({
   providedIn: 'root'
@@ -12,15 +12,25 @@ export class BackgroundTaskService {
   constructor(private snackBar: MatSnackBar) {
   }
 
-  showProgress(observable: Observable<HttpProgressEvent | HttpResponse<any>>): void {
-    let progressData: ProgressData = {progress: new BehaviorSubject<number>(0)};
+  showProgress(globalDescription: string, stepDescription: string, stepAmount: number): BehaviorSubject<Progress> {
+    let progress = new BehaviorSubject<Progress>({
+      index: 1,
+      value: 0,
+      description: stepDescription,
+    });
+
+    let progressData: ProgressData = {
+      globalDescription: globalDescription,
+      stepAmount: stepAmount,
+      progress: progress
+    };
     this.openSnackBar(progressData);
 
-    observable.subscribe(value => {
-      if (value.type === HttpEventType.UploadProgress && value.total) {
-        progressData.progress.next((100 * value.loaded) / value.total);
-      }
-    })
+    return progress;
+  }
+
+  updateProgress(progress: BehaviorSubject<Progress>, httpEvent: HttpProgressEvent | HttpResponse<any>) {
+
   }
 
   private openSnackBar(data: ProgressData) {
@@ -29,7 +39,21 @@ export class BackgroundTaskService {
 }
 
 interface ProgressData {
-  progress: BehaviorSubject<number>
+  globalDescription: string;
+  stepAmount: number;
+  progress: BehaviorSubject<Progress>
+}
+
+export interface Progress {
+  index: number;
+  /**
+   * Percentage progress in percent, when it reaches 100, the associated message will be dismissed automatically
+   */
+  value: number
+  /**
+   * No description when the tasks are finished
+   */
+  description?: string,
 }
 
 @Component({
@@ -43,9 +67,14 @@ interface ProgressData {
   ]
 })
 class SnackBarProgressIndicatorComponent {
+  progress: Progress;
+
   constructor(@Inject(MAT_SNACK_BAR_DATA) public data: ProgressData, private snackBarRef: MatSnackBarRef<SnackBarProgressIndicatorComponent>) {
-    data.progress.subscribe(value => {
-      if (value === 100) {
+    this.progress = data.progress.getValue();
+
+    data.progress.subscribe(progress => {
+      this.progress = progress;
+      if (progress.value === 100) {
         snackBarRef._dismissAfter(3000);
       }
     })

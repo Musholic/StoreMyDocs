@@ -10,8 +10,9 @@ import {mockFileElement} from "../file-list/file-list.component.spec";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {db} from "./db";
-import {lastValueFrom} from "rxjs";
+import {BehaviorSubject, lastValueFrom} from "rxjs";
 import {mockBackgroundTaskService} from "../background-task/background-task.service.spec";
+import {Progress} from "../background-task/background-task.service";
 
 describe('DatabaseBackupAndRestoreService', () => {
   beforeEach(() => MockBuilder(DatabaseBackupAndRestoreService, AppModule)
@@ -32,11 +33,19 @@ describe('DatabaseBackupAndRestoreService', () => {
   });
 
   describe('restore', () => {
-    it('the database should be automatically restored', fakeAsync(async () => {
+    it('The database should be automatically restored', fakeAsync(async () => {
       // Arrange
       let fileService = mockFileService();
       let dbBackupFile = mockFileElement('db.backup');
       when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([dbBackupFile]));
+
+      let backgroundTaskService = mockBackgroundTaskService();
+      let progress = mock<BehaviorSubject<Progress>>();
+      when(() => backgroundTaskService.showProgress("Automatic restore", "Downloading last backup", 2))
+        .thenReturn(progress);
+      when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();
+      when(() => progress.next({index: 2, description: "Importing backup", value: 50})).thenReturn();
+      when(() => progress.next({index: 2, value: 100})).thenReturn();
 
       let fixture = MockRender(DatabaseBackupAndRestoreService);
       let databaseBackupAndRestoreService = fixture.point.componentInstance;
@@ -88,7 +97,7 @@ describe('DatabaseBackupAndRestoreService', () => {
 
 
   describe('backup', () => {
-    it('should upload a new backup file when there is no backup yet', async () => {
+    it('Should upload a new backup file when there is no backup yet', async () => {
       // Arrange
       let fileService = mockFileService();
       when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([]));
@@ -100,7 +109,11 @@ describe('DatabaseBackupAndRestoreService', () => {
         } as HttpResponse<any>));
 
       let backgroundTaskService = mockBackgroundTaskService();
-      when(() => backgroundTaskService.showProgress(It.isAny())).thenReturn();
+      let progress = mock<BehaviorSubject<Progress>>();
+      when(() => backgroundTaskService.showProgress("Backup", "Creating backup", 2))
+        .thenReturn(progress);
+      when(() => progress.next({index: 2, description: "Uploading backup", value: 50})).thenReturn();
+      when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();
 
       const databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
 
@@ -123,6 +136,13 @@ describe('DatabaseBackupAndRestoreService', () => {
         .thenReturn(mustBeConsumedAsyncObservable({
           type: HttpEventType.Response
         } as HttpResponse<any>));
+
+      let backgroundTaskService = mockBackgroundTaskService();
+      let progress = mock<BehaviorSubject<Progress>>();
+      when(() => backgroundTaskService.showProgress("Backup", "Creating backup", 2))
+        .thenReturn(progress);
+      when(() => progress.next({index: 2, description: "Uploading backup", value: 50})).thenReturn();
+      when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();
 
       const databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
 

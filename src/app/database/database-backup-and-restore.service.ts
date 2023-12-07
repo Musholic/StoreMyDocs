@@ -2,10 +2,10 @@ import {Injectable} from '@angular/core';
 import {exportDB, importDB} from "dexie-export-import";
 import {db} from "./db";
 import {FileUploadService} from "../file-upload/file-upload.service";
-import {from, map, mergeMap, Observable, of} from "rxjs";
+import {filter, from, last, map, mergeMap, Observable, of, tap} from "rxjs";
 import {FileService} from "../file-list/file.service";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpEvent, HttpEventType, HttpProgressEvent, HttpResponse} from "@angular/common/http";
 import {BackgroundTaskService} from "../background-task/background-task.service";
 
 @Injectable({
@@ -20,29 +20,46 @@ export class DatabaseBackupAndRestoreService {
   }
 
   backup() {
-    let observable = from(exportDB(db))
-      .pipe(mergeMap(blob => {
-        return this.findExistingDbFile()
-          .pipe(mergeMap(dbFile => {
-            return this.fileUploadService.upload({name: DatabaseBackupAndRestoreService.DB_NAME, blob}, dbFile?.id);
-          }));
-      }));
-
-    this.backgroundTaskService.showProgress(observable);
-
-    return observable;
+    let progress = this.backgroundTaskService.showProgress('Backup',
+      "Creating backup", 2);
+    return from(exportDB(db))
+      .pipe(tap(() => progress.next({index: 2, value: 50, description: "Uploading backup"})),
+        mergeMap(blob => {
+          return this.findExistingDbFile()
+            .pipe(mergeMap(dbFile => {
+              return this.fileUploadService.upload({name: DatabaseBackupAndRestoreService.DB_NAME, blob}, dbFile?.id);
+            }));
+        }),
+        tap(httpEvent => this.backgroundTaskService.updateProgress(progress, httpEvent)));
   }
 
   restore(): Observable<void> {
-    return this.findExistingDbFile().pipe(mergeMap(dbFile => {
-      if (dbFile) {
-        let dlLink = FileService.DRIVE_API_FILES_BASE_URL + '/' + dbFile.id + '?alt=media';
-        return this.http.get(dlLink, {responseType: "blob"});
-      }
-      return of();
-    }), mergeMap(dbDownloadResponse => {
-      return from(importDB(dbDownloadResponse));
-    }), map(() => void 0));
+    let progress = this.backgroundTaskService.showProgress('Automatic restore',
+      "Downloading last backup", 2);
+    return this.findExistingDbFile().pipe(
+      tap(() => progress.next({index: 2, value: 50, description: 'Importing backup'})),
+      mergeMap(dbFile => {
+        if (dbFile) {
+          let dlLink = FileService.DRIVE_API_FILES_BASE_URL + '/' + dbFile.id + '?alt=media';
+          return this.http.get(dlLink, {responseType: "blob", observe: "events", reportProgress: true});
+        }
+        return of();
+      }),
+      filter((e: HttpEvent<any>): e is HttpProgressEvent | HttpResponse<any> => e.type === HttpEventType.DownloadProgress || e.type === HttpEventType.Response),
+      tap(event => this.backgroundTaskService.updateProgress(progress, event)),
+      last(),
+      mergeMap(event => {
+        if (event.type === HttpEventType.Response && event.body) {
+          return of(event.body);
+        } else {
+          return of();
+        }
+      }),
+      mergeMap(dbDownloadResponse => {
+        return from(importDB(dbDownloadResponse));
+      }),
+      tap(() => progress.next({index: 2, value: 100})),
+      map(() => void 0));
   }
 
   private findExistingDbFile() {
