@@ -27,8 +27,9 @@ export class DatabaseBackupAndRestoreService {
             return this.fileUploadService.upload({name: DatabaseBackupAndRestoreService.DB_NAME, blob}, dbFile?.id);
           }));
       }));
-    // TODO: move this to a pipe function?
+
     this.backgroundTaskService.showProgress(observable);
+
     return observable;
   }
 
