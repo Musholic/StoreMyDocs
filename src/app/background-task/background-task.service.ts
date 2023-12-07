@@ -2,7 +2,7 @@ import {Component, Inject, Injectable} from '@angular/core';
 import {BehaviorSubject} from "rxjs";
 import {MAT_SNACK_BAR_DATA, MatSnackBar, MatSnackBarModule, MatSnackBarRef} from "@angular/material/snack-bar";
 import {NgIf} from "@angular/common";
-import {HttpProgressEvent, HttpResponse} from "@angular/common/http";
+import {HttpEventType, HttpProgressEvent, HttpResponse} from "@angular/common/http";
 
 @Injectable({
   providedIn: 'root'
@@ -30,7 +30,20 @@ export class BackgroundTaskService {
   }
 
   updateProgress(progress: BehaviorSubject<Progress>, httpEvent: HttpProgressEvent | HttpResponse<any>) {
-
+    let lastProgress = progress.getValue();
+    if ((httpEvent.type === HttpEventType.DownloadProgress || httpEvent.type === HttpEventType.UploadProgress) && httpEvent.total) {
+      progress.next({
+        index: lastProgress.index,
+        value: (httpEvent.loaded * 100) / httpEvent.total,
+        description: lastProgress.description
+      })
+    } else if (httpEvent.type === HttpEventType.Response) {
+      progress.next({
+        index: lastProgress.index,
+        value: 100,
+        description: lastProgress.description
+      })
+    }
   }
 
   private openSnackBar(data: ProgressData) {
