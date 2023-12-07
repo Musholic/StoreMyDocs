@@ -31,6 +31,9 @@ import {MatTreeModule} from "@angular/material/tree";
 import {MatChipsModule} from "@angular/material/chips";
 import {TitleHeaderComponent} from './title-header/title-header.component';
 import {MatSortModule} from "@angular/material/sort";
+import {RulesComponent} from './rules/rules.component';
+import {MatExpansionModule} from "@angular/material/expansion";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
 
 @NgModule({
   declarations: [
@@ -42,7 +45,8 @@ import {MatSortModule} from "@angular/material/sort";
     FooterComponent,
     FileListComponent,
     LoginComponent,
-    TitleHeaderComponent
+    TitleHeaderComponent,
+    RulesComponent
   ],
   imports: [
     BrowserModule,
@@ -66,11 +70,14 @@ import {MatSortModule} from "@angular/material/sort";
     FormsModule,
     MatTreeModule,
     MatChipsModule,
-    MatSortModule
+    MatSortModule,
+    MatExpansionModule,
+    MatSnackBarModule
   ],
   providers: [
     httpInterceptorProviders
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}

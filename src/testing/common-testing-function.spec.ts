@@ -1,13 +1,5 @@
-import {mock, when} from "strong-mock";
-import {BaseFolderService} from "../app/file-upload/base-folder.service";
-import {Observable, of, Subscriber, TeardownLogic} from "rxjs";
-import {MockInstance} from "ng-mocks";
-
-export function mockFindOrCreateBaseFolder() {
-  let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
-    mock<BaseFolderService['findOrCreateBaseFolder']>())
-  when(() => findOrCreateBaseFolderMock()).thenReturn(of('parentId7854'));
-}
+import {Observable, Subscriber, TeardownLogic} from "rxjs";
+import {db} from "../app/database/db";
 
 export async function findAsyncSequential<T>(
   array: T[],
@@ -69,4 +61,10 @@ class TestObservable<T> extends Observable<T> {
   getId() {
     return this.id;
   }
+}
+
+export async function dbCleanUp() {
+  await db.delete();
+  db.createSchema();
+  await db.open();
 }

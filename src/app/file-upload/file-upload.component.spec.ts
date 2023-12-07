@@ -1,9 +1,9 @@
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture} from '@angular/core/testing';
 import {FileUploadComponent} from './file-upload.component';
 import {MatIconModule} from "@angular/material/icon";
 import {MockBuilder, MockInstance, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
-import {FileUploadService} from "./file-upload.service";
+import {toFileOrBlob} from "./file-upload.service";
 import {mock, when} from "strong-mock";
 import {Observable, of} from "rxjs";
 import {FileUploadElementComponent} from "./file-upload-element/file-upload-element.component";
@@ -12,11 +12,14 @@ import {TestbedHarnessEnvironment} from "@angular/cdk/testing/testbed";
 import {HarnessLoader} from "@angular/cdk/testing";
 import {MatButtonHarness} from "@angular/material/button/testing";
 import {GooglePickerService} from "./google-picker.service";
+import {mockFileUploadService} from "./file-upload.service.spec";
+import {BreakpointObserver} from "@angular/cdk/layout";
 
 describe('FileUploadComponent', () => {
   beforeEach(() => {
     return MockBuilder(FileUploadComponent, AppModule)
-      .keep(MatIconModule);
+      .keep(MatIconModule)
+      .keep(BreakpointObserver)
   });
 
   it('should create', () => {
@@ -31,14 +34,12 @@ describe('FileUploadComponent', () => {
   describe('When selecting a file to upload', () => {
     it('Should shows the file as being uploaded', () => {
       // Arrange
+      let fileUploadService = mockFileUploadService();
+      let file = new File([''], 'TestFile.txt');
+      when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(new Observable())
+
       const fixture = MockRender(FileUploadComponent);
       const page = new Page(fixture);
-      let fileUploadService = TestBed.inject(FileUploadService);
-      let uploadMock = mock<typeof fileUploadService['upload']>();
-      fileUploadService.upload = uploadMock;
-
-      let file = new File([''], 'TestFile.txt');
-      when(() => uploadMock(file)).thenReturn(new Observable())
 
       // Act
       page.uploadFile(file);
@@ -50,18 +51,16 @@ describe('FileUploadComponent', () => {
 
     it('Should update upload progress', () => {
       // Arrange
-      const fixture = MockRender(FileUploadComponent);
-      const page = new Page(fixture);
-      let fileUploadService = TestBed.inject(FileUploadService);
-      let uploadMock = mock<typeof fileUploadService['upload']>();
-      fileUploadService.upload = uploadMock;
-
+      let fileUploadService = mockFileUploadService();
       let file = new File([''], 'TestFile.txt');
-      when(() => uploadMock(file)).thenReturn(of({
+      when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(of({
         loaded: 50,
         total: 100,
         type: HttpEventType.UploadProgress
       }))
+
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
 
       // Act
       page.uploadFile(file);
@@ -76,16 +75,14 @@ describe('FileUploadComponent', () => {
 
     it('Should trigger upload finish event', () => {
       // Arrange
-      const fixture = MockRender(FileUploadComponent);
-      const page = new Page(fixture);
-      let fileUploadService = TestBed.inject(FileUploadService);
-      let uploadMock = mock<typeof fileUploadService['upload']>();
-      fileUploadService.upload = uploadMock;
-
+      let fileUploadService = mockFileUploadService();
       let file = new File([''], 'TestFile.txt');
-      when(() => uploadMock(file)).thenReturn(of({
+      when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(of({
         type: HttpEventType.Response
       } as HttpResponse<any>))
+
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
       let component = fixture.point.componentInstance;
       let finishedEventReceived = false;
       component.onRefreshRequest.subscribe(() => finishedEventReceived = true)

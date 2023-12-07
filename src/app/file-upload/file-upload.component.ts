@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Output} from '@angular/core';
-import {FileUploadService} from "./file-upload.service";
+import {FileUploadService, toFileOrBlob} from "./file-upload.service";
 import {FileUploadProgress} from "./file-upload-element/file-upload-element.component";
 import {HttpEventType} from "@angular/common/http";
 import {GooglePickerService} from "./google-picker.service";
@@ -37,7 +37,7 @@ export class FileUploadComponent {
   private upload(file: File) {
     let fileProgress: FileUploadProgress = {fileName: file.name, loaded: 0, total: file.size};
     this.files.push(fileProgress);
-    this.fileUploadService.upload(file)
+    this.fileUploadService.upload(toFileOrBlob(file))
       .subscribe(e => {
         if (e.type === HttpEventType.Response) {
           this.onRefreshRequest.emit();

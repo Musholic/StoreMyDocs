@@ -34,7 +34,7 @@ export interface FileElement extends FileOrFolderElement {
   dlLink: string;
 }
 
-function isFileElement(object: FileOrFolderElement): object is FileElement {
+export function isFileElement(object: FileOrFolderElement): object is FileElement {
   return 'size' in object;
 }
 
@@ -60,6 +60,7 @@ export class FileListComponent implements OnInit {
   categoryTreeControl = new NestedTreeControl<FolderElement>(node => this.getChildren(node.id));
   // Static is simpler here to avoid change detection stability issues
   @ViewChild(MatSort, {static: true}) fileSort?: MatSort;
+  isCategoryPanelExpanded = true;
   private categoryFilters = new Set<FolderElement>();
 
   constructor(private fileService: FileService, private baseFolderService: BaseFolderService, public dialog: MatDialog) {
