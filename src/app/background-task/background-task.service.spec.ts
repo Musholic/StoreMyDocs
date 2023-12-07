@@ -5,11 +5,10 @@ import {AppModule} from "../app.module";
 import {of} from "rxjs";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {HttpEventType} from "@angular/common/http";
-import {ComponentFixture} from "@angular/core/testing";
+import {ComponentFixture, fakeAsync, tick} from "@angular/core/testing";
 import {BrowserAnimationsModule, NoopAnimationsModule} from "@angular/platform-browser/animations";
 import {HarnessLoader} from "@angular/cdk/testing";
 import {TestbedHarnessEnvironment} from "@angular/cdk/testing/testbed";
-import {MatSnackBarHarness} from "@angular/material/snack-bar/testing";
 
 describe('BackgroundTaskService', () => {
   beforeEach(() => MockBuilder(BackgroundTaskService, AppModule)
@@ -54,9 +53,34 @@ describe('BackgroundTaskService', () => {
       }));
 
       // Assert
+      fixture.detectChanges();
       let result = await page.getProgressMessage();
       expect(result).toEqual("25%: Database backup in progress...");
     })
+
+    it('Should show as completed and should dismiss after 3s', fakeAsync(async () => {
+      // Arrange
+      let fixture = MockRender(BackgroundTaskService);
+      let page = new Page(fixture);
+      const backgroundTaskService = fixture.point.componentInstance;
+
+      // Act
+      backgroundTaskService.showProgress(of({
+        type: HttpEventType.UploadProgress,
+        loaded: 200,
+        total: 200
+      }));
+
+      // Assert
+      fixture.detectChanges();
+      let resultMessage = await page.getProgressMessage();
+      expect(resultMessage).toEqual("100%: Database backup finished!");
+      tick(3000);
+      // The message should be gone after 5 seconds at least
+      resultMessage = await page.getProgressMessage();
+      expect(resultMessage).toEqual(undefined);
+
+    }))
   })
 });
 
@@ -68,9 +92,12 @@ class Page {
   }
 
   async getProgressMessage() {
-
-    let snackBar = await this.loader.getHarness(MatSnackBarHarness);
-    return snackBar.getMessage();
+    let element = document.body.querySelector('mat-snack-bar-container');
+    if (element) {
+      let textContent = element.textContent;
+      return textContent || undefined;
+    }
+    return undefined
   }
 }
 

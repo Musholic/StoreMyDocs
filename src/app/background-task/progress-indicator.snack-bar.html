@@ -1,3 +1,5 @@
 <span matSnackBarLabel>
-{{data.progress}}%: Database backup in progress...
+  <span>{{ data.progress.getValue() }}%: Database backup </span>
+  <span *ngIf="data.progress.getValue() < 100">in progress...</span>
+  <span *ngIf="data.progress.getValue() === 100">finished!</span>
 </span>
