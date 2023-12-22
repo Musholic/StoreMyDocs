@@ -34,6 +34,8 @@ import {MatSortModule} from "@angular/material/sort";
 import {RulesComponent} from './rules/rules.component';
 import {MatExpansionModule} from "@angular/material/expansion";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
+import {UserRootComponent} from './user-root/user-root.component';
+import {routeReuseStrategyProvider} from "./route-strategy.service";
 
 @NgModule({
   declarations: [
@@ -46,7 +48,8 @@ import {MatSnackBarModule} from "@angular/material/snack-bar";
     FileListComponent,
     LoginComponent,
     TitleHeaderComponent,
-    RulesComponent
+    RulesComponent,
+    UserRootComponent
   ],
   imports: [
     BrowserModule,
@@ -75,7 +78,8 @@ import {MatSnackBarModule} from "@angular/material/snack-bar";
     MatSnackBarModule
   ],
   providers: [
-    httpInterceptorProviders
+    httpInterceptorProviders,
+    routeReuseStrategyProvider
   ],
   bootstrap: [AppComponent]
 })

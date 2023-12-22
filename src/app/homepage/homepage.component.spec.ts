@@ -4,7 +4,6 @@ import {AppModule} from "../app.module";
 import {FileUploadComponent} from "../file-upload/file-upload.component";
 import {FileListComponent} from "../file-list/file-list.component";
 import {mock, when} from "strong-mock";
-import {mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
 import {fakeAsync, tick} from "@angular/core/testing";
 
 describe('HomepageComponent', () => {
@@ -24,7 +23,8 @@ describe('HomepageComponent', () => {
         refresh: fileListComponent.refresh
       }
     });
-    when(() => fileListComponent.refresh()).thenReturn(mustBeConsumedAsyncObservable(undefined));
+    // TODO: simplify with direct page reload?
+    when(() => fileListComponent.refresh()).thenReturn();
 
     MockRender(HomepageComponent);
     let fileUploadComponent = ngMocks.findInstance(FileUploadComponent);

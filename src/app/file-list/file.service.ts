@@ -16,6 +16,7 @@ export class FileService {
   /**
    * Return all files managed by the app, except for the base folder
    */
+  // TODO: replace calls with state param
   findAll(): Observable<FileOrFolderElement[]> {
     const url = FileService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink,mimeType,parents)");
     return this.http.get<gapi.client.drive.FileList>(url).pipe(map(res => {

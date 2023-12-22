@@ -1,23 +1,27 @@
-import {MockBuilder, MockInstance, MockRender, ngMocks} from "ng-mocks";
-import {Router, RouterModule, RouterOutlet} from "@angular/router";
+import {MockBuilder, MockInstance, NG_MOCKS_RESOLVERS, ngMocks} from "ng-mocks";
+import {RouterModule} from "@angular/router";
 import {RouterTestingModule} from "@angular/router/testing";
 import {AppModule} from "./app.module";
-import {Location} from '@angular/common';
-import {fakeAsync, tick} from "@angular/core/testing";
+import {fakeAsync} from "@angular/core/testing";
 import {RulesComponent} from "./rules/rules.component";
 import {GoogleDriveAuthService} from "./file-upload/google-drive-auth.service";
 import {mock, when} from "strong-mock";
 import {HomepageComponent} from "./homepage/homepage.component";
+import {UserRootComponent} from "./user-root/user-root.component";
+import {navigateTo} from "../testing/common-testing-function.spec";
 
 describe('AppRoutingModule', () => {
   beforeEach(() => {
     return MockBuilder(
       [
         RouterModule,
-        RouterTestingModule.withRoutes([])
+        RouterTestingModule.withRoutes([]),
       ],
       AppModule,
-    );
+    )
+      // We use the real UserRootComponent as we need it to load its children route
+      .keep(UserRootComponent)
+      .exclude(NG_MOCKS_RESOLVERS)
   });
   describe('when logged in', () => {
     beforeEach(() => {
@@ -32,40 +36,19 @@ describe('AppRoutingModule', () => {
     })
 
     it('should display rules page', fakeAsync(() => {
-      // Arrange
-      const fixture = MockRender(RouterOutlet, {});
-      const router: Router = fixture.point.injector.get(Router);
-      const location: Location = fixture.point.injector.get(Location);
-
       // Act
-      location.go('/rules');
+      navigateTo('/rules');
 
       // Assert
-      if (fixture.ngZone) {
-        fixture.ngZone.run(() => router.initialNavigation());
-        tick(); // is needed for rendering of the current route.
-      }
-
-      expect(location.path()).toEqual('/rules');
+      expect(() => ngMocks.find(UserRootComponent)).not.toThrow();
       expect(() => ngMocks.find(RulesComponent)).not.toThrow();
     }));
 
     it('should display home page', fakeAsync(() => {
-      // Arrange
-      const fixture = MockRender(RouterOutlet, {});
-      const router: Router = fixture.point.injector.get(Router);
-      const location: Location = fixture.point.injector.get(Location);
-
       // Act
-      location.go('/');
+      navigateTo("/")
 
       // Assert
-      if (fixture.ngZone) {
-        fixture.ngZone.run(() => router.initialNavigation());
-        tick(); // is needed for rendering of the current route.
-      }
-
-      expect(location.path()).toEqual('/');
       expect(() => ngMocks.find(HomepageComponent)).not.toThrow();
     }));
   })

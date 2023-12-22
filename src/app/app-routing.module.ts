@@ -4,17 +4,28 @@ import {HomepageComponent} from "./homepage/homepage.component";
 import {authGuard} from "./auth/auth.guard";
 import {LoginComponent} from "./login/login.component";
 import {RulesComponent} from "./rules/rules.component";
+import {filesResolver} from "./resolver/files.resolver";
+import {UserRootComponent} from "./user-root/user-root.component";
 
 const routes: Routes = [
   {
     path: '',
-    component: HomepageComponent,
-    canActivate: [authGuard]
-  },
-  {
-    path: 'rules',
-    component: RulesComponent,
-    canActivate: [authGuard]
+    component: UserRootComponent,
+    canActivate: [authGuard],
+    resolve: {files: filesResolver},
+    runGuardsAndResolvers: () => {
+      return UserRootComponent.shouldReloadRouteData();
+    },
+    children: [
+      {
+        path: 'rules',
+        component: RulesComponent
+      },
+      {
+        path: '',
+        component: HomepageComponent,
+      }
+    ]
   },
   {
     path: 'login',

@@ -1,5 +1,9 @@
 import {Observable, Subscriber, TeardownLogic} from "rxjs";
 import {db} from "../app/database/db";
+import {MockRender, ngMocks} from "ng-mocks";
+import {Router, RouterOutlet} from "@angular/router";
+import {Location} from "@angular/common";
+import {tick} from "@angular/core/testing";
 
 export async function findAsyncSequential<T>(
   array: T[],
@@ -67,4 +71,22 @@ export async function dbCleanUp() {
   await db.delete();
   db.createSchema();
   await db.open();
+}
+
+export function navigateTo(path: string) {
+  const fixture = MockRender(RouterOutlet, {});
+  const router = ngMocks.get(Router);
+  const location = ngMocks.get(Location);
+
+  // Let's switch to the route with the resolver.
+  location.go(path);
+
+  if (fixture.ngZone) {
+    fixture.ngZone.run(() => router.initialNavigation());
+    tick(); // is needed for rendering of the current route.
+    fixture.detectChanges();
+  }
+
+  // Checking that we are on the right page.
+  expect(location.path()).toEqual(path);
 }
