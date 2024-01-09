@@ -91,11 +91,6 @@ export class FileListComponent implements OnInit {
       })
   }
 
-  // TODO: make private?
-  refresh() {
-    this.userRootComponent.refreshCacheAndReload();
-  }
-
   setCategory(element: FileElement) {
     let data: SelectFileCategoryDialogData = {
       file: element,
@@ -154,6 +149,10 @@ export class FileListComponent implements OnInit {
     } else {
       return [];
     }
+  }
+
+  private refresh() {
+    this.userRootComponent.refreshCacheAndReload();
   }
 
   private populateFilesAndCategories() {

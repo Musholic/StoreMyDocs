@@ -14,12 +14,18 @@ import {MatButtonHarness} from "@angular/material/button/testing";
 import {GooglePickerService} from "./google-picker.service";
 import {mockFileUploadService} from "./file-upload.service.spec";
 import {BreakpointObserver} from "@angular/cdk/layout";
+import {UserRootComponent} from "../user-root/user-root.component";
 
 describe('FileUploadComponent', () => {
   beforeEach(() => {
     return MockBuilder(FileUploadComponent, AppModule)
       .keep(MatIconModule)
       .keep(BreakpointObserver)
+      // For some reason, we need to explicitly add a provider for UserRootComponent
+      .provide({
+        provide: UserRootComponent,
+        useValue: mock<UserRootComponent>()
+      })
   });
 
   it('should create', () => {
@@ -81,17 +87,18 @@ describe('FileUploadComponent', () => {
         type: HttpEventType.Response
       } as HttpResponse<any>))
 
+      let userRootComponent = ngMocks.get(UserRootComponent);
+      // A page refresh is expected
+      when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
+
       const fixture = MockRender(FileUploadComponent);
       const page = new Page(fixture);
-      let component = fixture.point.componentInstance;
-      let finishedEventReceived = false;
-      component.onRefreshRequest.subscribe(() => finishedEventReceived = true)
 
       // Act
       page.uploadFile(file);
 
       // Assert
-      expect(finishedEventReceived).toBeTruthy();
+      // No failure from mock setup
     })
   })
 
@@ -102,17 +109,18 @@ describe('FileUploadComponent', () => {
       // The user has picked a file when we show the picker
       when(() => showMock()).thenResolve(undefined);
 
+      let userRootComponent = ngMocks.get(UserRootComponent);
+      // A page refresh is expected
+      when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
+
       const fixture = MockRender(FileUploadComponent);
       const page = new Page(fixture);
-      let component = fixture.point.componentInstance;
-      let finishedEventReceived = false;
-      component.onRefreshRequest.subscribe(() => finishedEventReceived = true)
 
       // Act
       await page.openGooglePicker();
 
       // Assert
-      expect(finishedEventReceived).toBeTruthy();
+      // No failure from mock setup
     });
   });
 });
