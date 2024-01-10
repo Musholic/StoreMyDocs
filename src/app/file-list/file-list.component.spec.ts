@@ -35,8 +35,8 @@ import {MatChipGridHarness} from "@angular/material/chips/testing";
 import {mockFileService} from "./file.service.spec";
 import {MatSortModule} from "@angular/material/sort";
 import {BreakpointObserver} from "@angular/cdk/layout";
-import {FilesCache} from "../resolver/files.resolver";
 import {UserRootComponent} from "../user-root/user-root.component";
+import {mockFilesCache} from "../user-root/user-root.component.spec";
 
 function mockRenderAndWaitForChanges() {
   let fixture = MockRender(FileListComponent, null, {reset: true});
@@ -46,17 +46,6 @@ function mockRenderAndWaitForChanges() {
   }
   fixture.detectChanges();
   return fixture;
-}
-
-function mockFilesCacheInRouteData() {
-  let filesCache: FilesCache = {
-    baseFolder: 'baseFolderId',
-    all: []
-  };
-  let userRootComponent = ngMocks.findInstance(UserRootComponent);
-  when(() => userRootComponent.getFilesCache()).thenReturn(filesCache);
-
-  return filesCache;
 }
 
 describe('FileListComponent', () => {
@@ -82,7 +71,7 @@ describe('FileListComponent', () => {
 
   it('should create (no element)', fakeAsync(() => {
     // Arrange
-    mockFilesCacheInRouteData();
+    mockFilesCache([]);
 
     // Act
     const component = mockRenderAndWaitForChanges().point.componentInstance;
@@ -748,7 +737,6 @@ function mockFolderElement(name: string, parentId: string = 'baseFolderId'): Fol
 }
 
 function mockListItemsAndCategories(itemsAndCategories: (FileElement | FolderElement)[], fillEachCategory: boolean = false) {
-  let filesCache = mockFilesCacheInRouteData();
   if (fillEachCategory) {
     let categories = itemsAndCategories.filter(file => !isFileElement(file))
       .map(value => value as FolderElement);
@@ -756,7 +744,7 @@ function mockListItemsAndCategories(itemsAndCategories: (FileElement | FolderEle
       itemsAndCategories.push(mockFileElement(cat.name + "_file", cat.id))
     })
   }
-  filesCache.all = itemsAndCategories;
+  mockFilesCache(itemsAndCategories);
   return mockFileService();
 }
 

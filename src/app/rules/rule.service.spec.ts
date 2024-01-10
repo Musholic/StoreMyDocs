@@ -1,3 +1,4 @@
+import {UserRootComponent} from "../user-root/user-root.component";
 import {RuleService} from './rule.service';
 import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
@@ -10,6 +11,7 @@ import {mockBaseFolderService} from "../file-upload/base-folder.service.spec";
 import {FileService} from "../file-list/file.service";
 import {mockRuleRepository} from "./rule.repository.spec";
 import {getSampleRules} from "./rules.component.spec";
+import {mockFilesCache} from "../user-root/user-root.component.spec";
 
 
 function mockBillCategoryFindOrCreate(fileService: FileService) {
@@ -21,7 +23,13 @@ function mockBillCategoryFindOrCreate(fileService: FileService) {
 }
 
 describe('RuleService', () => {
-  beforeEach(() => MockBuilder(RuleService, AppModule));
+  beforeEach(() => MockBuilder(RuleService, AppModule)
+    // For some reason, we need to explicitly add a provider for UserRootComponent
+    .provide({
+      provide: UserRootComponent,
+      useValue: mock<UserRootComponent>()
+    })
+  );
 
   it('should be created', () => {
     // Act
@@ -43,14 +51,14 @@ describe('RuleService', () => {
       when(() => ruleRepository.findAll())
         .thenResolve(getSampleRules());
 
-      let file = mockFileElement('electricity_bill.pdf');
-      when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([file]))
-
       // The file should be set to the bills category
+      let file = mockFileElement('electricity_bill.pdf');
       when(() => fileService.setCategory(file.id, 'billsCatId489'))
         .thenReturn(mustBeConsumedAsyncObservable(undefined));
 
       const service = MockRender(RuleService).point.componentInstance;
+
+      mockFilesCache([file]);
 
       // Act
       service.runAll().subscribe();
@@ -68,14 +76,14 @@ describe('RuleService', () => {
 
       mockBillCategoryFindOrCreate(fileService);
 
-      let file = mockFileElement('electricity_bill.pdf', 'billsCatId489');
-      when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([file]))
-
       let ruleRepository = mockRuleRepository();
       when(() => ruleRepository.findAll())
         .thenResolve(getSampleRules());
 
       const service = MockRender(RuleService).point.componentInstance;
+
+      let file = mockFileElement('electricity_bill.pdf', 'billsCatId489');
+      mockFilesCache([file]);
 
       // Act
       service.runAll().subscribe();

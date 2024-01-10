@@ -8,7 +8,8 @@ import {Rule} from "./rule.repository";
 @Component({
   selector: 'app-rules',
   templateUrl: './rules.component.html',
-  styleUrls: ['./rules.component.scss']
+  styleUrls: ['./rules.component.scss'],
+  providers: [RuleService]
 })
 export class RulesComponent {
   readonly separatorKeysCodes = [ENTER] as const;

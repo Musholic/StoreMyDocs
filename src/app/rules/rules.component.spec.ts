@@ -18,6 +18,7 @@ import {MatChipsModule} from "@angular/material/chips";
 import {MatChipGridHarness} from "@angular/material/chips/testing";
 import {Rule} from "./rule.repository";
 import {BreakpointObserver} from "@angular/cdk/layout";
+import {RuleService} from "./rule.service";
 
 describe('RulesComponent', () => {
   beforeEach(() => MockBuilder(RulesComponent, AppModule)
@@ -26,6 +27,7 @@ describe('RulesComponent', () => {
     .keep(FormsModule)
     .keep(MatChipsModule)
     .keep(BreakpointObserver)
+    .mock(RuleService)
     .replace(BrowserAnimationsModule, NoopAnimationsModule)
   );
 

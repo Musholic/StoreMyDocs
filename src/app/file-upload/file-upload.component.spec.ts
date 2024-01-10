@@ -87,12 +87,12 @@ describe('FileUploadComponent', () => {
         type: HttpEventType.Response
       } as HttpResponse<any>))
 
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
+
       let userRootComponent = ngMocks.get(UserRootComponent);
       // A page refresh is expected
       when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
-
-      const fixture = MockRender(FileUploadComponent);
-      const page = new Page(fixture);
 
       // Act
       page.uploadFile(file);
@@ -109,12 +109,12 @@ describe('FileUploadComponent', () => {
       // The user has picked a file when we show the picker
       when(() => showMock()).thenResolve(undefined);
 
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
+
       let userRootComponent = ngMocks.get(UserRootComponent);
       // A page refresh is expected
       when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
-
-      const fixture = MockRender(FileUploadComponent);
-      const page = new Page(fixture);
 
       // Act
       await page.openGooglePicker();

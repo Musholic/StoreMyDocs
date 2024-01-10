@@ -4,29 +4,27 @@ import {filter, from, map, mergeMap, Observable, of, zip} from "rxjs";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {BaseFolderService} from "../file-upload/base-folder.service";
 import {Rule, RuleRepository} from "./rule.repository";
+import {UserRootComponent} from "../user-root/user-root.component";
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class RuleService {
-  constructor(private fileService: FileService, private baseFolderService: BaseFolderService, private ruleRepository: RuleRepository) {
+  constructor(private fileService: FileService, private baseFolderService: BaseFolderService,
+              private ruleRepository: RuleRepository, private userRootComponent: UserRootComponent) {
   }
 
   runAll(): Observable<void> {
     return from(this.ruleRepository.findAll())
       .pipe(mergeMap(rules => {
-        return this.fileService.findAll()
-          .pipe(mergeMap(fileOrFolders => {
-            // Get all files
-            let files = fileOrFolders.filter(file => isFileElement(file))
-              .map(value => value as FileElement);
+        let fileOrFolders = this.userRootComponent.getFilesCache().all;
+        // Get all files
+        let files = fileOrFolders.filter(file => isFileElement(file))
+          .map(value => value as FileElement);
 
-            // Run the script for each file to get the associated category
-            let fileToCategoryMap = this.computeFileToCategoryMap(files, rules);
+        // Run the script for each file to get the associated category
+        let fileToCategoryMap = this.computeFileToCategoryMap(files, rules);
 
-            // Set the computed category for each files
-            return this.setAllFileCategory(fileToCategoryMap);
-          }))
+        // Set the computed category for each files
+        return this.setAllFileCategory(fileToCategoryMap);
       }));
   }
 
@@ -36,6 +34,10 @@ export class RuleService {
 
   findAll(): Promise<Rule[]> {
     return this.ruleRepository.findAll();
+  }
+
+  delete(rule: Rule) {
+    return this.ruleRepository.delete(rule);
   }
 
   /**
@@ -94,9 +96,5 @@ export class RuleService {
         }));
     }
     return of(categoryId);
-  }
-
-  delete(rule: Rule) {
-    return this.ruleRepository.delete(rule);
   }
 }
