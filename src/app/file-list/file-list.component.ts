@@ -19,7 +19,7 @@ import {
   MatAutocompleteTrigger
 } from "@angular/material/autocomplete";
 import {MatSort, MatSortable} from "@angular/material/sort";
-import {UserRootComponent} from "../user-root/user-root.component";
+import {FilesCacheService} from "../files-cache/files-cache.service";
 
 export interface FileOrFolderElement {
   id: string;
@@ -64,16 +64,15 @@ export class FileListComponent implements OnInit {
   private categoryFilters = new Set<FolderElement>();
   private allFiles: FileOrFolderElement[] = [];
 
-  constructor(private fileService: FileService, public dialog: MatDialog, private userRootComponent: UserRootComponent) {
+  constructor(private fileService: FileService, public dialog: MatDialog, private filesCacheService: FilesCacheService) {
     this.fileDataSource.filterPredicate = data => {
       return this.filterPredicate(data);
     }
   }
 
   ngOnInit(): void {
-    let filesCache = this.userRootComponent.getFilesCache();
-    this.baseFolderId = filesCache.baseFolder;
-    this.allFiles = filesCache.all;
+    this.baseFolderId = this.filesCacheService.getBaseFolder();
+    this.allFiles = this.filesCacheService.getAll();
     this.populateFilesAndCategories();
 
     if (this.fileSort) {
@@ -152,7 +151,7 @@ export class FileListComponent implements OnInit {
   }
 
   private refresh() {
-    this.userRootComponent.refreshCacheAndReload();
+    this.filesCacheService.refreshCacheAndReload();
   }
 
   private populateFilesAndCategories() {

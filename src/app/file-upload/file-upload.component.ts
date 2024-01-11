@@ -3,7 +3,7 @@ import {FileUploadService, toFileOrBlob} from "./file-upload.service";
 import {FileUploadProgress} from "./file-upload-element/file-upload-element.component";
 import {HttpEventType} from "@angular/common/http";
 import {GooglePickerService} from "./google-picker.service";
-import {UserRootComponent} from "../user-root/user-root.component";
+import {FilesCacheService} from "../files-cache/files-cache.service";
 
 @Component({
   selector: 'app-file-upload',
@@ -14,7 +14,7 @@ export class FileUploadComponent {
 
   files: FileUploadProgress[] = []
 
-  constructor(private fileUploadService: FileUploadService, private googlePickerService: GooglePickerService, private userRootComponent: UserRootComponent) {
+  constructor(private fileUploadService: FileUploadService, private googlePickerService: GooglePickerService, private filesCacheService: FilesCacheService) {
   }
 
   onFileSelected(event: Event) {
@@ -30,7 +30,7 @@ export class FileUploadComponent {
 
   async showGooglePicker() {
     this.googlePickerService.show()
-      .then(() => this.userRootComponent.refreshCacheAndReload());
+      .then(() => this.filesCacheService.refreshCacheAndReload());
   }
 
   private upload(file: File) {
@@ -39,7 +39,7 @@ export class FileUploadComponent {
     this.fileUploadService.upload(toFileOrBlob(file))
       .subscribe(e => {
         if (e.type === HttpEventType.Response) {
-          this.userRootComponent.refreshCacheAndReload();
+          this.filesCacheService.refreshCacheAndReload();
         } else {
           fileProgress.loaded = e.loaded;
           if (e.total != null) {

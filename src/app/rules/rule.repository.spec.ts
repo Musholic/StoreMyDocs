@@ -1,21 +1,26 @@
 import {Rule, RuleRepository} from "./rule.repository";
-import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
+import {MockBuilder, MockInstance, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {db} from "../database/db";
 import {mock, when} from "strong-mock";
-import {mockDatabaseBackupAndRestoreService} from "../database/database-backup-and-restore.service.spec";
 import {dbCleanUp, mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
 import {HttpEventType, HttpResponse} from "@angular/common/http";
+import {DatabaseBackupAndRestoreService} from "../database/database-backup-and-restore.service";
 
 
 function mockBackupCall() {
-  let databaseBackupAndRestoreService = mockDatabaseBackupAndRestoreService();
+  let databaseBackupAndRestoreService = ngMocks.get(DatabaseBackupAndRestoreService);
   return when(() => databaseBackupAndRestoreService.backup())
     .thenReturn(mustBeConsumedAsyncObservable({type: HttpEventType.Response} as HttpResponse<any>));
 }
 
 describe('RuleRepository', () => {
-  beforeEach(() => MockBuilder(RuleRepository, AppModule));
+  beforeEach(() => MockBuilder(RuleRepository, AppModule)
+    .provide({
+      provide: DatabaseBackupAndRestoreService,
+      useValue: mock<DatabaseBackupAndRestoreService>()
+    })
+  );
 
   // Db cleanup after each test
   afterEach(async () => {
@@ -33,8 +38,8 @@ describe('RuleRepository', () => {
   describe('findAll', () => {
     it('should list two rules', async () => {
       // Arrange
-      mockBackupCall().times(2);
       const ruleRepository = MockRender(RuleRepository).point.componentInstance;
+      mockBackupCall().times(2);
       let rule1: Rule = {
         name: 'TestRule',
         category: ['Test1', 'ChildTest1'],
@@ -70,9 +75,8 @@ describe('RuleRepository', () => {
   describe('create', () => {
     it('should persist a new rule', async () => {
       // Arrange
-      mockBackupCall();
-
       const ruleRepository = MockRender(RuleRepository).point.componentInstance;
+      mockBackupCall();
       let rule: Rule = {
         name: 'TestRule',
         category: ['Test1', 'ChildTest1'],
@@ -97,10 +101,10 @@ describe('RuleRepository', () => {
   describe('delete', () => {
     it('should delete one rule', async () => {
       // Arrange
-      // 2 calls to 'backup' expected, from create, and then from delete
-      mockBackupCall().times(2);
 
       const ruleRepository = MockRender(RuleRepository).point.componentInstance;
+      // 2 calls to 'backup' expected, from create, and then from delete
+      mockBackupCall().times(2);
       let rule: Rule = {
         name: 'TestRule',
         category: ['Test1', 'ChildTest1'],

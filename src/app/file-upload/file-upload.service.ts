@@ -9,7 +9,7 @@ import {
   HttpResponse
 } from "@angular/common/http";
 import {catchError, filter, mergeMap, Observable, of} from "rxjs";
-import {BaseFolderService} from "./base-folder.service";
+import {FilesCacheService} from "../files-cache/files-cache.service";
 
 export interface FileOrBlob {
   name: string;
@@ -23,32 +23,28 @@ export function toFileOrBlob(file: File) {
   }
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class FileUploadService {
 
   private readonly DRIVE_API_UPLOAD_FILES_BASE_URL = 'https://www.googleapis.com/upload/drive/v3/files';
 
-  constructor(private http: HttpClient, private baseFolderService: BaseFolderService) {
+  constructor(private http: HttpClient, private filesCacheService: FilesCacheService) {
   }
 
   upload(file: FileOrBlob, fileId?: string): Observable<HttpProgressEvent | HttpResponse<any>> {
     const contentType = file.blob.type || 'application/octet-stream';
 
-    return this.baseFolderService.findOrCreateBaseFolder()
-      .pipe(mergeMap(baseFolderId => {
-          return this.createUploadFileRequest(file, contentType, baseFolderId, fileId);
-        }),
-        mergeMap(metadataRes => {
-          const locationUrl = metadataRes.headers.get('Location') ?? '';
-          return this.uploadFileToUrl(locationUrl, contentType, file);
-        }),
-        filter((e: HttpEvent<any>): e is HttpProgressEvent | HttpResponse<any> => e.type === HttpEventType.UploadProgress || e.type === HttpEventType.Response),
-        catchError(err => {
-          console.log(err)
-          return of();
-        }))
+    let baseFolderId = this.filesCacheService.getBaseFolder();
+    return this.createUploadFileRequest(file, contentType, baseFolderId, fileId).pipe(
+      mergeMap(metadataRes => {
+        const locationUrl = metadataRes.headers.get('Location') ?? '';
+        return this.uploadFileToUrl(locationUrl, contentType, file);
+      }),
+      filter((e: HttpEvent<any>): e is HttpProgressEvent | HttpResponse<any> => e.type === HttpEventType.UploadProgress || e.type === HttpEventType.Response),
+      catchError(err => {
+        console.log(err)
+        return of();
+      }))
   }
 
   private uploadFileToUrl(url: string, contentType: string, file: FileOrBlob) {

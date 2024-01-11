@@ -35,8 +35,8 @@ import {MatChipGridHarness} from "@angular/material/chips/testing";
 import {mockFileService} from "./file.service.spec";
 import {MatSortModule} from "@angular/material/sort";
 import {BreakpointObserver} from "@angular/cdk/layout";
-import {UserRootComponent} from "../user-root/user-root.component";
-import {mockFilesCache} from "../user-root/user-root.component.spec";
+import {FilesCacheService} from "../files-cache/files-cache.service";
+import {mockFilesCacheService} from "../files-cache/files-cache.service.spec";
 
 function mockRenderAndWaitForChanges() {
   let fixture = MockRender(FileListComponent, null, {reset: true});
@@ -50,7 +50,7 @@ function mockRenderAndWaitForChanges() {
 
 describe('FileListComponent', () => {
   beforeEach(() => MockBuilder(FileListComponent, AppModule)
-    .mock(UserRootComponent)
+    .mock(FilesCacheService)
     .keep(MatTableModule)
     .keep(NgxFilesizeModule)
     .keep(MatMenuModule)
@@ -61,17 +61,16 @@ describe('FileListComponent', () => {
     .keep(MatChipsModule)
     .keep(MatSortModule)
     .keep(BreakpointObserver)
-    // For some reason, we need to explicitly add a provider for UserRootComponent
     .provide({
-      provide: UserRootComponent,
-      useValue: mock<UserRootComponent>()
+      provide: FilesCacheService,
+      useValue: mock<FilesCacheService>()
     })
     .replace(BrowserAnimationsModule, NoopAnimationsModule)
   );
 
   it('should create (no element)', fakeAsync(() => {
     // Arrange
-    mockFilesCache([]);
+    mockFilesCacheService([], true);
 
     // Act
     const component = mockRenderAndWaitForChanges().point.componentInstance;
@@ -136,8 +135,8 @@ describe('FileListComponent', () => {
     when(() => fileService.trash(el1.id))
       .thenReturn(mustBeConsumedAsyncObservable(undefined));
     // A refresh is expected
-    let userRootComponent = ngMocks.get(UserRootComponent);
-    when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
+    let filesCacheService = ngMocks.get(FilesCacheService);
+    when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
     let fixture = mockRenderAndWaitForChanges();
     let page = new Page(fixture);
@@ -160,8 +159,8 @@ describe('FileListComponent', () => {
     when(() => fileService.trash(cat1Folder.id))
       .thenReturn(mustBeConsumedAsyncObservable(undefined));
 
-    let userRootComponent = ngMocks.findInstance(UserRootComponent);
-    when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
+    let filesCacheService = ngMocks.findInstance(FilesCacheService);
+    when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
     // Act
     mockRenderAndWaitForChanges();
@@ -208,8 +207,8 @@ describe('FileListComponent', () => {
       let fileService = mockListItemsAndCategories([el2]);
 
       // A refresh is expected
-      let userRootComponent = ngMocks.get(UserRootComponent);
-      when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
+      let filesCacheService = ngMocks.get(FilesCacheService);
+      when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
       when(() => fileService.findOrCreateFolder('Cat848', 'baseFolderId')).thenReturn(of('cat848Id'));
       when(() => fileService.setCategory(el2.id, 'cat848Id')).thenReturn(of(undefined));
@@ -270,8 +269,8 @@ describe('FileListComponent', () => {
       let fileElement = mockFileElement('name1');
       let fileService = mockListItemsAndCategories([fileElement]);
       // A refresh is expected
-      let userRootComponent = ngMocks.get(UserRootComponent);
-      when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
+      let filesCacheService = ngMocks.get(FilesCacheService);
+      when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
       when(() => fileService.setCategory(fileElement.id, "baseFolderId")).thenReturn(of(undefined));
 
@@ -294,8 +293,8 @@ describe('FileListComponent', () => {
       let fileElement = mockFileElement('name1');
       let fileService = mockListItemsAndCategories([fileElement]);
       // A refresh is expected
-      let userRootComponent = ngMocks.get(UserRootComponent);
-      when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
+      let filesCacheService = ngMocks.get(FilesCacheService);
+      when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
       when(() => fileService.setCategory(fileElement.id, "baseFolderId")).thenReturn(of(undefined));
 
@@ -318,8 +317,8 @@ describe('FileListComponent', () => {
       let fileElement = mockFileElement('name1');
       let fileService = mockListItemsAndCategories([fileElement]);
       // A refresh is expected
-      let userRootComponent = ngMocks.get(UserRootComponent);
-      when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
+      let filesCacheService = ngMocks.get(FilesCacheService);
+      when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
       when(() => fileService.setCategory(fileElement.id, "parentCat45Id")).thenReturn(of(undefined));
 
@@ -343,8 +342,8 @@ describe('FileListComponent', () => {
       let el2 = mockFileElement('name2');
       let fileService = mockListItemsAndCategories([el2]);
       // A refresh is expected
-      let userRootComponent = ngMocks.get(UserRootComponent);
-      when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
+      let filesCacheService = ngMocks.get(FilesCacheService);
+      when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
       when(() => fileService.setCategory(el2.id, 'cat7Id')).thenReturn(of(undefined));
 
@@ -415,8 +414,8 @@ describe('FileListComponent', () => {
       let fileService = mockListItemsAndCategories([cat1Folder, cat2Folder, cat1bFolder, fileElement1], true);
 
       // A refresh is expected
-      let userRootComponent = ngMocks.get(UserRootComponent);
-      when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
+      let filesCacheService = ngMocks.get(FilesCacheService);
+      when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
       when(() => fileService.setCategory(fileElement1.id, cat1Folder.id)).thenReturn(of(undefined));
 
@@ -744,7 +743,7 @@ function mockListItemsAndCategories(itemsAndCategories: (FileElement | FolderEle
       itemsAndCategories.push(mockFileElement(cat.name + "_file", cat.id))
     })
   }
-  mockFilesCache(itemsAndCategories);
+  mockFilesCacheService(itemsAndCategories, true);
   return mockFileService();
 }
 

@@ -1,16 +1,21 @@
 import {FileUploadService, toFileOrBlob} from './file-upload.service';
-import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
+import {MockBuilder, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {HttpClientModule, HttpEventType, HttpProgressEvent, HttpSentEvent} from "@angular/common/http";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
-import {mockBaseFolderService} from "./base-folder.service.spec";
 import {mock} from "strong-mock";
+import {FilesCacheService} from "../files-cache/files-cache.service";
+import {mockFilesCacheServiceGetBaseFolder} from "../files-cache/files-cache.service.spec";
 
 describe('FileUploadService', () => {
   beforeEach(() =>
     MockBuilder(FileUploadService, AppModule)
       .replace(HttpClientModule, HttpClientTestingModule)
+      .provide({
+        provide: FilesCacheService,
+        useValue: mock<FilesCacheService>()
+      })
   );
 
   it('should be created', () => {
@@ -25,8 +30,8 @@ describe('FileUploadService', () => {
     it('should upload', fakeAsync(() => {
       // Arrange
       let f = new File(["test_content"], "test.txt", {type: 'application/txt'});
-      mockBaseFolderService()
       const service = MockRender(FileUploadService).point.componentInstance;
+      mockFilesCacheServiceGetBaseFolder()
       let httpTestingController = TestBed.inject(HttpTestingController);
 
       // Act
@@ -66,8 +71,8 @@ describe('FileUploadService', () => {
     it('should filter out unwanted http events when uploading', fakeAsync(() => {
       // Arrange
       let f = new File(["test_content"], "test.txt", {type: 'application/txt'});
-      mockBaseFolderService();
       const service = MockRender(FileUploadService).point.componentInstance;
+      mockFilesCacheServiceGetBaseFolder()
       let httpTestingController = TestBed.inject(HttpTestingController);
 
       // Act
@@ -111,8 +116,8 @@ describe('FileUploadService', () => {
     it('should overwrite an existing file when provided with an id', fakeAsync(() => {
       // Arrange
       let f = new File(["test_content"], "test.txt", {type: 'application/txt'});
-      mockBaseFolderService()
       const service = MockRender(FileUploadService).point.componentInstance;
+      mockFilesCacheServiceGetBaseFolder()
       let httpTestingController = TestBed.inject(HttpTestingController);
 
       // Act
@@ -146,12 +151,3 @@ describe('FileUploadService', () => {
   })
 });
 
-export function mockFileUploadService() {
-  let fileUploadServiceMock = mock<FileUploadService>();
-  MockInstance(FileUploadService, () => {
-    return {
-      upload: fileUploadServiceMock.upload
-    }
-  });
-  return fileUploadServiceMock;
-}

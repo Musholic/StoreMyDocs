@@ -4,18 +4,18 @@ import {filter, from, map, mergeMap, Observable, of, zip} from "rxjs";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {BaseFolderService} from "../file-upload/base-folder.service";
 import {Rule, RuleRepository} from "./rule.repository";
-import {UserRootComponent} from "../user-root/user-root.component";
+import {FilesCacheService} from "../files-cache/files-cache.service";
 
 @Injectable()
 export class RuleService {
   constructor(private fileService: FileService, private baseFolderService: BaseFolderService,
-              private ruleRepository: RuleRepository, private userRootComponent: UserRootComponent) {
+              private ruleRepository: RuleRepository, private filesCacheService: FilesCacheService) {
   }
 
   runAll(): Observable<void> {
     return from(this.ruleRepository.findAll())
       .pipe(mergeMap(rules => {
-        let fileOrFolders = this.userRootComponent.getFilesCache().all;
+        let fileOrFolders = this.filesCacheService.getAll()
         // Get all files
         let files = fileOrFolders.filter(file => isFileElement(file))
           .map(value => value as FileElement);

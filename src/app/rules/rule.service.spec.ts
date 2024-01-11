@@ -1,4 +1,3 @@
-import {UserRootComponent} from "../user-root/user-root.component";
 import {RuleService} from './rule.service';
 import {MockBuilder, MockInstance, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
@@ -10,8 +9,9 @@ import {mockFileElement} from "../file-list/file-list.component.spec";
 import {mockBaseFolderService} from "../file-upload/base-folder.service.spec";
 import {FileService} from "../file-list/file.service";
 import {getSampleRules} from "./rules.component.spec";
-import {mockFilesCache} from "../user-root/user-root.component.spec";
 import {RuleRepository} from "./rule.repository";
+import {FilesCacheService} from "../files-cache/files-cache.service";
+import {mockFilesCacheService} from "../files-cache/files-cache.service.spec";
 
 
 function mockBillCategoryFindOrCreate(fileService: FileService) {
@@ -25,13 +25,12 @@ function mockBillCategoryFindOrCreate(fileService: FileService) {
 describe('RuleService', () => {
   beforeEach(() => MockBuilder(RuleService, AppModule)
     .provide({
+      provide: FilesCacheService,
+      useValue: mock<FilesCacheService>()
+    })
+    .provide({
       provide: RuleRepository,
       useValue: mock<RuleRepository>()
-    })
-    // For some reason, we need to explicitly add a provider for UserRootComponent
-    .provide({
-      provide: UserRootComponent,
-      useValue: mock<UserRootComponent>()
     })
   );
 
@@ -63,7 +62,7 @@ describe('RuleService', () => {
         .thenResolve(getSampleRules());
 
 
-      mockFilesCache([file]);
+      mockFilesCacheService([file]);
 
       // Act
       service.runAll().subscribe();
@@ -89,7 +88,7 @@ describe('RuleService', () => {
         .thenResolve(getSampleRules());
 
       let file = mockFileElement('electricity_bill.pdf', 'billsCatId489');
-      mockFilesCache([file]);
+      mockFilesCacheService([file]);
 
       // Act
       service.runAll().subscribe();

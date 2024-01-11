@@ -3,7 +3,7 @@ import {FileUploadComponent} from './file-upload.component';
 import {MatIconModule} from "@angular/material/icon";
 import {MockBuilder, MockInstance, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
-import {toFileOrBlob} from "./file-upload.service";
+import {FileUploadService, toFileOrBlob} from "./file-upload.service";
 import {mock, when} from "strong-mock";
 import {Observable, of} from "rxjs";
 import {FileUploadElementComponent} from "./file-upload-element/file-upload-element.component";
@@ -12,19 +12,21 @@ import {TestbedHarnessEnvironment} from "@angular/cdk/testing/testbed";
 import {HarnessLoader} from "@angular/cdk/testing";
 import {MatButtonHarness} from "@angular/material/button/testing";
 import {GooglePickerService} from "./google-picker.service";
-import {mockFileUploadService} from "./file-upload.service.spec";
 import {BreakpointObserver} from "@angular/cdk/layout";
-import {UserRootComponent} from "../user-root/user-root.component";
+import {FilesCacheService} from "../files-cache/files-cache.service";
 
 describe('FileUploadComponent', () => {
   beforeEach(() => {
     return MockBuilder(FileUploadComponent, AppModule)
       .keep(MatIconModule)
       .keep(BreakpointObserver)
-      // For some reason, we need to explicitly add a provider for UserRootComponent
       .provide({
-        provide: UserRootComponent,
-        useValue: mock<UserRootComponent>()
+        provide: FilesCacheService,
+        useValue: mock<FilesCacheService>()
+      })
+      .provide({
+        provide: FileUploadService,
+        useValue: mock<FileUploadService>()
       })
   });
 
@@ -40,12 +42,12 @@ describe('FileUploadComponent', () => {
   describe('When selecting a file to upload', () => {
     it('Should shows the file as being uploaded', () => {
       // Arrange
-      let fileUploadService = mockFileUploadService();
-      let file = new File([''], 'TestFile.txt');
-      when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(new Observable())
-
       const fixture = MockRender(FileUploadComponent);
       const page = new Page(fixture);
+
+      let fileUploadService = ngMocks.get(FileUploadService);
+      let file = new File([''], 'TestFile.txt');
+      when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(new Observable())
 
       // Act
       page.uploadFile(file);
@@ -57,16 +59,16 @@ describe('FileUploadComponent', () => {
 
     it('Should update upload progress', () => {
       // Arrange
-      let fileUploadService = mockFileUploadService();
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
+
+      let fileUploadService = ngMocks.get(FileUploadService);
       let file = new File([''], 'TestFile.txt');
       when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(of({
         loaded: 50,
         total: 100,
         type: HttpEventType.UploadProgress
       }))
-
-      const fixture = MockRender(FileUploadComponent);
-      const page = new Page(fixture);
 
       // Act
       page.uploadFile(file);
@@ -81,18 +83,18 @@ describe('FileUploadComponent', () => {
 
     it('Should trigger upload finish event', () => {
       // Arrange
-      let fileUploadService = mockFileUploadService();
+      const fixture = MockRender(FileUploadComponent);
+      const page = new Page(fixture);
+
+      let fileUploadService = ngMocks.get(FileUploadService);
       let file = new File([''], 'TestFile.txt');
       when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(of({
         type: HttpEventType.Response
       } as HttpResponse<any>))
 
-      const fixture = MockRender(FileUploadComponent);
-      const page = new Page(fixture);
-
-      let userRootComponent = ngMocks.get(UserRootComponent);
+      let filesCacheService = ngMocks.get(FilesCacheService);
       // A page refresh is expected
-      when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
+      when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
       // Act
       page.uploadFile(file);
@@ -112,9 +114,9 @@ describe('FileUploadComponent', () => {
       const fixture = MockRender(FileUploadComponent);
       const page = new Page(fixture);
 
-      let userRootComponent = ngMocks.get(UserRootComponent);
+      let filesCacheService = ngMocks.findInstance(FilesCacheService);
       // A page refresh is expected
-      when(() => userRootComponent.refreshCacheAndReload()).thenReturn();
+      when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
       // Act
       await page.openGooglePicker();

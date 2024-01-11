@@ -7,7 +7,7 @@ import {FileService} from "../file-list/file.service";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {HttpClient, HttpEvent, HttpEventType, HttpProgressEvent, HttpResponse} from "@angular/common/http";
 import {BackgroundTaskService} from "../background-task/background-task.service";
-import {UserRootComponent} from "../user-root/user-root.component";
+import {FilesCacheService} from "../files-cache/files-cache.service";
 
 @Injectable()
 export class DatabaseBackupAndRestoreService {
@@ -15,7 +15,7 @@ export class DatabaseBackupAndRestoreService {
   private static readonly DB_NAME = 'db.backup';
 
   constructor(private fileUploadService: FileUploadService, private http: HttpClient,
-              private backgroundTaskService: BackgroundTaskService, private userRootComponent: UserRootComponent) {
+              private backgroundTaskService: BackgroundTaskService, private filesCacheService: FilesCacheService) {
     // this.restore().subscribe();
     // TODO: check refresh after restore
   }
@@ -62,7 +62,7 @@ export class DatabaseBackupAndRestoreService {
   }
 
   private findExistingDbFile() {
-    let files = this.userRootComponent.getFilesCache().all;
+    let files = this.filesCacheService.getAll();
     // TODO: ensure there cannot be any conflicts with user files
     return files.filter(f => isFileElement(f))
       .map(f => f as FileElement)

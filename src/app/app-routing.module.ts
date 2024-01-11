@@ -4,8 +4,9 @@ import {HomepageComponent} from "./homepage/homepage.component";
 import {authGuard} from "./auth/auth.guard";
 import {LoginComponent} from "./login/login.component";
 import {RulesComponent} from "./rules/rules.component";
-import {filesResolver} from "./resolver/files.resolver";
+import {filesResolver} from "./files-cache/files.resolver";
 import {UserRootComponent} from "./user-root/user-root.component";
+import {FilesCacheService} from "./files-cache/files-cache.service";
 
 const routes: Routes = [
   {
@@ -14,7 +15,7 @@ const routes: Routes = [
     canActivate: [authGuard],
     resolve: {files: filesResolver},
     runGuardsAndResolvers: () => {
-      return UserRootComponent.shouldReloadRouteData();
+      return FilesCacheService.shouldReloadRouteData();
     },
     children: [
       {
