@@ -11,6 +11,7 @@ import {FilesCacheService} from "../files-cache/files-cache.service";
   providers: [RuleRepository, DatabaseBackupAndRestoreService, FileUploadService, FilesCacheService]
 })
 export class UserRootComponent {
-  constructor() {
+  constructor(databaseBackupAndRestoreService: DatabaseBackupAndRestoreService) {
+    databaseBackupAndRestoreService.restore().subscribe();
   }
 }

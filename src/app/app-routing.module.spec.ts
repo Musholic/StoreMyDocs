@@ -8,7 +8,9 @@ import {GoogleDriveAuthService} from "./file-upload/google-drive-auth.service";
 import {mock, when} from "strong-mock";
 import {HomepageComponent} from "./homepage/homepage.component";
 import {UserRootComponent} from "./user-root/user-root.component";
-import {navigateTo} from "../testing/common-testing-function.spec";
+import {mustBeConsumedAsyncObservable, navigateTo} from "../testing/common-testing-function.spec";
+import {DatabaseBackupAndRestoreService} from "./database/database-backup-and-restore.service";
+import {mockDatabaseBackupAndRestoreService} from "./database/database-backup-and-restore.service.spec";
 
 describe('AppRoutingModule', () => {
   beforeEach(() => {
@@ -19,10 +21,19 @@ describe('AppRoutingModule', () => {
       ],
       AppModule,
     )
+      .mock(DatabaseBackupAndRestoreService)
       // We use the real UserRootComponent as we need it to load its children route
       .keep(UserRootComponent)
       .exclude(NG_MOCKS_RESOLVERS)
   });
+
+  beforeEach(() => {
+    // Since we use the real UserRootComponent, we need to mock the automatic restore
+    let databaseBackupAndRestoreService = mockDatabaseBackupAndRestoreService();
+    when(() => databaseBackupAndRestoreService.restore())
+      .thenReturn(mustBeConsumedAsyncObservable(undefined));
+  })
+
   describe('when logged in', () => {
     beforeEach(() => {
       // Mock that the user is logged in

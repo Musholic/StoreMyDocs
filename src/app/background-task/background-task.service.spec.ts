@@ -40,19 +40,19 @@ describe('BackgroundTaskService', () => {
       // Arrange
       let fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
-      let progress = backgroundTaskService.showProgress("Test", "Doing first test", 3);
+      let progress = backgroundTaskService.showProgress("Test", "Doing first test", 4);
 
       // Act
       progress.next({
         index: 2,
-        value: 25,
+        value: 50,
         description: "Doing more test"
       })
 
       // Assert
       fixture.detectChanges();
       let result = await Page.getProgressMessage();
-      expect(result).toEqual("2/3 25% Test: Doing more test...");
+      expect(result).toEqual("2/4 37% Test: Doing more test...");
     })
 
     it('Should show as completed and should dismiss after 3s', fakeAsync(async () => {

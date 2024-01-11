@@ -1,5 +1,5 @@
 import {DatabaseBackupAndRestoreService} from './database-backup-and-restore.service';
-import {MockBuilder, MockRender, ngMocks} from "ng-mocks";
+import {MockBuilder, MockInstance, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {It, mock, when} from "strong-mock";
 import {dbCleanUp, mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
@@ -42,7 +42,7 @@ describe('DatabaseBackupAndRestoreService', () => {
   });
 
   describe('restore', () => {
-    it('The database should be automatically restored', fakeAsync(async () => {
+    it('The database should be restored', fakeAsync(async () => {
       // Arrange
       let backgroundTaskService = mockBackgroundTaskService();
 
@@ -50,6 +50,7 @@ describe('DatabaseBackupAndRestoreService', () => {
       when(() => backgroundTaskService.showProgress("Automatic restore", "Downloading last backup", 2))
         .thenReturn(progress);
       when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();
+      when(() => progress.next({index: 2, value: 0, description: "Importing last backup"})).thenReturn();
       when(() => progress.next({index: 2, value: 100})).thenReturn();
       let fixture = MockRender(DatabaseBackupAndRestoreService);
       let databaseBackupAndRestoreService = fixture.point.componentInstance;
@@ -110,7 +111,7 @@ describe('DatabaseBackupAndRestoreService', () => {
       let progress = mock<BehaviorSubject<Progress>>();
       when(() => backgroundTaskService.showProgress("Backup", "Creating backup", 2))
         .thenReturn(progress);
-      when(() => progress.next({index: 2, description: "Uploading backup", value: 50})).thenReturn();
+      when(() => progress.next({index: 2, description: "Uploading backup", value: 0})).thenReturn();
       when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();
 
       const databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
@@ -137,7 +138,7 @@ describe('DatabaseBackupAndRestoreService', () => {
       let progress = mock<BehaviorSubject<Progress>>();
       when(() => backgroundTaskService.showProgress("Backup", "Creating backup", 2))
         .thenReturn(progress);
-      when(() => progress.next({index: 2, description: "Uploading backup", value: 50})).thenReturn();
+      when(() => progress.next({index: 2, description: "Uploading backup", value: 0})).thenReturn();
       when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();
 
       const databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
@@ -160,3 +161,13 @@ describe('DatabaseBackupAndRestoreService', () => {
     });
   })
 });
+
+export function mockDatabaseBackupAndRestoreService() {
+  let databaseBackupAndRestoreService = mock<DatabaseBackupAndRestoreService>();
+  MockInstance(DatabaseBackupAndRestoreService, () => {
+    return {
+      restore: databaseBackupAndRestoreService.restore
+    };
+  })
+  return databaseBackupAndRestoreService;
+}

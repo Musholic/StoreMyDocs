@@ -1,5 +1,5 @@
 <span matSnackBarLabel>
-  <span>{{ progress.index }}/{{ data.stepAmount }} {{ progress.value }}% {{ data.globalDescription }}</span>
-  <span *ngIf="progress.value < 100">: {{ progress.description }}...</span>
-  <span *ngIf="progress.value === 100"> finished!</span>
+  <span>{{ progress.index }}/{{ data.stepAmount }} {{ getTotalProgress() }}% {{ data.globalDescription }}</span>
+  <span *ngIf="!isFinished()">: {{ progress.description }}...</span>
+  <span *ngIf="isFinished()"> finished!</span>
 </span>

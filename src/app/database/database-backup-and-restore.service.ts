@@ -16,7 +16,6 @@ export class DatabaseBackupAndRestoreService {
 
   constructor(private fileUploadService: FileUploadService, private http: HttpClient,
               private backgroundTaskService: BackgroundTaskService, private filesCacheService: FilesCacheService) {
-    // this.restore().subscribe();
     // TODO: check refresh after restore
   }
 
@@ -24,7 +23,7 @@ export class DatabaseBackupAndRestoreService {
     let progress = this.backgroundTaskService.showProgress('Backup',
       "Creating backup", 2);
     return from(exportDB(db))
-      .pipe(tap(() => progress.next({index: 2, value: 50, description: "Uploading backup"})),
+      .pipe(tap(() => progress.next({index: 2, value: 0, description: "Uploading backup"})),
         mergeMap(blob => {
           let dbFile = this.findExistingDbFile();
           return this.fileUploadService.upload({name: DatabaseBackupAndRestoreService.DB_NAME, blob}, dbFile?.id);
@@ -51,6 +50,7 @@ export class DatabaseBackupAndRestoreService {
               return of();
             }
           }),
+          tap(() => progress.next({index: 2, value: 0, description: 'Importing last backup'})),
           mergeMap(dbDownloadResponse => {
             return from(importDB(dbDownloadResponse));
           }),

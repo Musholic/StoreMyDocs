@@ -87,9 +87,17 @@ class SnackBarProgressIndicatorComponent {
 
     data.progress.subscribe(progress => {
       this.progress = progress;
-      if (progress.value === 100) {
+      if (this.isFinished()) {
         snackBarRef._dismissAfter(3000);
       }
     })
+  }
+
+  getTotalProgress() {
+    return Math.floor(((this.progress.index - 1) * 100 + this.progress.value) / this.data.stepAmount);
+  }
+
+  isFinished() {
+    return this.progress.index === this.data.stepAmount && this.progress.value === 100;
   }
 }
