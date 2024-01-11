@@ -2,14 +2,12 @@ import {Injectable} from '@angular/core';
 import {FileService} from "../file-list/file.service";
 import {filter, from, map, mergeMap, Observable, of, zip} from "rxjs";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
-import {BaseFolderService} from "../file-upload/base-folder.service";
 import {Rule, RuleRepository} from "./rule.repository";
 import {FilesCacheService} from "../files-cache/files-cache.service";
 
 @Injectable()
 export class RuleService {
-  constructor(private fileService: FileService, private baseFolderService: BaseFolderService,
-              private ruleRepository: RuleRepository, private filesCacheService: FilesCacheService) {
+  constructor(private fileService: FileService, private ruleRepository: RuleRepository, private filesCacheService: FilesCacheService) {
   }
 
   runAll(): Observable<void> {
@@ -67,22 +65,20 @@ export class RuleService {
    * Find or create the categories for each file and associate them
    */
   private setAllFileCategory(fileToCategoryMap: Map<FileElement, string[]>) {
-    return this.baseFolderService.findOrCreateBaseFolder()
-      .pipe(mergeMap(baseFolderId => {
-        let categoryRequests: Observable<void>[] = [];
-        fileToCategoryMap
-          .forEach((category, file) => {
-            categoryRequests.push(this.findOrCreateCategories(category, baseFolderId)
-              // There is no need to set the category if the current category is correct
-              .pipe(filter(categoryId => file.parentId !== categoryId),
-                mergeMap(categoryId => {
-                  return this.fileService.setCategory(file.id, categoryId);
-                })));
-          });
-        let observable = zip(categoryRequests);
-        return observable
-          .pipe(map(() => {
-          }));
+    let baseFolderId = this.filesCacheService.getBaseFolder();
+    let categoryRequests: Observable<void>[] = [];
+    fileToCategoryMap
+      .forEach((category, file) => {
+        categoryRequests.push(this.findOrCreateCategories(category, baseFolderId)
+          // There is no need to set the category if the current category is correct
+          .pipe(filter(categoryId => file.parentId !== categoryId),
+            mergeMap(categoryId => {
+              return this.fileService.setCategory(file.id, categoryId);
+            })));
+      });
+    let observable = zip(categoryRequests);
+    return observable
+      .pipe(map(() => {
       }));
   }
 

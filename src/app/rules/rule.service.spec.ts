@@ -6,7 +6,6 @@ import {mock, when} from "strong-mock";
 import {mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
 import {fakeAsync, tick} from "@angular/core/testing";
 import {mockFileElement} from "../file-list/file-list.component.spec";
-import {mockBaseFolderService} from "../file-upload/base-folder.service.spec";
 import {FileService} from "../file-list/file.service";
 import {getSampleRules} from "./rules.component.spec";
 import {RuleRepository} from "./rule.repository";
@@ -45,8 +44,6 @@ describe('RuleService', () => {
   describe('runAll', () => {
     it('should automatically categorize a file', fakeAsync(() => {
       // Arrange
-      mockBaseFolderService();
-
       let fileService = mockFileService();
       mockBillCategoryFindOrCreate(fileService);
 
@@ -61,8 +58,7 @@ describe('RuleService', () => {
       when(() => ruleRepository.findAll())
         .thenResolve(getSampleRules());
 
-
-      mockFilesCacheService([file]);
+      mockFilesCacheService([file], true);
 
       // Act
       service.runAll().subscribe();
@@ -74,8 +70,6 @@ describe('RuleService', () => {
 
     it('should not categorize a file which is already in the correct category', fakeAsync(() => {
       // Arrange
-      mockBaseFolderService();
-
       let fileService = mockFileService();
 
       mockBillCategoryFindOrCreate(fileService);
@@ -88,7 +82,7 @@ describe('RuleService', () => {
         .thenResolve(getSampleRules());
 
       let file = mockFileElement('electricity_bill.pdf', 'billsCatId489');
-      mockFilesCacheService([file]);
+      mockFilesCacheService([file], true);
 
       // Act
       service.runAll().subscribe();

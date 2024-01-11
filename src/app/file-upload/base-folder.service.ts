@@ -10,7 +10,6 @@ export class BaseFolderService {
   constructor(private fileService: FileService) {
   }
 
-  // TODO: persist the base folder id for quick access
   findOrCreateBaseFolder() {
     return this.fileService.findOrCreateFolder(BaseFolderService.BASE_FOLDER_NAME);
   }
