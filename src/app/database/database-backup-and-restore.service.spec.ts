@@ -5,7 +5,6 @@ import {mockFileUploadService} from "../file-upload/file-upload.service.spec";
 import {It, mock, when} from "strong-mock";
 import {dbCleanUp, mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
 import {HttpClientModule, HttpEventType, HttpResponse} from "@angular/common/http";
-import {mockFileService} from "../file-list/file.service.spec";
 import {mockFileElement} from "../file-list/file-list.component.spec";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
@@ -13,10 +12,16 @@ import {db} from "./db";
 import {BehaviorSubject, lastValueFrom} from "rxjs";
 import {mockBackgroundTaskService} from "../background-task/background-task.service.spec";
 import {Progress} from "../background-task/background-task.service";
+import {UserRootComponent} from "../user-root/user-root.component";
+import {mockFilesCache} from "../user-root/user-root.component.spec";
 
 describe('DatabaseBackupAndRestoreService', () => {
   beforeEach(() => MockBuilder(DatabaseBackupAndRestoreService, AppModule)
     .replace(HttpClientModule, HttpClientTestingModule)
+    .provide({
+      provide: UserRootComponent,
+      useValue: mock<UserRootComponent>()
+    })
   );
 
   // Db cleanup after each test
@@ -35,20 +40,18 @@ describe('DatabaseBackupAndRestoreService', () => {
   describe('restore', () => {
     it('The database should be automatically restored', fakeAsync(async () => {
       // Arrange
-      let fileService = mockFileService();
-      let dbBackupFile = mockFileElement('db.backup');
-      when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([dbBackupFile]));
-
       let backgroundTaskService = mockBackgroundTaskService();
+
       let progress = mock<BehaviorSubject<Progress>>();
       when(() => backgroundTaskService.showProgress("Automatic restore", "Downloading last backup", 2))
         .thenReturn(progress);
       when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();
-      when(() => progress.next({index: 2, description: "Importing backup", value: 50})).thenReturn();
       when(() => progress.next({index: 2, value: 100})).thenReturn();
-
       let fixture = MockRender(DatabaseBackupAndRestoreService);
       let databaseBackupAndRestoreService = fixture.point.componentInstance;
+
+      let dbBackupFile = mockFileElement('db.backup');
+      mockFilesCache([dbBackupFile]);
 
       // Act
       let restorePromise = lastValueFrom(databaseBackupAndRestoreService.restore());
@@ -99,9 +102,6 @@ describe('DatabaseBackupAndRestoreService', () => {
   describe('backup', () => {
     it('Should upload a new backup file when there is no backup yet', async () => {
       // Arrange
-      let fileService = mockFileService();
-      when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([]));
-
       let fileUploadService = mockFileUploadService();
       when(() => fileUploadService.upload(It.isObject({blob: It.isAny(), name: "db.backup"})))
         .thenReturn(mustBeConsumedAsyncObservable({
@@ -117,6 +117,8 @@ describe('DatabaseBackupAndRestoreService', () => {
 
       const databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
 
+      mockFilesCache([]);
+
       // Act
       let backupPromise = lastValueFrom(databaseBackupAndRestoreService.backup());
 
@@ -127,10 +129,7 @@ describe('DatabaseBackupAndRestoreService', () => {
 
     it('should overwrite the existing backup file when there is already an existing backup', async () => {
       // Arrange
-      let fileService = mockFileService();
       let dbBackupFile = mockFileElement('db.backup');
-      when(() => fileService.findAll()).thenReturn(mustBeConsumedAsyncObservable([dbBackupFile]));
-
       let fileUploadService = mockFileUploadService();
       when(() => fileUploadService.upload(It.isObject({blob: It.isAny(), name: "db.backup"}), dbBackupFile.id))
         .thenReturn(mustBeConsumedAsyncObservable({
@@ -145,6 +144,8 @@ describe('DatabaseBackupAndRestoreService', () => {
       when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();
 
       const databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
+
+      mockFilesCache([dbBackupFile]);
 
       // Act
       let backupPromise = lastValueFrom(databaseBackupAndRestoreService.backup());

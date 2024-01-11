@@ -9,9 +9,7 @@ export interface Rule {
   script: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class RuleRepository {
 
   constructor(private databaseBackupAndRestoreService: DatabaseBackupAndRestoreService) {

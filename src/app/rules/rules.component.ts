@@ -48,17 +48,17 @@ export class RulesComponent {
     event.chipInput.clear();
   }
 
-  private refresh() {
-    this.ruleService.findAll()
-      .then(rules => {
-        this.rules = rules;
-      })
-  }
-
   delete(rule: Rule) {
     this.ruleService.delete(rule)
       .then(() => {
         this.refresh();
+      })
+  }
+
+  private refresh() {
+    this.ruleService.findAll()
+      .then(rules => {
+        this.rules = rules;
       })
   }
 }

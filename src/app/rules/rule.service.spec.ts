@@ -1,6 +1,6 @@
 import {UserRootComponent} from "../user-root/user-root.component";
 import {RuleService} from './rule.service';
-import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
+import {MockBuilder, MockInstance, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {mockFileService} from "../file-list/file.service.spec";
 import {mock, when} from "strong-mock";
@@ -9,9 +9,9 @@ import {fakeAsync, tick} from "@angular/core/testing";
 import {mockFileElement} from "../file-list/file-list.component.spec";
 import {mockBaseFolderService} from "../file-upload/base-folder.service.spec";
 import {FileService} from "../file-list/file.service";
-import {mockRuleRepository} from "./rule.repository.spec";
 import {getSampleRules} from "./rules.component.spec";
 import {mockFilesCache} from "../user-root/user-root.component.spec";
+import {RuleRepository} from "./rule.repository";
 
 
 function mockBillCategoryFindOrCreate(fileService: FileService) {
@@ -24,6 +24,10 @@ function mockBillCategoryFindOrCreate(fileService: FileService) {
 
 describe('RuleService', () => {
   beforeEach(() => MockBuilder(RuleService, AppModule)
+    .provide({
+      provide: RuleRepository,
+      useValue: mock<RuleRepository>()
+    })
     // For some reason, we need to explicitly add a provider for UserRootComponent
     .provide({
       provide: UserRootComponent,
@@ -47,16 +51,17 @@ describe('RuleService', () => {
       let fileService = mockFileService();
       mockBillCategoryFindOrCreate(fileService);
 
-      let ruleRepository = mockRuleRepository();
-      when(() => ruleRepository.findAll())
-        .thenResolve(getSampleRules());
-
       // The file should be set to the bills category
       let file = mockFileElement('electricity_bill.pdf');
       when(() => fileService.setCategory(file.id, 'billsCatId489'))
         .thenReturn(mustBeConsumedAsyncObservable(undefined));
 
       const service = MockRender(RuleService).point.componentInstance;
+
+      let ruleRepository = ngMocks.findInstance(RuleRepository);
+      when(() => ruleRepository.findAll())
+        .thenResolve(getSampleRules());
+
 
       mockFilesCache([file]);
 
@@ -76,11 +81,12 @@ describe('RuleService', () => {
 
       mockBillCategoryFindOrCreate(fileService);
 
-      let ruleRepository = mockRuleRepository();
-      when(() => ruleRepository.findAll())
-        .thenResolve(getSampleRules());
 
       const service = MockRender(RuleService).point.componentInstance;
+
+      let ruleRepository = ngMocks.findInstance(RuleRepository);
+      when(() => ruleRepository.findAll())
+        .thenResolve(getSampleRules());
 
       let file = mockFileElement('electricity_bill.pdf', 'billsCatId489');
       mockFilesCache([file]);
