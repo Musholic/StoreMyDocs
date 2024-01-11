@@ -5,7 +5,8 @@ import {HttpClientModule} from "@angular/common/http";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {FileElement, FileOrFolderElement, FolderElement} from "./file-list.component";
-import {mock} from "strong-mock";
+import {mock, when} from "strong-mock";
+import {of} from "rxjs";
 
 describe('FileService', () => {
   beforeEach(() => MockBuilder(FileService, AppModule)
@@ -302,6 +303,27 @@ describe('FileService', () => {
       }))
     });
   })
+
+  describe('findOrCreateBaseFolder', function () {
+    it('should find or create base folder', fakeAsync(() => {
+      // Arrange
+      let fileServiceMock = mockFileService();
+
+      when(() => fileServiceMock.findOrCreateFolder('storemydocs.ovh'))
+        .thenReturn(of('folderId51'))
+      const service = MockRender(FileService).point.componentInstance;
+      service.findOrCreateFolder = fileServiceMock.findOrCreateFolder;
+
+      // Act
+      let result = '';
+      service.findOrCreateBaseFolder()
+        .subscribe(value => result = value);
+
+      // Assert
+      tick();
+      expect(result).toBe('folderId51');
+    }))
+  });
 });
 
 export function mockFileService() {
@@ -311,7 +333,8 @@ export function mockFileService() {
       findOrCreateFolder: fileServiceMock.findOrCreateFolder,
       findAll: fileServiceMock.findAll,
       trash: fileServiceMock.trash,
-      setCategory: fileServiceMock.setCategory
+      setCategory: fileServiceMock.setCategory,
+      findOrCreateBaseFolder: fileServiceMock.findOrCreateBaseFolder
     }
   });
   return fileServiceMock;

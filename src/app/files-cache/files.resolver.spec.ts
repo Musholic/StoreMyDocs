@@ -5,7 +5,6 @@ import {MockBuilder, NG_MOCKS_GUARDS, NG_MOCKS_RESOLVERS, ngMocks, Type} from "n
 import {RouterTestingModule} from "@angular/router/testing";
 import {AppModule} from "../app.module";
 import {fakeAsync} from "@angular/core/testing";
-import {mockBaseFolderService} from "../file-upload/base-folder.service.spec";
 import {when} from "strong-mock";
 import {mockFileService} from "../file-list/file.service.spec";
 import {of} from "rxjs";
@@ -38,10 +37,10 @@ describe('filesResolver', () => {
 
   it('should fetch baseFolder and files', fakeAsync(() => {
     // Arrange
-    mockBaseFolderService();
     let fileService = mockFileService();
     let fileElement = mockFileElement('file1');
     when(() => fileService.findAll()).thenReturn(of([fileElement]))
+    when(() => fileService.findOrCreateBaseFolder()).thenReturn(of('baseFolderId'));
 
     // Act
     navigateTo('/');

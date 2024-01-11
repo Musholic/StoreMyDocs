@@ -2,15 +2,19 @@ import {Injectable} from '@angular/core';
 import {FileElement, FileOrFolderElement, FolderElement} from "./file-list.component";
 import {map, mergeMap, Observable, of} from "rxjs";
 import {HttpClient} from "@angular/common/http";
-import {BaseFolderService} from "../file-upload/base-folder.service";
 
 @Injectable({
   providedIn: 'root'
 })
 export class FileService {
+  static readonly BASE_FOLDER_NAME = 'storemydocs.ovh';
   static readonly DRIVE_API_FILES_BASE_URL = 'https://www.googleapis.com/drive/v3/files';
 
   constructor(private http: HttpClient) {
+  }
+
+  findOrCreateBaseFolder() {
+    return this.findOrCreateFolder(FileService.BASE_FOLDER_NAME);
   }
 
   /**
@@ -22,7 +26,7 @@ export class FileService {
       if (res.files) {
         return res.files
           // Filter out the base folder
-          .filter(f => f.name !== BaseFolderService.BASE_FOLDER_NAME)
+          .filter(f => f.name !== FileService.BASE_FOLDER_NAME)
           .map(f => {
             if (f.mimeType == 'application/vnd.google-apps.folder') {
               return {
