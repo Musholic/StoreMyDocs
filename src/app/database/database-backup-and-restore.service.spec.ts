@@ -14,6 +14,44 @@ import {Progress} from "../background-task/background-task.service";
 import {mockFilesCacheService} from "../files-cache/files-cache.service.spec";
 import {FileUploadService} from "../file-upload/file-upload.service";
 import {FilesCacheService} from "../files-cache/files-cache.service";
+import {FileElement} from "../file-list/file-list.component";
+import {Rule} from "../rules/rule.repository";
+
+function setupMockForRestore() {
+  let backgroundTaskService = mockBackgroundTaskService();
+
+  let progress = mock<BehaviorSubject<Progress>>();
+  when(() => backgroundTaskService.showProgress("Automatic restore", "Downloading last backup", 2))
+    .thenReturn(progress);
+  when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();
+  when(() => progress.next({index: 2, value: 0, description: "Importing last backup"})).thenReturn();
+  when(() => progress.next({index: 2, value: 100})).thenReturn();
+}
+
+function mockLastBackupDownload(dbBackupFile: FileElement) {
+  let httpTestingController = TestBed.inject(HttpTestingController);
+  let request = httpTestingController.expectOne('https://www.googleapis.com/drive/v3/files/' + dbBackupFile.id + '?alt=media');
+  request.flush(new Blob([JSON.stringify({
+    "formatName": "dexie",
+    "formatVersion": 1,
+    "data": {
+      "databaseName": "StoreMyDocsDB",
+      "databaseVersion": 3,
+      "tables": [{"name": "rules", "schema": "++id", "rowCount": 1}],
+      "data": [{
+        "tableName": "rules",
+        "inbound": true,
+        "rows": [{
+          "name": "TestRule",
+          "category": ["Test1", "ChildTest1"],
+          "script": "return true",
+          "id": 1,
+          "$types": {"category": "arrayNonindexKeys"}
+        }]
+      }]
+    }
+  })]));
+}
 
 describe('DatabaseBackupAndRestoreService', () => {
   beforeEach(() => MockBuilder(DatabaseBackupAndRestoreService, AppModule)
@@ -44,16 +82,8 @@ describe('DatabaseBackupAndRestoreService', () => {
   describe('restore', () => {
     it('The database should be restored', fakeAsync(async () => {
       // Arrange
-      let backgroundTaskService = mockBackgroundTaskService();
-
-      let progress = mock<BehaviorSubject<Progress>>();
-      when(() => backgroundTaskService.showProgress("Automatic restore", "Downloading last backup", 2))
-        .thenReturn(progress);
-      when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();
-      when(() => progress.next({index: 2, value: 0, description: "Importing last backup"})).thenReturn();
-      when(() => progress.next({index: 2, value: 100})).thenReturn();
-      let fixture = MockRender(DatabaseBackupAndRestoreService);
-      let databaseBackupAndRestoreService = fixture.point.componentInstance;
+      setupMockForRestore();
+      let databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
 
       let dbBackupFile = mockFileElement('db.backup');
       mockFilesCacheService([dbBackupFile]);
@@ -63,29 +93,45 @@ describe('DatabaseBackupAndRestoreService', () => {
 
       // Assert
       tick();
-      let httpTestingController = TestBed.inject(HttpTestingController);
+      mockLastBackupDownload(dbBackupFile);
+      // We need to explicitly wait for the restore to finish
+      await restorePromise;
 
-      let request = httpTestingController.expectOne('https://www.googleapis.com/drive/v3/files/' + dbBackupFile.id + '?alt=media');
-      request.flush(new Blob([JSON.stringify({
-        "formatName": "dexie",
-        "formatVersion": 1,
-        "data": {
-          "databaseName": "StoreMyDocsDB",
-          "databaseVersion": 3,
-          "tables": [{"name": "rules", "schema": "++id", "rowCount": 1}],
-          "data": [{
-            "tableName": "rules",
-            "inbound": true,
-            "rows": [{
-              "name": "TestRule",
-              "category": ["Test1", "ChildTest1"],
-              "script": "return true",
-              "id": 1,
-              "$types": {"category": "arrayNonindexKeys"}
-            }]
-          }]
-        }
-      })]));
+      let rules = await db.rules.toArray();
+      expect(rules)
+        .toEqual([{
+          id: 1,
+          name: 'TestRule',
+          category: ['Test1', 'ChildTest1'],
+          script: 'return true'
+        }]);
+
+      let httpTestingController = TestBed.inject(HttpTestingController);
+      httpTestingController.verify();
+    }));
+
+    it('The database should be restored even if there is existing conflicting on old data', fakeAsync(async () => {
+      // Arrange
+      setupMockForRestore();
+
+      let databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
+
+      let dbBackupFile = mockFileElement('db.backup');
+      mockFilesCacheService([dbBackupFile]);
+      let oldRule: Rule = {
+        id: 1,
+        name: 'OldTestRule',
+        category: ['Test1', 'ChildTest1'],
+        script: 'return old'
+      };
+      db.rules.add(oldRule)
+
+      // Act
+      let restorePromise = lastValueFrom(databaseBackupAndRestoreService.restore());
+
+      // Assert
+      tick();
+      mockLastBackupDownload(dbBackupFile);
 
       // We need to explicitly wait for the restore to finish
       await restorePromise;
@@ -99,6 +145,7 @@ describe('DatabaseBackupAndRestoreService', () => {
           script: 'return true'
         }]);
 
+      let httpTestingController = TestBed.inject(HttpTestingController);
       httpTestingController.verify();
     }));
   })

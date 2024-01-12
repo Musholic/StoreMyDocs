@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {exportDB, importDB} from "dexie-export-import";
+import {exportDB} from "dexie-export-import";
 import {db} from "./db";
 import {FileUploadService} from "../file-upload/file-upload.service";
 import {filter, from, last, map, mergeMap, Observable, of, tap} from "rxjs";
@@ -52,7 +52,7 @@ export class DatabaseBackupAndRestoreService {
           }),
           tap(() => progress.next({index: 2, value: 0, description: 'Importing last backup'})),
           mergeMap(dbDownloadResponse => {
-            return from(importDB(dbDownloadResponse));
+            return from(db.import(dbDownloadResponse, {clearTablesBeforeImport: true}));
           }),
           tap(() => progress.next({index: 2, value: 100})),
           map(() => void 0));
