@@ -7,7 +7,6 @@ export class FilesCacheService {
   static reloadRouteData = false;
 
   constructor(private activatedRoute: ActivatedRoute, private router: Router) {
-    console.log(activatedRoute)
   }
 
   static shouldReloadRouteData() {

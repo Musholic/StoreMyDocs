@@ -2,7 +2,11 @@ import {DatabaseBackupAndRestoreService} from './database-backup-and-restore.ser
 import {MockBuilder, MockInstance, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {It, mock, when} from "strong-mock";
-import {dbCleanUp, mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
+import {
+  dbCleanUp,
+  getLocalStorageMock,
+  mustBeConsumedAsyncObservable
+} from "../../testing/common-testing-function.spec";
 import {HttpClientModule, HttpEventType, HttpResponse} from "@angular/common/http";
 import {mockFileElement} from "../file-list/file-list.component.spec";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
@@ -82,6 +86,10 @@ describe('DatabaseBackupAndRestoreService', () => {
   describe('restore', () => {
     it('The database should be restored', fakeAsync(async () => {
       // Arrange
+      let localStorageMock = getLocalStorageMock();
+      when(() => localStorageMock.getItem('last_db_backup_time')).thenReturn(null);
+      when(() => localStorageMock.setItem('last_db_backup_time', It.isAny())).thenReturn();
+
       setupMockForRestore();
       let databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
 
@@ -110,8 +118,11 @@ describe('DatabaseBackupAndRestoreService', () => {
       httpTestingController.verify();
     }));
 
-    it('The database should be restored even if there is existing conflicting on old data', fakeAsync(async () => {
+    it('The database should be restored even if there is existing and conflicting old data', fakeAsync(async () => {
       // Arrange
+      let localStorageMock = getLocalStorageMock();
+      when(() => localStorageMock.getItem('last_db_backup_time')).thenReturn(null);
+      when(() => localStorageMock.setItem('last_db_backup_time', It.isAny())).thenReturn();
       setupMockForRestore();
 
       let databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
@@ -148,12 +159,41 @@ describe('DatabaseBackupAndRestoreService', () => {
       let httpTestingController = TestBed.inject(HttpTestingController);
       httpTestingController.verify();
     }));
+
+    it('The database should not be restored if it is already up-to-date', fakeAsync(async () => {
+      // Arrange
+      mockBackgroundTaskService();
+      let databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
+
+      let localStorageMock = getLocalStorageMock();
+      // Last db backup is one second later as it will generally be the case
+      when(() => localStorageMock.getItem('last_db_backup_time'))
+        .thenReturn('2024-01-09T17:53:08.560Z');
+      let dbBackupFile = mockFileElement('db.backup');
+      dbBackupFile.modifiedTime = new Date('2024-01-09T17:53:07.560Z')
+      mockFilesCacheService([dbBackupFile]);
+
+      // Act
+      let restorePromise = lastValueFrom(databaseBackupAndRestoreService.restore(), {defaultValue: undefined});
+
+      // Assert
+      tick();
+
+      // We need to explicitly wait for the restore to finish
+      await restorePromise;
+
+      let httpTestingController = TestBed.inject(HttpTestingController);
+      httpTestingController.verify();
+    }));
   })
 
 
   describe('backup', () => {
     it('Should upload a new backup file when there is no backup yet', async () => {
       // Arrange
+      let localStorageMock = getLocalStorageMock();
+      when(() => localStorageMock.setItem('last_db_backup_time', It.isAny())).thenReturn();
+
       let backgroundTaskService = mockBackgroundTaskService();
       let progress = mock<BehaviorSubject<Progress>>();
       when(() => backgroundTaskService.showProgress("Backup", "Creating backup", 2))
@@ -181,6 +221,9 @@ describe('DatabaseBackupAndRestoreService', () => {
 
     it('should overwrite the existing backup file when there is already an existing backup', async () => {
       // Arrange
+      let localStorageMock = getLocalStorageMock();
+      when(() => localStorageMock.setItem('last_db_backup_time', It.isAny())).thenReturn();
+
       let backgroundTaskService = mockBackgroundTaskService();
       let progress = mock<BehaviorSubject<Progress>>();
       when(() => backgroundTaskService.showProgress("Backup", "Creating backup", 2))

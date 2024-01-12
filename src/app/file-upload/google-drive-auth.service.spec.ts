@@ -2,17 +2,11 @@ import {GoogleDriveAuthService} from './google-drive-auth.service';
 import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {It, mock, when} from 'strong-mock';
+import {Router} from "@angular/router";
+import {getLocalStorageMock,} from "../../testing/common-testing-function.spec";
 import TokenClient = google.accounts.oauth2.TokenClient;
 import TokenResponse = google.accounts.oauth2.TokenResponse;
-import {Router} from "@angular/router";
 
-function getLocalStorageMock() {
-  let localStorageMock = mock<Storage>();
-  Object.defineProperty(window, 'localStorage', {
-    value: localStorageMock
-  });
-  return localStorageMock;
-}
 
 function setupValidAuthenticationAndApiToken() {
   let localStorageMock = getLocalStorageMock();

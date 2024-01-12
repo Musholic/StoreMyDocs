@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {exportDB} from "dexie-export-import";
 import {db} from "./db";
 import {FileUploadService} from "../file-upload/file-upload.service";
-import {filter, from, last, map, mergeMap, Observable, of, tap} from "rxjs";
+import {filter, finalize, from, last, map, mergeMap, Observable, of, tap} from "rxjs";
 import {FileService} from "../file-list/file.service";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {HttpClient, HttpEvent, HttpEventType, HttpProgressEvent, HttpResponse} from "@angular/common/http";
@@ -12,6 +12,8 @@ import {FilesCacheService} from "../files-cache/files-cache.service";
 @Injectable()
 export class DatabaseBackupAndRestoreService {
 
+
+  private static readonly LAST_DB_BACKUP_TIME = 'last_db_backup_time';
   private static readonly DB_NAME = 'db.backup';
 
   constructor(private fileUploadService: FileUploadService, private http: HttpClient,
@@ -28,14 +30,17 @@ export class DatabaseBackupAndRestoreService {
           let dbFile = this.findExistingDbFile();
           return this.fileUploadService.upload({name: DatabaseBackupAndRestoreService.DB_NAME, blob}, dbFile?.id);
         }),
-        tap(httpEvent => this.backgroundTaskService.updateProgress(progress, httpEvent)));
+        tap(httpEvent => this.backgroundTaskService.updateProgress(progress, httpEvent)),
+        finalize(() => this.updateLastDbBackupTime()));
   }
 
   restore(): Observable<void> {
-    let progress = this.backgroundTaskService.showProgress('Automatic restore',
-      "Downloading last backup", 2);
     let dbFile = this.findExistingDbFile();
-    if (dbFile) {
+    let lastDbBackupTime = this.getLastDbBackupTime();
+    let modifiedTime = dbFile?.modifiedTime ?? Date.now();
+    if (dbFile && modifiedTime > lastDbBackupTime) {
+      let progress = this.backgroundTaskService.showProgress('Automatic restore',
+        "Downloading last backup", 2);
       let dlLink = FileService.DRIVE_API_FILES_BASE_URL + '/' + dbFile.id + '?alt=media';
       return this.http.get(dlLink, {responseType: "blob", observe: "events", reportProgress: true})
         .pipe(
@@ -55,10 +60,25 @@ export class DatabaseBackupAndRestoreService {
             return from(db.import(dbDownloadResponse, {clearTablesBeforeImport: true}));
           }),
           tap(() => progress.next({index: 2, value: 100})),
-          map(() => void 0));
+          map(() => void 0),
+          finalize(() => this.updateLastDbBackupTime()));
     } else {
       return of();
     }
+  }
+
+  private getLastDbBackupTime() {
+    let lastDbBackupTime = localStorage.getItem(DatabaseBackupAndRestoreService.LAST_DB_BACKUP_TIME);
+    if (lastDbBackupTime) {
+      return new Date(lastDbBackupTime);
+    } else {
+      // No backup so we return an arbitrary old value
+      return new Date(0);
+    }
+  }
+
+  private updateLastDbBackupTime() {
+    localStorage.setItem(DatabaseBackupAndRestoreService.LAST_DB_BACKUP_TIME, new Date().toISOString());
   }
 
   private findExistingDbFile() {

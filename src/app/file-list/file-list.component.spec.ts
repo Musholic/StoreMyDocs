@@ -711,12 +711,13 @@ describe('FileListComponent', () => {
   })
 });
 
-export function mockFileElement(name: string, parentId: string = 'baseFolderId', size: number = 0, date: string = ''): FileElement {
+export function mockFileElement(name: string, parentId: string = 'baseFolderId', size: number = 0, date: string = '0'): FileElement {
   let id = name + '-' + uuid();
   return {
     id: id,
     size: size,
-    date: date,
+    createdTime: new Date(date),
+    modifiedTime: new Date(date),
     name: name,
     iconLink: "link",
     dlLink: "dlLink",
@@ -728,7 +729,8 @@ function mockFolderElement(name: string, parentId: string = 'baseFolderId'): Fol
   let id = name + '-' + uuid();
   return {
     id: id,
-    date: '2023-08-02T14:54:55.556Z',
+    createdTime: new Date('2023-08-02T14:54:55.556Z'),
+    modifiedTime: new Date('2023-08-02T14:54:55.556Z'),
     name: name,
     iconLink: "link",
     parentId: parentId

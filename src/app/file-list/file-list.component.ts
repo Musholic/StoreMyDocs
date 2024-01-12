@@ -24,7 +24,8 @@ import {FilesCacheService} from "../files-cache/files-cache.service";
 export interface FileOrFolderElement {
   id: string;
   name: string;
-  date: string;
+  createdTime: Date;
+  modifiedTime: Date;
   iconLink: string;
   parentId: string;
 }

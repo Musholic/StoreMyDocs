@@ -21,7 +21,7 @@ export class FileService {
    * Return all files managed by the app, except for the base folder
    */
   findAll(): Observable<FileOrFolderElement[]> {
-    const url = FileService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,size,iconLink,webContentLink,mimeType,parents)");
+    const url = FileService.DRIVE_API_FILES_BASE_URL + '?q=' + encodeURI("trashed = false") + "&fields=" + encodeURI("files(id,name,createdTime,modifiedTime,size,iconLink,webContentLink,mimeType,parents)");
     return this.http.get<gapi.client.drive.FileList>(url).pipe(map(res => {
       if (res.files) {
         return res.files
@@ -32,7 +32,8 @@ export class FileService {
               return {
                 id: f.id,
                 name: f.name,
-                date: f.createdTime,
+                createdTime: new Date(f.createdTime ?? '0'),
+                modifiedTime: new Date(f.modifiedTime ?? '0'),
                 iconLink: f.iconLink,
                 parentId: f.parents?.[0]
               } as FolderElement;
@@ -40,7 +41,8 @@ export class FileService {
               return {
                 id: f.id,
                 name: f.name,
-                date: f.createdTime,
+                createdTime: new Date(f.createdTime ?? '0'),
+                modifiedTime: new Date(f.modifiedTime ?? '0'),
                 size: Number(f.size),
                 iconLink: f.iconLink,
                 parentId: f.parents?.[0],

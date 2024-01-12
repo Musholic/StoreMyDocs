@@ -33,7 +33,7 @@ describe('FileService', () => {
 
     const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?" +
       "q=trashed%20=%20false" +
-      "&fields=files(id,name,createdTime,size,iconLink,webContentLink,mimeType,parents)");
+      "&fields=files(id,name,createdTime,modifiedTime,size,iconLink,webContentLink,mimeType,parents)");
     expect(req.request.method).toEqual('GET');
     req.flush({
       "files": [
@@ -42,6 +42,7 @@ describe('FileService', () => {
           "size": "1811088",
           "name": "data.bin",
           "createdTime": "2023-08-14T14:48:44.928Z",
+          "modifiedTime": "2023-08-14T14:49:44.928Z",
           iconLink: "link",
           webContentLink: "dlLink",
           parents: ['pId12']
@@ -51,6 +52,7 @@ describe('FileService', () => {
           "size": "215142",
           "name": "document.pdf",
           "createdTime": "2023-08-14T12:28:46.935Z",
+          "modifiedTime": "2023-08-14T12:28:46.935Z",
           iconLink: "link",
           webContentLink: "dlLink",
           parents: ['pId12']
@@ -60,6 +62,7 @@ describe('FileService', () => {
           "size": "23207",
           "name": "test-render.png",
           "createdTime": "2023-08-03T14:54:55.556Z",
+          "modifiedTime": "2023-08-03T14:54:55.556Z",
           iconLink: "link",
           webContentLink: "dlLink",
           parents: ['pId3']
@@ -70,6 +73,7 @@ describe('FileService', () => {
           "name": "image",
           iconLink: "link",
           "createdTime": "2023-10-13T08:47:32.059Z",
+          "modifiedTime": "2023-10-13T08:47:32.059Z",
           parents: ['pId4']
         },
         {
@@ -88,7 +92,8 @@ describe('FileService', () => {
         id: "id1",
         "size": 1811088,
         "name": "data.bin",
-        "date": "2023-08-14T14:48:44.928Z",
+        "createdTime": new Date("2023-08-14T14:48:44.928Z"),
+        "modifiedTime": new Date("2023-08-14T14:49:44.928Z"),
         iconLink: "link",
         dlLink: "dlLink",
         parentId: "pId12"
@@ -97,7 +102,8 @@ describe('FileService', () => {
         id: "id2",
         "size": 215142,
         "name": "document.pdf",
-        "date": "2023-08-14T12:28:46.935Z",
+        "createdTime": new Date("2023-08-14T12:28:46.935Z"),
+        "modifiedTime": new Date("2023-08-14T12:28:46.935Z"),
         iconLink: "link",
         dlLink: "dlLink",
         parentId: "pId12"
@@ -106,7 +112,8 @@ describe('FileService', () => {
         id: "id3",
         "size": 23207,
         "name": "test-render.png",
-        "date": "2023-08-03T14:54:55.556Z",
+        "createdTime": new Date("2023-08-03T14:54:55.556Z"),
+        "modifiedTime": new Date("2023-08-03T14:54:55.556Z"),
         iconLink: "link",
         dlLink: "dlLink",
         parentId: "pId3"
@@ -114,7 +121,8 @@ describe('FileService', () => {
       {
         "id": "id4",
         "name": "image",
-        "date": "2023-10-13T08:47:32.059Z",
+        "createdTime": new Date("2023-10-13T08:47:32.059Z"),
+        "modifiedTime": new Date("2023-10-13T08:47:32.059Z"),
         iconLink: "link",
         parentId: "pId4"
       } as FolderElement

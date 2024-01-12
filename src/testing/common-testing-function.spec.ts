@@ -4,6 +4,7 @@ import {MockRender, ngMocks} from "ng-mocks";
 import {Router, RouterOutlet} from "@angular/router";
 import {Location} from "@angular/common";
 import {tick} from "@angular/core/testing";
+import {mock} from "strong-mock";
 
 export async function findAsyncSequential<T>(
   array: T[],
@@ -89,4 +90,12 @@ export function navigateTo(path: string) {
 
   // Checking that we are on the right page.
   expect(location.path()).toEqual(path);
+}
+
+export function getLocalStorageMock() {
+  let localStorageMock = mock<Storage>();
+  Object.defineProperty(window, 'localStorage', {
+    value: localStorageMock
+  });
+  return localStorageMock;
 }
