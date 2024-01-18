@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {FileService} from "../file-list/file.service";
-import {BehaviorSubject, filter, from, map, mergeMap, Observable, of, zip} from "rxjs";
+import {BehaviorSubject, filter, from, map, mergeMap, Observable, of, tap, zip} from "rxjs";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {Rule, RuleRepository} from "./rule.repository";
 import {FilesCacheService} from "../files-cache/files-cache.service";
@@ -16,21 +16,21 @@ export class RuleService {
   runAll(): Observable<void> {
     return from(this.ruleRepository.findAll())
       .pipe(mergeMap(rules => {
-          let fileOrFolders = this.filesCacheService.getAll()
-          // Get all files
-          let files = fileOrFolders.filter(file => isFileElement(file))
-            .map(value => value as FileElement);
+        let fileOrFolders = this.filesCacheService.getAll()
+        // Get all files
+        let files = fileOrFolders.filter(file => isFileElement(file))
+          .map(value => value as FileElement);
 
-          // Run the script for each file to get the associated category
-          // The amount of step is one download per file and one per rule running for each file
-          let stepAmount = files.length * (1 + rules.length);
-          let progress = this.backgroundTaskService.showProgress('Running all rules', '', stepAmount);
-          return this.computeFileToCategoryMap(files, rules, progress)
-        }),
-        mergeMap(fileToCategoryMap => {
-          // Set the computed category for each files
-          return this.setAllFileCategory(fileToCategoryMap);
-        }));
+        // Run the script for each file to get the associated category
+        // The amount of step is one download per file and one per rule running for each file
+        let stepAmount = files.length * (1 + rules.length);
+        let progress = this.backgroundTaskService.showProgress('Running all rules', '', stepAmount);
+        return this.computeFileToCategoryMap(files, rules, progress)
+          .pipe(mergeMap(fileToCategoryMap => {
+            // Set the computed category for each files
+            return this.setAllFileCategory(fileToCategoryMap);
+          }), tap({complete: () => progress.next({value: 100, index: stepAmount})}))
+      }));
   }
 
   create(rule: Rule) {
@@ -53,30 +53,41 @@ export class RuleService {
 
     return zip(files.map((file, fileIndex) => {
       let progressIndex = 1 + fileIndex * (rules.length + 1);
-      progress.next({
-        index: progressIndex,
-        value: 0,
-        description: "Downloading file content of '" + file.name + "'"
-      });
-      return this.fileService.downloadFile(file, progress)
-        .pipe(mergeMap(blobContent => fromPromise(blobContent.text())),
-          map(fileContent => {
-            // Find the first rule which matches
-            let rule = rules.find((rule, ruleIndex) => {
-              progress.next({
-                index: progressIndex + 1 + ruleIndex,
-                value: 0,
-                description: "Running rule '" + rule.name + "' for '" + file.name + "'"
-              });
-              return this.run(rule, file, fileContent);
-            })
-            if (rule) {
-              fileToCategoryMap.set(file, rule.category);
-            }
-          }))
+
+      let fileContentObservable: Observable<string>;
+      if (this.isFileContentReadable(file)) {
+        progress.next({
+          index: progressIndex,
+          value: 0,
+          description: "Downloading file content of '" + file.name + "'"
+        });
+        fileContentObservable = this.fileService.downloadFile(file, progress)
+          .pipe(mergeMap(blobContent => fromPromise(blobContent.text())));
+      } else {
+        fileContentObservable = of("");
+      }
+      return fileContentObservable.pipe(
+        map(fileContent => {
+          // Find the first rule which matches
+          let rule = rules.find((rule, ruleIndex) => {
+            progress.next({
+              index: progressIndex + 1 + ruleIndex,
+              value: 0,
+              description: "Running rule '" + rule.name + "' for '" + file.name + "'"
+            });
+            return this.run(rule, file, fileContent);
+          })
+          if (rule) {
+            fileToCategoryMap.set(file, rule.category);
+          }
+        }))
     }))
       .pipe(map(() => fileToCategoryMap));
 
+  }
+
+  private isFileContentReadable(file: FileElement) {
+    return file.mimeType.startsWith('text/');
   }
 
   private run(rule: Rule, file: FileElement, fileContent: string) {

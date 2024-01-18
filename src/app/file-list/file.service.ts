@@ -30,25 +30,28 @@ export class FileService {
           .filter(f => f.name !== FileService.BASE_FOLDER_NAME)
           .map(f => {
             if (f.mimeType == 'application/vnd.google-apps.folder') {
-              return {
-                id: f.id,
-                name: f.name,
+              let folderElement: FolderElement = {
+                id: f.id ?? '',
+                name: f.name ?? '',
                 createdTime: new Date(f.createdTime ?? '0'),
                 modifiedTime: new Date(f.modifiedTime ?? '0'),
-                iconLink: f.iconLink,
-                parentId: f.parents?.[0]
-              } as FolderElement;
+                iconLink: f.iconLink ?? '',
+                parentId: f.parents?.[0] ?? ''
+              };
+              return folderElement;
             } else {
-              return {
-                id: f.id,
-                name: f.name,
+              let fileElement: FileElement = {
+                id: f.id ?? '',
+                name: f.name ?? '',
                 createdTime: new Date(f.createdTime ?? '0'),
                 modifiedTime: new Date(f.modifiedTime ?? '0'),
                 size: Number(f.size),
-                iconLink: f.iconLink,
-                parentId: f.parents?.[0],
-                dlLink: f.webContentLink
-              } as FileElement;
+                iconLink: f.iconLink ?? '',
+                parentId: f.parents?.[0] ?? '',
+                dlLink: f.webContentLink ?? '',
+                mimeType: f.mimeType ?? ''
+              };
+              return fileElement;
             }
           })
       } else {

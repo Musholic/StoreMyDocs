@@ -31,6 +31,7 @@ export interface FileOrFolderElement {
 }
 
 export interface FileElement extends FileOrFolderElement {
+  mimeType: string;
   size: number;
   dlLink: string;
 }

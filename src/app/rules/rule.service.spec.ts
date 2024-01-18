@@ -40,6 +40,10 @@ function mockElectricityBillSample(file: FileElement, fileService: FileService) 
     value: 0,
     description: "Running rule 'Electric bill' for 'electricity_bill.pdf'"
   })).thenReturn()
+  when(() => progress.next({
+    index: 3,
+    value: 100,
+  })).thenReturn();
 
   mockBillCategoryFindOrCreate(fileService);
 
@@ -145,6 +149,10 @@ describe('RuleService', () => {
         value: 0,
         description: "Running rule 'Dumb rule' for 'something_else.txt'"
       })).thenReturn()
+      when(() => progress.next({
+        index: 6,
+        value: 100,
+      })).thenReturn();
 
       let fileService = mockFileService();
       mockBillCategoryFindOrCreate(fileService);
@@ -185,8 +193,48 @@ describe('RuleService', () => {
       await runAllPromise;
       // No failure in mock setup
     }));
-    // TODO: handle errors on file download?
-    // TODO: distinguish between binary file and readable files
+
+    it('should not download content of a binary file', fakeAsync(async () => {
+      // Arrange
+      let backgroundTaskService = mockBackgroundTaskService();
+      let progress = mock<BehaviorSubject<Progress>>();
+      when(() => backgroundTaskService.showProgress("Running all rules", "", 2))
+        .thenReturn(progress);
+      when(() => progress.next({
+        index: 2,
+        value: 0,
+        description: "Running rule 'Dumb file content rule' for 'test.png'"
+      })).thenReturn();
+      when(() => progress.next({
+        index: 2,
+        value: 100,
+      })).thenReturn();
+
+      mockFileService();
+
+      let file = mockFileElement('test.png');
+      file.mimeType = 'image/png'
+
+      const service = MockRender(RuleService).point.componentInstance;
+
+      let ruleRepository = ngMocks.findInstance(RuleRepository);
+      when(() => ruleRepository.findAll())
+        .thenResolve([{
+          name: 'Dumb file content rule',
+          category: ['Dumb'],
+          script: 'return fileContent.includes("test")'
+        }]);
+
+      mockFilesCacheService([file], true);
+
+      // Act
+      let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+
+      // Assert
+      tick();
+      await runAllPromise;
+      // No failure in mock setup
+    }));
     // TODO: only keep one file content in memory and only if the file type content can be fetched
   })
 });

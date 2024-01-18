@@ -714,6 +714,7 @@ describe('FileListComponent', () => {
 export function mockFileElement(name: string, parentId: string = 'baseFolderId', size: number = 0, date: string = '0'): FileElement {
   let id = name + '-' + uuid();
   return {
+    mimeType: "text/plain",
     id: id,
     size: size,
     createdTime: new Date(date),
