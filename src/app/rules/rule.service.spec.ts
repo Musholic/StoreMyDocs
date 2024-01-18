@@ -117,24 +117,45 @@ describe('RuleService', () => {
       // Arrange
       let backgroundTaskService = mockBackgroundTaskService();
       let progress = mock<BehaviorSubject<Progress>>();
-      when(() => backgroundTaskService.showProgress("Running all rules", "", 2))
+      when(() => backgroundTaskService.showProgress("Running all rules", "", 6))
         .thenReturn(progress);
       when(() => progress.next({
         index: 1,
         value: 0,
         description: "Downloading file content of 'electricity_bill.txt'"
-      })).thenReturn()
+      })).thenReturn();
       when(() => progress.next({
         index: 2,
         value: 0,
         description: "Running rule 'Electric bill' for 'electricity_bill.txt'"
+      })).thenReturn();
+
+      when(() => progress.next({
+        index: 4,
+        value: 0,
+        description: "Downloading file content of 'something_else.txt'"
+      })).thenReturn();
+      when(() => progress.next({
+        index: 5,
+        value: 0,
+        description: "Running rule 'Electric bill' for 'something_else.txt'"
+      })).thenReturn();
+      when(() => progress.next({
+        index: 6,
+        value: 0,
+        description: "Running rule 'Dumb rule' for 'something_else.txt'"
       })).thenReturn()
+
       let fileService = mockFileService();
       mockBillCategoryFindOrCreate(fileService);
 
       let file = mockFileElement('electricity_bill.txt');
       when(() => fileService.downloadFile(file, progress))
         .thenReturn(mustBeConsumedAsyncObservable(new Blob(['Electricity Bill. XXXXXX'])));
+
+      let otherFile = mockFileElement('something_else.txt');
+      when(() => fileService.downloadFile(otherFile, progress))
+        .thenReturn(mustBeConsumedAsyncObservable(new Blob(['Something else'])));
 
       // The file should be set to the bills category
       when(() => fileService.setCategory(file.id, 'billsCatId489'))
@@ -148,9 +169,13 @@ describe('RuleService', () => {
           name: 'Electric bill',
           category: ['Electricity', 'Bills'],
           script: 'return fileContent.startsWith("Electricity Bill");'
+        }, {
+          name: 'Dumb rule',
+          category: ['Dumb'],
+          script: 'return false'
         }]);
 
-      mockFilesCacheService([file], true);
+      mockFilesCacheService([file, otherFile], true);
 
       // Act
       let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
@@ -160,6 +185,7 @@ describe('RuleService', () => {
       await runAllPromise;
       // No failure in mock setup
     }));
+    // TODO: handle errors on file download?
     // TODO: distinguish between binary file and readable files
     // TODO: only keep one file content in memory and only if the file type content can be fetched
   })

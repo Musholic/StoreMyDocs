@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {FileService} from "../file-list/file.service";
-import {BehaviorSubject, filter, from, last, map, mergeMap, Observable, of, zip} from "rxjs";
+import {BehaviorSubject, filter, from, map, mergeMap, Observable, of, zip} from "rxjs";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {Rule, RuleRepository} from "./rule.repository";
 import {FilesCacheService} from "../files-cache/files-cache.service";
@@ -51,28 +51,31 @@ export class RuleService {
   private computeFileToCategoryMap(files: FileElement[], rules: Rule[], progress: BehaviorSubject<Progress>) {
     let fileToCategoryMap = new Map<FileElement, string[]>();
 
-    return from(files)
-      .pipe(mergeMap(file => {
-          progress.next({index: 1, value: 0, description: "Downloading file content of '" + file.name + "'"});
-          return this.fileService.downloadFile(file, progress)
-            .pipe(mergeMap(blobContent => fromPromise(blobContent.text())),
-              map(fileContent => {
-                // Find the first rule which matches
-                let rule = rules.find(rule => {
-                  progress.next({
-                    index: 2,
-                    value: 0,
-                    description: "Running rule '" + rule.name + "' for '" + file.name + "'"
-                  });
-                  return this.run(rule, file, fileContent);
-                })
-                if (rule) {
-                  fileToCategoryMap.set(file, rule.category);
-                }
-              }))
-        }),
-        last(),
-        map(() => fileToCategoryMap))
+    return zip(files.map((file, fileIndex) => {
+      let progressIndex = 1 + fileIndex * (rules.length + 1);
+      progress.next({
+        index: progressIndex,
+        value: 0,
+        description: "Downloading file content of '" + file.name + "'"
+      });
+      return this.fileService.downloadFile(file, progress)
+        .pipe(mergeMap(blobContent => fromPromise(blobContent.text())),
+          map(fileContent => {
+            // Find the first rule which matches
+            let rule = rules.find((rule, ruleIndex) => {
+              progress.next({
+                index: progressIndex + 1 + ruleIndex,
+                value: 0,
+                description: "Running rule '" + rule.name + "' for '" + file.name + "'"
+              });
+              return this.run(rule, file, fileContent);
+            })
+            if (rule) {
+              fileToCategoryMap.set(file, rule.category);
+            }
+          }))
+    }))
+      .pipe(map(() => fileToCategoryMap));
 
   }
 
