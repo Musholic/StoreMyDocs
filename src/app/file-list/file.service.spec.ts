@@ -6,7 +6,9 @@ import {HttpClientTestingModule, HttpTestingController} from "@angular/common/ht
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {FileElement, FileOrFolderElement, FolderElement} from "./file-list.component";
 import {mock, when} from "strong-mock";
-import {of} from "rxjs";
+import {BehaviorSubject, of} from "rxjs";
+import {mockFileElement} from "./file-list.component.spec";
+import {Progress} from "../background-task/background-task.service";
 
 describe('FileService', () => {
   beforeEach(() => MockBuilder(FileService, AppModule)
@@ -332,6 +334,33 @@ describe('FileService', () => {
       expect(result).toBe('folderId51');
     }))
   });
+
+  describe("downloadFile", () => {
+    it('should download a file', async () => {
+      // Arrange
+      const service = MockRender(FileService).point.componentInstance;
+
+      let fileElement = mockFileElement('file');
+
+      // Act
+      let result: Blob | undefined = undefined;
+      service.downloadFile(fileElement, mock<BehaviorSubject<Progress>>())
+        .subscribe(value => result = value);
+
+      // Assert
+      let httpTestingController = TestBed.inject(HttpTestingController);
+      let request = httpTestingController.expectOne('https://www.googleapis.com/drive/v3/files/' + fileElement.id + '?alt=media');
+      request.flush(new Blob(['testContent']));
+
+      let textResult = '';
+      if (result) {
+        textResult = await (result as Blob).text();
+      }
+      expect(textResult).toBe('testContent');
+
+      httpTestingController.verify();
+    })
+  })
 });
 
 export function mockFileService() {
@@ -342,7 +371,8 @@ export function mockFileService() {
       findAll: fileServiceMock.findAll,
       trash: fileServiceMock.trash,
       setCategory: fileServiceMock.setCategory,
-      findOrCreateBaseFolder: fileServiceMock.findOrCreateBaseFolder
+      findOrCreateBaseFolder: fileServiceMock.findOrCreateBaseFolder,
+      downloadFile: fileServiceMock.downloadFile
     }
   });
   return fileServiceMock;

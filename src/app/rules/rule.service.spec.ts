@@ -11,6 +11,10 @@ import {getSampleRules} from "./rules.component.spec";
 import {RuleRepository} from "./rule.repository";
 import {FilesCacheService} from "../files-cache/files-cache.service";
 import {mockFilesCacheService} from "../files-cache/files-cache.service.spec";
+import {mockBackgroundTaskService} from "../background-task/background-task.service.spec";
+import {BehaviorSubject, lastValueFrom} from "rxjs";
+import {Progress} from "../background-task/background-task.service";
+import {FileElement} from "../file-list/file-list.component";
 
 
 function mockBillCategoryFindOrCreate(fileService: FileService) {
@@ -19,6 +23,38 @@ function mockBillCategoryFindOrCreate(fileService: FileService) {
 
   when(() => fileService.findOrCreateFolder("Bills", "elecCatId548"))
     .thenReturn(mustBeConsumedAsyncObservable('billsCatId489'));
+}
+
+function mockElectricityBillSample(file: FileElement, fileService: FileService) {
+  let backgroundTaskService = mockBackgroundTaskService();
+  let progress = mock<BehaviorSubject<Progress>>();
+  when(() => backgroundTaskService.showProgress("Running all rules", "", 3))
+    .thenReturn(progress);
+  when(() => progress.next({
+    index: 1,
+    value: 0,
+    description: "Downloading file content of 'electricity_bill.pdf'"
+  })).thenReturn()
+  when(() => progress.next({
+    index: 2,
+    value: 0,
+    description: "Running rule 'Electric bill' for 'electricity_bill.pdf'"
+  })).thenReturn()
+
+  mockBillCategoryFindOrCreate(fileService);
+
+  when(() => fileService.downloadFile(file, progress))
+    .thenReturn(mustBeConsumedAsyncObservable(new Blob(['not important content'])));
+
+  const service = MockRender(RuleService).point.componentInstance;
+
+  let ruleRepository = ngMocks.findInstance(RuleRepository);
+  when(() => ruleRepository.findAll())
+    .thenResolve(getSampleRules());
+
+  mockFilesCacheService([file], true);
+
+  return service;
 }
 
 describe('RuleService', () => {
@@ -42,13 +78,65 @@ describe('RuleService', () => {
   });
 
   describe('runAll', () => {
-    it('should automatically categorize a file', fakeAsync(() => {
+    it('should automatically categorize a file', fakeAsync(async () => {
       // Arrange
+      let file = mockFileElement('electricity_bill.pdf');
+      let fileService = mockFileService();
+
+      // The file should be set to the bills category
+      when(() => fileService.setCategory(file.id, 'billsCatId489'))
+        .thenReturn(mustBeConsumedAsyncObservable(undefined));
+
+      let service = mockElectricityBillSample(file, fileService);
+
+      // Act
+      let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+
+      // Assert
+      tick();
+      await runAllPromise;
+      // No failure in mock setup
+    }));
+
+    it('should not categorize a file which is already in the correct category', fakeAsync(async () => {
+      // Arrange
+      let file = mockFileElement('electricity_bill.pdf', 'billsCatId489');
+      let fileService = mockFileService();
+      let service = mockElectricityBillSample(file, fileService);
+
+      // Act
+      let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+
+      // Assert
+      tick();
+      await runAllPromise;
+      // No unexpected calls to fileService.setCategory
+    }));
+
+    it('should automatically categorize a file (using txt file content)', fakeAsync(async () => {
+      // Arrange
+      let backgroundTaskService = mockBackgroundTaskService();
+      let progress = mock<BehaviorSubject<Progress>>();
+      when(() => backgroundTaskService.showProgress("Running all rules", "", 2))
+        .thenReturn(progress);
+      when(() => progress.next({
+        index: 1,
+        value: 0,
+        description: "Downloading file content of 'electricity_bill.txt'"
+      })).thenReturn()
+      when(() => progress.next({
+        index: 2,
+        value: 0,
+        description: "Running rule 'Electric bill' for 'electricity_bill.txt'"
+      })).thenReturn()
       let fileService = mockFileService();
       mockBillCategoryFindOrCreate(fileService);
 
+      let file = mockFileElement('electricity_bill.txt');
+      when(() => fileService.downloadFile(file, progress))
+        .thenReturn(mustBeConsumedAsyncObservable(new Blob(['Electricity Bill. XXXXXX'])));
+
       // The file should be set to the bills category
-      let file = mockFileElement('electricity_bill.pdf');
       when(() => fileService.setCategory(file.id, 'billsCatId489'))
         .thenReturn(mustBeConsumedAsyncObservable(undefined));
 
@@ -56,41 +144,24 @@ describe('RuleService', () => {
 
       let ruleRepository = ngMocks.findInstance(RuleRepository);
       when(() => ruleRepository.findAll())
-        .thenResolve(getSampleRules());
+        .thenResolve([{
+          name: 'Electric bill',
+          category: ['Electricity', 'Bills'],
+          script: 'return fileContent.startsWith("Electricity Bill");'
+        }]);
 
       mockFilesCacheService([file], true);
 
       // Act
-      service.runAll().subscribe();
+      let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
 
       // Assert
       tick();
+      await runAllPromise;
       // No failure in mock setup
     }));
-
-    it('should not categorize a file which is already in the correct category', fakeAsync(() => {
-      // Arrange
-      let fileService = mockFileService();
-
-      mockBillCategoryFindOrCreate(fileService);
-
-
-      const service = MockRender(RuleService).point.componentInstance;
-
-      let ruleRepository = ngMocks.findInstance(RuleRepository);
-      when(() => ruleRepository.findAll())
-        .thenResolve(getSampleRules());
-
-      let file = mockFileElement('electricity_bill.pdf', 'billsCatId489');
-      mockFilesCacheService([file], true);
-
-      // Act
-      service.runAll().subscribe();
-
-      // Assert
-      tick();
-      // No unexpected calls to fileService.setCategory
-    }));
+    // TODO: distinguish between binary file and readable files
+    // TODO: only keep one file content in memory and only if the file type content can be fetched
   })
 });
 

@@ -1,7 +1,8 @@
 import {Injectable} from '@angular/core';
 import {FileElement, FileOrFolderElement, FolderElement} from "./file-list.component";
-import {map, mergeMap, Observable, of} from "rxjs";
-import {HttpClient} from "@angular/common/http";
+import {BehaviorSubject, filter, last, map, mergeMap, Observable, of, tap} from "rxjs";
+import {HttpClient, HttpEvent, HttpEventType, HttpProgressEvent, HttpResponse} from "@angular/common/http";
+import {BackgroundTaskService, Progress} from "../background-task/background-task.service";
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ export class FileService {
   static readonly BASE_FOLDER_NAME = 'storemydocs.ovh';
   static readonly DRIVE_API_FILES_BASE_URL = 'https://www.googleapis.com/drive/v3/files';
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private backgroundTaskService: BackgroundTaskService) {
   }
 
   findOrCreateBaseFolder() {
@@ -74,6 +75,23 @@ export class FileService {
         return this.createFolder(folderName, parentId);
       }
     }))
+  }
+
+  downloadFile(fileElement: FileElement, progress: BehaviorSubject<Progress>): Observable<Blob> {
+    let dlLink = FileService.DRIVE_API_FILES_BASE_URL + '/' + fileElement.id + '?alt=media';
+    return this.http.get(dlLink, {responseType: "blob", observe: "events", reportProgress: true})
+      .pipe(
+        filter((e: HttpEvent<any>): e is HttpProgressEvent | HttpResponse<any> =>
+          e.type === HttpEventType.DownloadProgress || e.type === HttpEventType.Response),
+        tap(event => this.backgroundTaskService.updateProgress(progress, event)),
+        last(),
+        mergeMap(event => {
+          if (event.type === HttpEventType.Response && event.body) {
+            return of(event.body);
+          } else {
+            return of();
+          }
+        }));
   }
 
   private findFolder(folderName: string, parentId: string | null) {
