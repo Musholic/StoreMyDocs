@@ -2,18 +2,14 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "./out-tsc/spec",
-    "types": [
-      "jasmine",
-      "gapi.client.drive-v3",
-      "google.accounts",
-      "google.picker"
-    ]
+    "outDir": "./out-tsc/worker",
+    "lib": [
+      "es2018",
+      "webworker"
+    ],
+    "types": []
   },
   "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
     "src/**/*.worker.ts"
   ]
 }

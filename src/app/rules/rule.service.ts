@@ -1,16 +1,35 @@
 import {Injectable} from '@angular/core';
 import {FileService} from "../file-list/file.service";
-import {BehaviorSubject, filter, from, map, mergeMap, Observable, of, tap, zip} from "rxjs";
+import {BehaviorSubject, concatMap, filter, find, from, last, map, mergeMap, Observable, of, tap, zip} from "rxjs";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {Rule, RuleRepository} from "./rule.repository";
 import {FilesCacheService} from "../files-cache/files-cache.service";
 import {BackgroundTaskService, Progress} from "../background-task/background-task.service";
 import {fromPromise} from "rxjs/internal/observable/innerFrom";
 
+export interface RuleResult {
+  rule: Rule,
+  value: boolean
+}
+
+export interface RuleWorkerParams {
+  script: string,
+  fileName: string,
+  fileContent: string,
+}
+
+interface WorkerResponse {
+  data: boolean;
+}
+
 @Injectable()
 export class RuleService {
+  private worker: Worker;
+
   constructor(private fileService: FileService, private ruleRepository: RuleRepository,
               private filesCacheService: FilesCacheService, private backgroundTaskService: BackgroundTaskService) {
+    // Create a new
+    this.worker = new Worker(new URL('./rule.worker', import.meta.url));
   }
 
   runAll(): Observable<void> {
@@ -50,39 +69,46 @@ export class RuleService {
    */
   private computeFileToCategoryMap(files: FileElement[], rules: Rule[], progress: BehaviorSubject<Progress>) {
     let fileToCategoryMap = new Map<FileElement, string[]>();
+    return zip(from(files)
+      .pipe(concatMap((file, fileIndex) => {
+        let progressIndex = 1 + fileIndex * (rules.length + 1);
 
-    return zip(files.map((file, fileIndex) => {
-      let progressIndex = 1 + fileIndex * (rules.length + 1);
-
-      let fileContentObservable: Observable<string>;
-      if (this.isFileContentReadable(file)) {
-        progress.next({
-          index: progressIndex,
-          value: 0,
-          description: "Downloading file content of '" + file.name + "'"
-        });
-        fileContentObservable = this.fileService.downloadFile(file, progress)
-          .pipe(mergeMap(blobContent => fromPromise(blobContent.text())));
-      } else {
-        fileContentObservable = of("");
-      }
-      return fileContentObservable.pipe(
-        map(fileContent => {
-          // Find the first rule which matches
-          let rule = rules.find((rule, ruleIndex) => {
-            progress.next({
-              index: progressIndex + 1 + ruleIndex,
-              value: 0,
-              description: "Running rule '" + rule.name + "' for '" + file.name + "'"
-            });
-            return this.run(rule, file, fileContent);
-          })
-          if (rule) {
-            fileToCategoryMap.set(file, rule.category);
-          }
-        }))
-    }))
-      .pipe(map(() => fileToCategoryMap));
+        let fileContentObservable: Observable<string>;
+        if (this.isFileContentReadable(file)) {
+          progress.next({
+            index: progressIndex,
+            value: 0,
+            description: "Downloading file content of '" + file.name + "'"
+          });
+          fileContentObservable = this.fileService.downloadFile(file, progress)
+            .pipe(mergeMap(blobContent => fromPromise(blobContent.text())));
+        } else {
+          fileContentObservable = of("");
+        }
+        return fileContentObservable.pipe(
+          mergeMap(fileContent => {
+            // Find the first rule which matches
+            return from(rules).pipe(concatMap((rule, ruleIndex) => {
+                progress.next({
+                  index: progressIndex + 1 + ruleIndex,
+                  value: 0,
+                  description: "Running rule '" + rule.name + "' for '" + file.name + "'"
+                });
+                return this.run(rule, file, fileContent, progress, progressIndex + 1 + ruleIndex);
+              }),
+              // Find will stop running further scripts once we got a match
+              find(result => {
+                return result.value;
+              }),
+              map(result => {
+                if (result) {
+                  fileToCategoryMap.set(file, result.rule.category);
+                }
+              }));
+          }));
+      })))
+      .pipe(last(),
+        map(() => fileToCategoryMap));
 
   }
 
@@ -90,8 +116,19 @@ export class RuleService {
     return file.mimeType.startsWith('text/');
   }
 
-  private run(rule: Rule, file: FileElement, fileContent: string) {
-    return Function("const fileName = arguments[0]; const fileContent = arguments[1]; " + rule.script)(file.name, fileContent);
+  private run(rule: Rule, file: FileElement, fileContent: string, progress: BehaviorSubject<Progress>, progressIndex: number): Observable<RuleResult> {
+    return new Observable(subscriber => {
+      this.worker.onmessage = ({data}: WorkerResponse) => {
+        subscriber.next({rule: rule, value: data});
+        subscriber.complete();
+      };
+      let params: RuleWorkerParams = {
+        script: rule.script,
+        fileName: file.name,
+        fileContent: fileContent
+      };
+      this.worker.postMessage(params);
+    });
   }
 
   /**
