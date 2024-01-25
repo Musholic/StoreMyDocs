@@ -17,16 +17,16 @@
   "private": true,
   "//": "WARNING: Before upgrading angular, check compatibility with ngMocks (https://github.com/help-me-mom/ng-mocks)",
   "dependencies": {
-    "@angular/animations": "^16.1.0",
-    "@angular/cdk": "^16.1.4",
-    "@angular/common": "^16.1.0",
-    "@angular/compiler": "^16.1.0",
-    "@angular/core": "^16.1.0",
-    "@angular/forms": "^16.2.12",
-    "@angular/material": "^16.2.12",
-    "@angular/platform-browser": "^16.1.0",
-    "@angular/platform-browser-dynamic": "^16.2.12",
-    "@angular/router": "^16.2.12",
+    "@angular/animations": "^17.1.1",
+    "@angular/cdk": "^17.1.0",
+    "@angular/common": "^17.1.1",
+    "@angular/compiler": "^17.1.1",
+    "@angular/core": "^17.1.1",
+    "@angular/forms": "^17.1.1",
+    "@angular/material": "^17.1.0",
+    "@angular/platform-browser": "^17.1.1",
+    "@angular/platform-browser-dynamic": "^17.1.1",
+    "@angular/router": "^17.1.1",
     "@auth0/angular-jwt": "^5.2.0",
     "dexie": "^3.2.4",
     "dexie-export-import": "^4.0.7",
@@ -34,16 +34,16 @@
     "ngx-filesize": "^3.0.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "zone.js": "^0.13.3"
+    "zone.js": "^0.14.3"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^16.2.10",
-    "@angular/cli": "~16.1.3",
-    "@angular/compiler-cli": "^16.2.12",
+    "@angular-devkit/build-angular": "^17.1.1",
+    "@angular/cli": "~17.1.1",
+    "@angular/compiler-cli": "^17.1.1",
     "@playwright/test": "^1.39.0",
-    "@stryker-mutator/core": "^7.3.0",
-    "@stryker-mutator/karma-runner": "^7.3.0",
-    "@stryker-mutator/typescript-checker": "^7.3.0",
+    "@stryker-mutator/core": "^8.0.0",
+    "@stryker-mutator/karma-runner": "^8.0.0",
+    "@stryker-mutator/typescript-checker": "^8.0.0",
     "@types/gapi.client.drive-v3": "^0.0.4",
     "@types/google.accounts": "^0.0.14",
     "@types/google.picker": "^0.0.42",
@@ -59,6 +59,6 @@
     "ng-mocks": "^14.11.0",
     "strong-mock": "^8.0.1",
     "stryker-cli": "^1.0.2",
-    "typescript": "~5.1.6"
+    "typescript": "~5.3.3"
   }
 }
