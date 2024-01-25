@@ -68,6 +68,10 @@ export class RuleService {
     return this.ruleRepository.delete(rule);
   }
 
+  update(rule: Rule): Promise<void> {
+    return this.ruleRepository.update(rule);
+  }
+
   /**
    * Run the given rules on the given files and return the associated category for each file that got a matching rule
    */
@@ -167,6 +171,7 @@ export class RuleService {
   }
 
   // TODO: move and refactor duplicate to FileService
+
   private findOrCreateCategories(categories: string[], categoryId: string): Observable<string> {
     let categoryName = categories.shift();
     if (categoryName !== undefined) {

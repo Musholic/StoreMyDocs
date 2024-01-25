@@ -30,4 +30,11 @@ export class RuleRepository {
       this.databaseBackupAndRestoreService.backup().subscribe();
     }
   }
+
+  async update(rule: Rule) {
+    if (rule.id) {
+      await db.rules.update(rule.id, rule);
+      this.databaseBackupAndRestoreService.backup().subscribe();
+    }
+  }
 }

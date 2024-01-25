@@ -93,9 +93,9 @@ describe('RulesComponent', () => {
     // Act
     await page.clickOnCreateNewRule();
     fixture.detectChanges();
-    await page.setCreateRuleName('New rule');
-    await page.setCreateRuleCategory(['Cat1', 'ChildCat1']);
-    await page.setCreateRuleScript('return fileName === "child_cat_1.txt"');
+    await page.setRuleName('New rule');
+    await page.setRuleCategory(['Cat1', 'ChildCat1']);
+    await page.setRuleScript('return fileName === "child_cat_1.txt"');
     await page.clickOnCreate();
 
     // Assert
@@ -136,6 +136,48 @@ describe('RulesComponent', () => {
     fixture.detectChanges();
     expect(Page.getRuleNames())
       .toEqual([]);
+  }))
+
+  it('should update an existing rule', fakeAsync(async () => {
+    // Arrange
+    let ruleService = mockRuleService();
+
+    let rule: Rule = {
+      id: 1,
+      name: 'Rule1',
+      category: ['Cat1', 'ChildCat1'],
+      script: 'return fileName === "child_cat_1.txt"'
+    };
+    when(() => ruleService.findAll()).thenResolve([rule]);
+
+    // A refresh is expected after update
+    let editedRule: Rule = {
+      id: 1,
+      name: 'Rule1 edited',
+      category: ['Cat1', 'ChildCat1'],
+      script: 'return fileName === "child_cat_1.txt"'
+    };
+    when(() => ruleService.findAll()).thenResolve([editedRule]);
+
+    when(() => ruleService.update(editedRule)).thenResolve(undefined);
+
+    let fixture = MockRender(RulesComponent);
+    tick();
+
+    let page = new Page(fixture);
+
+    // Act
+    await page.clickOnEditFirstRule();
+    fixture.detectChanges();
+    await page.setRuleName('Rule1 edited');
+    await page.clickOnUpdate();
+
+    // Assert
+    // No failure in mock setup
+    tick();
+    fixture.detectChanges();
+    expect(Page.getRuleNames())
+      .toEqual(['Rule1 edited']);
   }))
 });
 
@@ -195,12 +237,17 @@ class Page {
     await button.click();
   }
 
-  async setCreateRuleName(name: string) {
+  async clickOnEditFirstRule() {
+    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Edit'}));
+    await button.click();
+  }
+
+  async setRuleName(name: string) {
     let input = await this.getInputByFloatingLabel('Name');
     await input.setValue(name);
   }
 
-  async setCreateRuleCategory(category: string[]) {
+  async setRuleCategory(category: string[]) {
     // let inputHarness = await this.loader.getHarness(MatInputHarness.with({placeholder: 'Select category...'}));
     let chipGridHarness = await this.loader.getHarness(MatChipGridHarness);
     let inputHarness = await chipGridHarness.getInput()
@@ -213,13 +260,18 @@ class Page {
     }
   }
 
-  async setCreateRuleScript(script: string) {
+  async setRuleScript(script: string) {
     let inputHarness = await this.getInputByFloatingLabel('Script');
     await inputHarness.setValue(script);
   }
 
   async clickOnCreate() {
     let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Create'}));
+    await button.click();
+  }
+
+  async clickOnUpdate() {
+    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Update'}));
     await button.click();
   }
 

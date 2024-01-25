@@ -5,22 +5,22 @@
 <div class="smd-main-content">
   <h1>Setup rules</h1>
   <div class="actionButtons">
-    <button (click)="showCreate = true" [disabled]="showCreate" mat-raised-button>Create new rule</button>
+    <button (click)="showCreate()" [disabled]="ruleToCreateOrUpdate" mat-raised-button>Create new rule</button>
     &nbsp;
     <button (click)="runAll()" color="primary" mat-raised-button>Run all</button>
   </div>
-  <form (ngSubmit)="createNewRule()" *ngIf="showCreate">
+  <form (ngSubmit)="createOrUpdateRule()" *ngIf="ruleToCreateOrUpdate">
     <div class="nameAndCategoryFields">
       <mat-form-field>
         <mat-label>Name</mat-label>
-        <input [(ngModel)]="ruleToCreate.name" matInput name="name" required>
+        <input [(ngModel)]="ruleToCreateOrUpdate.name" matInput name="name" required>
       </mat-form-field>
       &nbsp;
       <mat-form-field>
         <mat-label>Category</mat-label>
         <mat-chip-grid #chipGrid aria-label="Enter category">
-          <mat-chip-row *ngFor="let cat of ruleToCreate.category">
-            {{cat}}
+          <mat-chip-row *ngFor="let cat of ruleToCreateOrUpdate.category">
+            {{ cat }}
             <button matChipRemove>
               <mat-icon>cancel</mat-icon>
             </button>
@@ -34,28 +34,34 @@
     </div>
     <mat-form-field class="fullWidth">
       <mat-label>Script</mat-label>
-      <textarea [(ngModel)]="ruleToCreate.script" matInput name="script" required></textarea>
+      <textarea [(ngModel)]="ruleToCreateOrUpdate.script" matInput name="script" required></textarea>
     </mat-form-field>
     <div class="actionButtons">
-      <button (click)="showCreate = false" mat-raised-button>Cancel</button>
+      <button (click)="cancelCreateOrUpdate()" mat-raised-button>Cancel</button>
       &nbsp;
-      <button color="primary" mat-raised-button type="submit">Create</button>
+      <button *ngIf="ruleToCreateOrUpdate.id" color="primary" mat-raised-button type="submit">Update</button>
+      <button *ngIf="!ruleToCreateOrUpdate.id" color="primary" mat-raised-button type="submit">Create</button>
     </div>
   </form>
   <mat-accordion [multi]="true">
     <mat-expansion-panel *ngFor="let rule of rules">
       <mat-expansion-panel-header>
         <mat-panel-title>
-          {{rule.name}}
+          {{ rule.name }}
         </mat-panel-title>
         <mat-panel-description>
-          <span *ngFor="let cat of rule.category; first as first"><span *ngIf="!first"> &nbsp;&gt; </span>{{cat}}</span>
+          <span *ngFor="let cat of rule.category; first as first"><span
+            *ngIf="!first"> &nbsp;&gt; </span>{{ cat }}</span>
         </mat-panel-description>
       </mat-expansion-panel-header>
       <div class="ruleScript">
-        {{rule.script}}
+        {{ rule.script }}
       </div>
-      <button (click)="delete(rule)" class="ruleDeleteButton" color="warn" mat-raised-button>Delete</button>
+      <div class="ruleButtons">
+        <button (click)="update(rule)" mat-raised-button>Edit</button>
+        &nbsp;
+        <button (click)="delete(rule)" color="warn" mat-raised-button>Delete</button>
+      </div>
     </mat-expansion-panel>
   </mat-accordion>
 </div>

@@ -120,6 +120,35 @@ describe('RuleRepository', () => {
       expect(rules).toEqual([]);
     });
   });
+
+  describe('update', () => {
+    it('should update an existing rule', async () => {
+      // Arrange
+      const ruleRepository = MockRender(RuleRepository).point.componentInstance;
+      // 2 calls to 'backup' expected, from create, and then from update
+      mockBackupCall().times(2);
+      let rule: Rule = {
+        name: 'TestRule',
+        category: ['Test1', 'ChildTest1'],
+        script: 'return true'
+      };
+      await ruleRepository.create(rule)
+      rule.name = 'TestRule edited';
+
+      // Act
+      await ruleRepository.update(rule)
+
+      // Assert
+      let rules = await db.rules.toArray();
+      expect(rules)
+        .toEqual([{
+          id: 1,
+          name: 'TestRule edited',
+          category: ['Test1', 'ChildTest1'],
+          script: 'return true'
+        }]);
+    })
+  })
 });
 
 export function mockRuleRepository() {

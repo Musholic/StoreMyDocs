@@ -15,28 +15,28 @@ export class RulesComponent {
   readonly separatorKeysCodes = [ENTER] as const;
 
   rules: Rule[] = [];
-  showCreate: boolean = false;
-  ruleToCreate: Rule = {
-    name: '',
-    category: [],
-    script: ''
-  };
+  ruleToCreateOrUpdate?: Rule = undefined;
 
   constructor(private ruleService: RuleService) {
     this.refresh();
   }
 
-  createNewRule() {
-    this.ruleService.create(this.ruleToCreate)
-      .then(() => {
-        this.showCreate = false;
-        this.ruleToCreate = {
-          name: '',
-          category: [],
-          script: ''
-        };
-        this.refresh();
-      })
+  createOrUpdateRule() {
+    if (this.ruleToCreateOrUpdate) {
+      if (!this.ruleToCreateOrUpdate.id) {
+        this.ruleService.create(this.ruleToCreateOrUpdate)
+          .then(() => {
+            this.cancelCreateOrUpdate();
+            this.refresh();
+          })
+      } else {
+        this.ruleService.update(this.ruleToCreateOrUpdate)
+          .then(() => {
+            this.cancelCreateOrUpdate();
+            this.refresh();
+          })
+      }
+    }
   }
 
   runAll() {
@@ -44,7 +44,7 @@ export class RulesComponent {
   }
 
   add(event: MatChipInputEvent) {
-    this.ruleToCreate.category.push(event.value);
+    this.ruleToCreateOrUpdate?.category.push(event.value);
     event.chipInput.clear();
   }
 
@@ -53,6 +53,22 @@ export class RulesComponent {
       .then(() => {
         this.refresh();
       })
+  }
+
+  update(rule: Rule) {
+    this.ruleToCreateOrUpdate = rule;
+  }
+
+  cancelCreateOrUpdate() {
+    this.ruleToCreateOrUpdate = undefined;
+  }
+
+  showCreate() {
+    this.ruleToCreateOrUpdate = {
+      name: '',
+      category: [],
+      script: ''
+    };
   }
 
   private refresh() {
