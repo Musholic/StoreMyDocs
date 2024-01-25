@@ -6,6 +6,8 @@ import {Rule, RuleRepository} from "./rule.repository";
 import {FilesCacheService} from "../files-cache/files-cache.service";
 import {BackgroundTaskService, Progress} from "../background-task/background-task.service";
 import {fromPromise} from "rxjs/internal/observable/innerFrom";
+import * as pdfjs from "pdfjs-dist";
+import {TextItem} from "pdfjs-dist/types/src/display/api";
 
 export interface RuleResult {
   rule: Rule,
@@ -30,6 +32,8 @@ export class RuleService {
               private filesCacheService: FilesCacheService, private backgroundTaskService: BackgroundTaskService) {
     // Create a new
     this.worker = new Worker(new URL('./rule.worker', import.meta.url));
+    const pdfWorkerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+    pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
   }
 
   runAll(): Observable<void> {
@@ -81,7 +85,19 @@ export class RuleService {
             description: "Downloading file content of '" + file.name + "'"
           });
           fileContentObservable = this.fileService.downloadFile(file, progress)
-            .pipe(mergeMap(blobContent => fromPromise(blobContent.text())));
+            .pipe(mergeMap(blobContent => {
+              if (file.mimeType === 'application/pdf') {
+                return fromPromise(blobContent.arrayBuffer()
+                  .then(arrayBuffer => pdfjs.getDocument(arrayBuffer).promise)
+                  .then(pdfDocument => pdfDocument.getPage(1))
+                  .then(firstPage => firstPage.getTextContent())
+                  .then(textContent => textContent.items
+                    .filter((item): item is TextItem => item !== undefined)
+                    .map(item => "" + item.str).join()));
+              } else {
+                return fromPromise(blobContent.text());
+              }
+            }));
         } else {
           fileContentObservable = of("");
         }
@@ -113,7 +129,7 @@ export class RuleService {
   }
 
   private isFileContentReadable(file: FileElement) {
-    return file.mimeType.startsWith('text/');
+    return file.mimeType.startsWith('text/') || file.mimeType === 'application/pdf';
   }
 
   private run(rule: Rule, file: FileElement, fileContent: string, progress: BehaviorSubject<Progress>, progressIndex: number): Observable<RuleResult> {

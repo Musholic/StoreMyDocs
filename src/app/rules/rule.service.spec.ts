@@ -235,7 +235,64 @@ describe('RuleService', () => {
       await runAllPromise;
       // No failure in mock setup
     }));
-    // TODO: only keep one file content in memory and only if the file type content can be fetched
+
+    it('should automatically categorize a file (using pdf file content)', fakeAsync(async () => {
+      // Arrange
+      let backgroundTaskService = mockBackgroundTaskService();
+      let progress = mock<BehaviorSubject<Progress>>();
+      when(() => backgroundTaskService.showProgress("Running all rules", "", 2))
+        .thenReturn(progress);
+      when(() => progress.next({
+        index: 1,
+        value: 0,
+        description: "Downloading file content of 'dummy.pdf'"
+      })).thenReturn();
+      when(() => progress.next({
+        index: 2,
+        value: 0,
+        description: "Running rule 'Dummy' for 'dummy.pdf'"
+      })).thenReturn();
+
+      when(() => progress.next({
+        index: 2,
+        value: 100,
+      })).thenReturn();
+
+      let fileService = mockFileService();
+      when(() => fileService.findOrCreateFolder("Dummy", "baseFolderId"))
+        .thenReturn(mustBeConsumedAsyncObservable('dummyCatId548'));
+
+      let file = mockFileElement('dummy.pdf');
+      file.mimeType = 'application/pdf';
+      let dummyPdfResponse = await fetch('/base/src/app/rules/dummy.pdf');
+      let dummyPdfBlob = await dummyPdfResponse.blob();
+      when(() => fileService.downloadFile(file, progress))
+        .thenReturn(mustBeConsumedAsyncObservable(dummyPdfBlob));
+
+      // The file should be set to the bills category
+      when(() => fileService.setCategory(file.id, 'dummyCatId548'))
+        .thenReturn(mustBeConsumedAsyncObservable(undefined));
+
+      const service = MockRender(RuleService).point.componentInstance;
+
+      let ruleRepository = ngMocks.findInstance(RuleRepository);
+      when(() => ruleRepository.findAll())
+        .thenResolve([{
+          name: 'Dummy',
+          category: ['Dummy'],
+          script: 'return fileContent.startsWith("Dummy");'
+        }]);
+
+      mockFilesCacheService([file], true);
+
+      // Act
+      let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+
+      // Assert
+      // fakeAsync(() => tick());
+      await runAllPromise;
+      // No failure in mock setup
+    }));
   })
 });
 

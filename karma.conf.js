@@ -35,6 +35,14 @@ module.exports = function (config) {
     },
     reporters: ['mocha', 'kjhtml'],
     browsers: ['ChromeHeadless'],
-    restartOnFileChange: true
+    restartOnFileChange: true,
+    files: [
+      {
+        pattern: 'src/app/rules/dummy.pdf',
+        included: false,
+        watched: false,
+        served: true
+      }
+    ]
   });
 };
