@@ -40,10 +40,6 @@ export class RulesComponent {
     }
   }
 
-  runAll() {
-    this.ruleService.runAll().subscribe();
-  }
-
   add(event: MatChipInputEvent) {
     this.ruleToCreateOrUpdate?.category.push(event.value);
     event.chipInput.clear();

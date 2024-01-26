@@ -6,8 +6,6 @@ import {MatButtonHarness} from "@angular/material/button/testing";
 import {HarnessLoader, TestKey} from "@angular/cdk/testing";
 import {ComponentFixture, fakeAsync, tick} from "@angular/core/testing";
 import {TestbedHarnessEnvironment} from "@angular/cdk/testing/testbed";
-import {mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
-import {mockRuleService} from "./rule.service.spec";
 import {MatInputHarness} from "@angular/material/input/testing";
 import {MatFormFieldHarness} from "@angular/material/form-field/testing";
 import {MatFormFieldModule} from "@angular/material/form-field";
@@ -39,7 +37,7 @@ describe('RulesComponent', () => {
     mockSampleRules()
 
     // Act
-    let component = MockRender(RulesComponent).point.componentInstance;
+    let component = MockRender(RulesComponent, null, {reset: true}).point.componentInstance;
 
     // Assert
     expect(component).toBeTruthy();
@@ -50,7 +48,7 @@ describe('RulesComponent', () => {
     mockSampleRules();
 
     // Act
-    let fixture = MockRender(RulesComponent);
+    let fixture = MockRender(RulesComponent, null, {reset: true});
 
     // Assert
     tick();
@@ -60,24 +58,9 @@ describe('RulesComponent', () => {
     expect(Page.getRuleScript('Electric bill')).toEqual('return fileName === "electricity_bill.pdf"');
   }))
 
-  it('should run all the rules when clicking on "run rules" button', async () => {
-    // Arrange
-    mockSampleRules();
-    let ruleService = mockRuleService();
-    when(() => ruleService.runAll()).thenReturn(mustBeConsumedAsyncObservable(undefined));
-    let fixture = MockRender(RulesComponent);
-    let page = new Page(fixture);
-
-    // Act
-    await page.clickOnRunRulesButton();
-
-    // Assert
-    // no failure from mock setup
-  })
-
   it('should create a new rule', fakeAsync(async () => {
     // Arrange
-    let ruleService = mockRuleService();
+    let ruleService = ngMocks.get(RuleService);
     when(() => ruleService.findAll()).thenResolve([]);
 
     let expectedRule: Rule = {
@@ -89,7 +72,7 @@ describe('RulesComponent', () => {
 
     // After refresh, there should be the new rule
     when(() => ruleService.findAll()).thenResolve([expectedRule]);
-    let fixture = MockRender(RulesComponent);
+    let fixture = MockRender(RulesComponent, null, {reset: true});
 
     let page = new Page(fixture);
 
@@ -111,7 +94,7 @@ describe('RulesComponent', () => {
 
   it('should delete an existing rule', fakeAsync(async () => {
     // Arrange
-    let ruleService = mockRuleService();
+    let ruleService = ngMocks.get(RuleService);
 
     let rule: Rule = {
       name: 'Rule1',
@@ -125,7 +108,7 @@ describe('RulesComponent', () => {
 
     when(() => ruleService.delete(rule)).thenResolve();
 
-    let fixture = MockRender(RulesComponent);
+    let fixture = MockRender(RulesComponent, null, {reset: true});
     tick();
 
     let page = new Page(fixture);
@@ -188,7 +171,7 @@ describe('RulesComponent', () => {
 
 
 function mockSampleRules() {
-  let ruleService = mockRuleService();
+  let ruleService = ngMocks.get(RuleService);
   when(() => ruleService.findAll()).thenResolve(getSampleRules());
 }
 
@@ -230,11 +213,6 @@ class Page {
       ?.parent?.parent;
     return ngMocks.find(rule, '.ruleScript')
       .nativeNode.textContent.trim();
-  }
-
-  async clickOnRunRulesButton() {
-    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Run all'}));
-    return button.click();
   }
 
   async clickOnCreateNewRule() {
@@ -280,6 +258,11 @@ class Page {
     await button.click();
   }
 
+  async deleteFirstRule() {
+    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Delete'}));
+    await button.click();
+  }
+
   private async getInputByFloatingLabel(floatingLabelText: string | RegExp) {
     let formFieldHarness = await this.loader.getHarness(MatFormFieldHarness.with({floatingLabelText: floatingLabelText}));
     let control = await formFieldHarness.getControl();
@@ -287,10 +270,5 @@ class Page {
       return control as MatInputHarness;
     }
     throw Error("No input found with floating label '" + floatingLabelText + "'");
-  }
-
-  async deleteFirstRule() {
-    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Delete'}));
-    await button.click();
   }
 }

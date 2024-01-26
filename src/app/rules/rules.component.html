@@ -6,8 +6,6 @@
   <h1>Setup rules</h1>
   <div class="actionButtons">
     <button (click)="showCreate()" [disabled]="ruleToCreateOrUpdate" mat-raised-button>Create new rule</button>
-    &nbsp;
-    <button (click)="runAll()" color="primary" mat-raised-button>Run all</button>
   </div>
   <form (ngSubmit)="createOrUpdateRule()" *ngIf="ruleToCreateOrUpdate">
     <div class="nameAndCategoryFields">
