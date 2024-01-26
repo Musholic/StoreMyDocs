@@ -3,6 +3,7 @@ import {RuleService} from "./rule.service";
 import {ENTER} from "@angular/cdk/keycodes";
 import {MatChipInputEvent} from "@angular/material/chips";
 import {Rule} from "./rule.repository";
+import {Router} from "@angular/router";
 
 
 @Component({
@@ -16,8 +17,11 @@ export class RulesComponent {
   rules: Rule[] = [];
   ruleToCreateOrUpdate?: Rule = undefined;
 
-  constructor(private ruleService: RuleService) {
-    this.refresh();
+  constructor(private ruleService: RuleService, private router: Router) {
+    this.ruleService.findAll()
+      .then(rules => {
+        this.rules = rules;
+      })
   }
 
   createOrUpdateRule() {
@@ -69,9 +73,7 @@ export class RulesComponent {
   }
 
   private refresh() {
-    this.ruleService.findAll()
-      .then(rules => {
-        this.rules = rules;
-      })
+    // Reload page
+    this.router.navigate([this.router.url], {onSameUrlNavigation: "reload"});
   }
 }

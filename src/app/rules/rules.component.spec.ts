@@ -17,6 +17,14 @@ import {MatChipGridHarness} from "@angular/material/chips/testing";
 import {Rule} from "./rule.repository";
 import {BreakpointObserver} from "@angular/cdk/layout";
 import {RuleService} from "./rule.service";
+import {Router} from "@angular/router";
+
+function mockRouterReloadPage() {
+  let router = ngMocks.get(Router);
+  when(() => router.url).thenReturn("currentUrl")
+  when(() => router.navigate(['currentUrl'], {onSameUrlNavigation: "reload"}))
+    .thenResolve(true);
+}
 
 describe('RulesComponent', () => {
   beforeEach(() => MockBuilder(RulesComponent, AppModule)
@@ -25,6 +33,10 @@ describe('RulesComponent', () => {
     .keep(FormsModule)
     .keep(MatChipsModule)
     .keep(BreakpointObserver)
+    .provide({
+      provide: Router,
+      useValue: mock<Router>()
+    })
     .provide({
       provide: RuleService,
       useValue: mock<RuleService>()
@@ -71,7 +83,7 @@ describe('RulesComponent', () => {
     when(() => ruleService.create(expectedRule)).thenResolve(undefined);
 
     // After refresh, there should be the new rule
-    when(() => ruleService.findAll()).thenResolve([expectedRule]);
+    mockRouterReloadPage();
     let fixture = MockRender(RulesComponent, null, {reset: true});
 
     let page = new Page(fixture);
@@ -88,8 +100,6 @@ describe('RulesComponent', () => {
     // No failure in mock setup
     tick();
     fixture.detectChanges();
-    expect(Page.getRuleNames())
-      .toEqual(['New rule']);
   }))
 
   it('should delete an existing rule', fakeAsync(async () => {
@@ -104,7 +114,7 @@ describe('RulesComponent', () => {
     when(() => ruleService.findAll()).thenResolve([rule]);
 
     // A refresh is expected after delete
-    when(() => ruleService.findAll()).thenResolve([]);
+    mockRouterReloadPage();
 
     when(() => ruleService.delete(rule)).thenResolve();
 
@@ -120,8 +130,6 @@ describe('RulesComponent', () => {
     // No failure in mock setup
     tick();
     fixture.detectChanges();
-    expect(Page.getRuleNames())
-      .toEqual([]);
   }))
 
   it('should update an existing rule', fakeAsync(async () => {
@@ -138,6 +146,8 @@ describe('RulesComponent', () => {
     when(() => ruleService.findAll()).thenResolve([rule]);
 
     // A refresh is expected after update
+    mockRouterReloadPage();
+
     let editedRule: Rule = {
       id: 1,
       name: 'Rule1 edited',
@@ -145,7 +155,6 @@ describe('RulesComponent', () => {
       script: 'return fileName === "child_cat_1.txt"',
       fileRuns: []
     };
-    when(() => ruleService.findAll()).thenResolve([editedRule]);
 
     when(() => ruleService.update(editedRule)).thenResolve(undefined);
 
@@ -164,8 +173,6 @@ describe('RulesComponent', () => {
     // No failure in mock setup
     tick();
     fixture.detectChanges();
-    expect(Page.getRuleNames())
-      .toEqual(['Rule1 edited']);
   }))
 });
 

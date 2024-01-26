@@ -4,11 +4,15 @@ import {MockBuilder, MockRender, ngMocks} from "ng-mocks";
 import {mock, UnexpectedProperty, when} from "strong-mock";
 import {AppModule} from "../app.module";
 import {mockFileElement} from "../file-list/file-list.component.spec";
-import {ActivatedRoute, ActivatedRouteSnapshot, Data} from "@angular/router";
+import {ActivatedRoute, ActivatedRouteSnapshot, Data, Router} from "@angular/router";
 import {FilesCache} from "./files.resolver";
 
 describe('FilesCacheService', () => {
   beforeEach(() => MockBuilder(FilesCacheService, AppModule)
+    .provide({
+      provide: Router,
+      useValue: mock<Router>()
+    })
     .provide({
       provide: ActivatedRoute,
       useValue: mock<ActivatedRoute>({
@@ -67,6 +71,25 @@ describe('FilesCacheService', () => {
       // Assert
       expect(baseFolder).toEqual('baseFolderId')
     })
+  })
+
+  describe('refreshCacheAndReload', () => {
+    it('should refresh cache and reload', () => {
+      // Arrange
+      const service = MockRender(FilesCacheService).point.componentInstance;
+
+      let router = ngMocks.get(Router);
+      when(() => router.url).thenReturn("currentUrl")
+      when(() => router.navigate(['currentUrl'], {onSameUrlNavigation: "reload"}))
+        .thenResolve(true);
+
+      // Act
+      service.refreshCacheAndReload();
+
+      // Assert
+      expect(FilesCacheService.reloadRouteData).toBeTruthy();
+    })
+
   })
 
 });
