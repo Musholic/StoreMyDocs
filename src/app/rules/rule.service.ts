@@ -34,9 +34,6 @@ export class RuleService {
     this.worker = new Worker(new URL('./rule.worker', import.meta.url));
     const pdfWorkerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
     pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
-
-    //TODO: mark each file to know which rules have already been run and when, then every time we load the page,
-    // we check for all pair of rules/files which have not run or are outdated
   }
 
   private static isRuleRunNeeded(rules: Rule[], file: FileElement) {
@@ -104,8 +101,6 @@ export class RuleService {
             // Find the first rule which matches
             return this.runAllRules(rules, progress, progressIndex, file, fileContent)
               .pipe(mergeMap(result => {
-                // TODO: do the call to change the category immediately instead of constructing this map
-                // TODO: How to handle rules that have not run due to finding another matching rule? flag the matching files?
                 if (result) {
                   return this.findOrCreateCategories(Object.assign([], result.rule.category), this.filesCacheService.getBaseFolder())
                     // There is no need to set the category if the current category is correct
