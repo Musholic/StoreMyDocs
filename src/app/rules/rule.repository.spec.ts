@@ -125,8 +125,11 @@ describe('RuleRepository', () => {
     it('should update an existing rule', async () => {
       // Arrange
       const ruleRepository = MockRender(RuleRepository).point.componentInstance;
-      // 2 calls to 'backup' expected, from create, and then from update
-      mockBackupCall().times(2);
+      // 2 calls to 'backup' then 'scheduleBackup' expected, from create, and then from update
+      let databaseBackupAndRestoreService = ngMocks.get(DatabaseBackupAndRestoreService);
+      mockBackupCall();
+      when(() => databaseBackupAndRestoreService.scheduleBackup()).thenReturn();
+
       let rule: Rule = {
         name: 'TestRule',
         category: ['Test1', 'ChildTest1'],

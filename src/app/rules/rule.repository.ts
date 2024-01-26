@@ -41,9 +41,7 @@ export class RuleRepository {
   async update(rule: Rule) {
     if (rule.id) {
       await db.rules.update(rule.id, rule);
-      // TODO: Postpone backup until the end of running all rules? Or don't show backup progress?
-      //  Or don't upload it to google drive after each local backup? (and then only show message when uploading to google drive)
-      this.databaseBackupAndRestoreService.backup().subscribe();
+      this.databaseBackupAndRestoreService.scheduleBackup();
     }
   }
 }
