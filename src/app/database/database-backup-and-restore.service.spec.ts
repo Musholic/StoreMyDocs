@@ -25,7 +25,7 @@ function setupMockForRestore(dbBackupFile: FileElement) {
   let backgroundTaskService = mockBackgroundTaskService();
 
   let progress = mock<BehaviorSubject<Progress>>();
-  when(() => backgroundTaskService.showProgress("Automatic restore", "Downloading last backup", 2))
+  when(() => backgroundTaskService.showProgress("Automatic restore", 2, "Downloading last backup"))
     .thenReturn(progress);
   when(() => progress.next({index: 2, value: 0, description: "Importing last backup"})).thenReturn();
   when(() => progress.next({index: 2, value: 100})).thenReturn();
@@ -184,7 +184,7 @@ describe('DatabaseBackupAndRestoreService', () => {
 
       let backgroundTaskService = mockBackgroundTaskService();
       let progress = mock<BehaviorSubject<Progress>>();
-      when(() => backgroundTaskService.showProgress("Backup", "Creating backup", 2))
+      when(() => backgroundTaskService.showProgress("Backup", 2, "Creating backup"))
         .thenReturn(progress);
       when(() => progress.next({index: 2, description: "Uploading backup", value: 0})).thenReturn();
       when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();
@@ -214,7 +214,7 @@ describe('DatabaseBackupAndRestoreService', () => {
 
       let backgroundTaskService = mockBackgroundTaskService();
       let progress = mock<BehaviorSubject<Progress>>();
-      when(() => backgroundTaskService.showProgress("Backup", "Creating backup", 2))
+      when(() => backgroundTaskService.showProgress("Backup", 2, "Creating backup"))
         .thenReturn(progress);
       when(() => progress.next({index: 2, description: "Uploading backup", value: 0})).thenReturn();
       when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();

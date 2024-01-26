@@ -28,7 +28,7 @@ function mockBillCategoryFindOrCreate(fileService: FileService) {
 function mockElectricityBillSample(file: FileElement, fileService: FileService) {
   let backgroundTaskService = mockBackgroundTaskService();
   let progress = mock<BehaviorSubject<Progress>>();
-  when(() => backgroundTaskService.showProgress("Running all rules", "", 3))
+  when(() => backgroundTaskService.showProgress("Running all rules", 3))
     .thenReturn(progress);
   when(() => progress.next({
     index: 1,
@@ -126,7 +126,7 @@ describe('RuleService', () => {
       // Arrange
       let backgroundTaskService = mockBackgroundTaskService();
       let progress = mock<BehaviorSubject<Progress>>();
-      when(() => backgroundTaskService.showProgress("Running all rules", "", 2))
+      when(() => backgroundTaskService.showProgress("Running all rules", 2))
         .thenReturn(progress);
       when(() => progress.next({
         index: 2,
@@ -161,7 +161,7 @@ describe('RuleService', () => {
       // Arrange
       let backgroundTaskService = mockBackgroundTaskService();
       let progress = mock<BehaviorSubject<Progress>>();
-      when(() => backgroundTaskService.showProgress("Running all rules", "", 6))
+      when(() => backgroundTaskService.showProgress("Running all rules", 6))
         .thenReturn(progress);
       when(() => progress.next({
         index: 1,
@@ -263,7 +263,7 @@ describe('RuleService', () => {
       // Arrange
       let backgroundTaskService = mockBackgroundTaskService();
       let progress = mock<BehaviorSubject<Progress>>();
-      when(() => backgroundTaskService.showProgress("Running all rules", "", 2))
+      when(() => backgroundTaskService.showProgress("Running all rules", 2))
         .thenReturn(progress);
       when(() => progress.next({
         index: 2,
@@ -313,7 +313,7 @@ describe('RuleService', () => {
       // Arrange
       let backgroundTaskService = mockBackgroundTaskService();
       let progress = mock<BehaviorSubject<Progress>>();
-      when(() => backgroundTaskService.showProgress("Running all rules", "", 2))
+      when(() => backgroundTaskService.showProgress("Running all rules", 2))
         .thenReturn(progress);
       when(() => progress.next({
         index: 1,

@@ -20,8 +20,7 @@ export class DatabaseBackupAndRestoreService {
   }
 
   backup() {
-    let progress = this.backgroundTaskService.showProgress('Backup',
-      "Creating backup", 2);
+    let progress = this.backgroundTaskService.showProgress('Backup', 2, "Creating backup");
     return from(exportDB(db))
       .pipe(tap(() => progress.next({index: 2, value: 0, description: "Uploading backup"})),
         mergeMap(blob => {
@@ -37,8 +36,7 @@ export class DatabaseBackupAndRestoreService {
     let lastDbBackupTime = this.getLastDbBackupTime();
     let modifiedTime = dbFile?.modifiedTime ?? Date.now();
     if (dbFile && modifiedTime > lastDbBackupTime) {
-      let progress = this.backgroundTaskService.showProgress('Automatic restore',
-        "Downloading last backup", 2);
+      let progress = this.backgroundTaskService.showProgress('Automatic restore', 2, "Downloading last backup");
       return this.fileService.downloadFile(dbFile, progress)
         .pipe(
           tap(() => progress.next({index: 2, value: 0, description: 'Importing last backup'})),

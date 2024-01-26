@@ -29,7 +29,7 @@ describe('BackgroundTaskService', () => {
       const backgroundTaskService = fixture.point.componentInstance;
 
       // Act
-      backgroundTaskService.showProgress("Test", "Doing first test", 2);
+      backgroundTaskService.showProgress("Test", 2, "Doing first test");
 
       // Assert
       let result = await Page.getProgressMessage();
@@ -40,7 +40,7 @@ describe('BackgroundTaskService', () => {
       // Arrange
       let fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
-      let progress = backgroundTaskService.showProgress("Test", "Doing first test", 4);
+      let progress = backgroundTaskService.showProgress("Test", 4, "Doing first test");
 
       // Act
       progress.next({
@@ -60,7 +60,7 @@ describe('BackgroundTaskService', () => {
       let fixture = MockRender(BackgroundTaskService);
       let page = new Page();
       const backgroundTaskService = fixture.point.componentInstance;
-      let progress = backgroundTaskService.showProgress("Test", "Doing first test", 2);
+      let progress = backgroundTaskService.showProgress("Test", 2, "Doing first test");
 
       // Act
       progress.next({
@@ -70,13 +70,33 @@ describe('BackgroundTaskService', () => {
 
       // Assert
       fixture.detectChanges();
+      tick();
       let resultMessage = await Page.getProgressMessage();
       expect(resultMessage).toEqual("2/2 100% Test finished!");
       tick(3000);
       // The message should be gone after 5 seconds at least
       resultMessage = await Page.getProgressMessage();
       expect(resultMessage).toEqual(undefined);
+    }))
 
+    it('Should dismiss immediately if it finished with no actual step', fakeAsync(async () => {
+      // Arrange
+      let fixture = MockRender(BackgroundTaskService);
+      let page = new Page();
+      const backgroundTaskService = fixture.point.componentInstance;
+      let progress = backgroundTaskService.showProgress("Test", 2);
+
+      // Act
+      progress.next({
+        index: 2,
+        value: 100
+      })
+
+      // Assert
+      fixture.detectChanges();
+      tick();
+      let resultMessage = await Page.getProgressMessage();
+      expect(resultMessage).toEqual(undefined);
     }))
   })
   describe('updateProgress', () => {

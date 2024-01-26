@@ -67,7 +67,7 @@ export class RuleService {
         // Run the script for each file to get the associated category
         // The amount of step is one download per file and one per rule running for each file
         let stepAmount = files.length * (1 + rules.length);
-        let progress = this.backgroundTaskService.showProgress('Running all rules', '', stepAmount);
+        let progress = this.backgroundTaskService.showProgress('Running all rules', stepAmount);
         return this.runAllAndSetCategories(files, rules, progress)
           .pipe(tap({complete: () => progress.next({value: 100, index: stepAmount})}));
       }));

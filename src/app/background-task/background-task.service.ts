@@ -12,7 +12,7 @@ export class BackgroundTaskService {
   constructor(private snackBar: MatSnackBar) {
   }
 
-  showProgress(globalDescription: string, stepDescription: string, stepAmount: number): BehaviorSubject<Progress> {
+  showProgress(globalDescription: string, stepAmount: number, stepDescription?: string): BehaviorSubject<Progress> {
     let progress = new BehaviorSubject<Progress>({
       index: 1,
       value: 0,
@@ -82,13 +82,21 @@ export interface Progress {
 class SnackBarProgressIndicatorComponent {
   progress: Progress;
 
-  constructor(@Inject(MAT_SNACK_BAR_DATA) public data: ProgressData, private snackBarRef: MatSnackBarRef<SnackBarProgressIndicatorComponent>) {
+  constructor(@Inject(MAT_SNACK_BAR_DATA) public data: ProgressData, snackBarRef: MatSnackBarRef<SnackBarProgressIndicatorComponent>) {
     this.progress = data.progress.getValue();
 
     data.progress.subscribe(progress => {
+      let noStepYet = !this.progress.description;
       this.progress = progress;
       if (this.isFinished()) {
-        snackBarRef._dismissAfter(3000);
+        if (noStepYet) {
+          // There was no step, and it's already finished,
+          // we can simply dismiss the message since there is actually nothing to inform the users about
+          snackBarRef.dismiss();
+        } else {
+          // The user must see that something happened
+          snackBarRef._dismissAfter(3000);
+        }
       }
     })
   }
