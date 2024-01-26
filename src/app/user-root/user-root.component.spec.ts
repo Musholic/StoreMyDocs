@@ -6,18 +6,25 @@ import {mustBeConsumedAsyncObservable} from "../../testing/common-testing-functi
 import {mockDatabaseBackupAndRestoreService} from "../database/database-backup-and-restore.service.spec";
 import {DatabaseBackupAndRestoreService} from "../database/database-backup-and-restore.service";
 import {fakeAsync, tick} from "@angular/core/testing";
+import {RuleService} from "../rules/rule.service";
+import {mockRuleService} from "../rules/rule.service.spec";
 
 
 describe('UserRootComponent', () => {
   beforeEach(() => MockBuilder(UserRootComponent, AppModule)
     .mock(DatabaseBackupAndRestoreService)
+    .mock(RuleService)
   )
 
-  it('should restore automatically', fakeAsync(() => {
+  it('should restore and run all rules automatically', fakeAsync(() => {
     // Arrange
     let databaseBackupAndRestoreService = mockDatabaseBackupAndRestoreService();
+    let restoreObservable = mustBeConsumedAsyncObservable(undefined);
     when(() => databaseBackupAndRestoreService.restore())
-      .thenReturn(mustBeConsumedAsyncObservable(undefined));
+      .thenReturn(restoreObservable);
+    let ruleService = mockRuleService();
+    when(() => ruleService.runAll())
+      .thenReturn(mustBeConsumedAsyncObservable(undefined, restoreObservable))
 
     // Act
     MockRender(UserRootComponent);

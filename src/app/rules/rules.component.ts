@@ -8,8 +8,7 @@ import {Rule} from "./rule.repository";
 @Component({
   selector: 'app-rules',
   templateUrl: './rules.component.html',
-  styleUrls: ['./rules.component.scss'],
-  providers: [RuleService]
+  styleUrls: ['./rules.component.scss']
 })
 export class RulesComponent {
   readonly separatorKeysCodes = [ENTER] as const;
@@ -30,6 +29,8 @@ export class RulesComponent {
             this.refresh();
           })
       } else {
+        // Reset fileRuns to ensure we will automatically re-run the rule
+        this.ruleToCreateOrUpdate.fileRuns = [];
         this.ruleService.update(this.ruleToCreateOrUpdate)
           .then(() => {
             this.cancelCreateOrUpdate();

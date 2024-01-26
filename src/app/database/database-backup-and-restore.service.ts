@@ -50,7 +50,7 @@ export class DatabaseBackupAndRestoreService {
           finalize(() => this.updateLastDbBackupTime())
         );
     } else {
-      return of();
+      return of(undefined);
     }
   }
 

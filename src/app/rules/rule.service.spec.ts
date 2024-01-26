@@ -56,6 +56,11 @@ function mockElectricityBillSample(file: FileElement, fileService: FileService) 
   when(() => ruleRepository.findAll())
     .thenResolve(getSampleRules());
 
+  // The first rule should be flagged as matching
+  let ruleAfterRun = getSampleRules()[0];
+  ruleAfterRun.fileRuns = [{id: file.id, value: true}];
+  when(() => ruleRepository.update(ruleAfterRun)).thenResolve();
+
   mockFilesCacheService([file], true);
 
   return service;
@@ -115,6 +120,41 @@ describe('RuleService', () => {
       tick();
       await runAllPromise;
       // No unexpected calls to fileService.setCategory
+    }));
+
+    it('should not run a rule for a file it was already run on', fakeAsync(async () => {
+      // Arrange
+      let backgroundTaskService = mockBackgroundTaskService();
+      let progress = mock<BehaviorSubject<Progress>>();
+      when(() => backgroundTaskService.showProgress("Running all rules", "", 2))
+        .thenReturn(progress);
+      when(() => progress.next({
+        index: 2,
+        value: 100,
+      })).thenReturn();
+
+      let file = mockFileElement('electricity_bill.txt');
+
+      const service = MockRender(RuleService).point.componentInstance;
+
+      let ruleRepository = ngMocks.findInstance(RuleRepository);
+      when(() => ruleRepository.findAll())
+        .thenResolve([{
+          name: 'Electric bill',
+          category: ['Electricity', 'Bills'],
+          script: 'return fileContent.startsWith("Electricity Bill");',
+          fileRuns: [{id: file.id, value: false}]
+        }]);
+
+      mockFilesCacheService([file]);
+
+      // Act
+      let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+
+      // Assert
+      tick();
+      await runAllPromise;
+      // No failure in mock setup
     }));
 
     it('should automatically categorize a file (using txt file content)', fakeAsync(async () => {
@@ -183,6 +223,31 @@ describe('RuleService', () => {
           script: 'return false'
         }]);
 
+      // The first rule should be flagged as matching
+      let ruleAfterRun = {
+        name: 'Electric bill',
+        category: ['Electricity', 'Bills'],
+        script: 'return fileContent.startsWith("Electricity Bill");',
+        fileRuns: [{id: file.id, value: true}]
+      };
+      when(() => ruleRepository.update(ruleAfterRun)).thenResolve();
+
+      // Both rules should be flagged as not matching for the other file
+      ruleAfterRun = {
+        name: 'Electric bill',
+        category: ['Electricity', 'Bills'],
+        script: 'return fileContent.startsWith("Electricity Bill");',
+        fileRuns: [{id: file.id, value: true}, {id: otherFile.id, value: false}]
+      };
+      when(() => ruleRepository.update(ruleAfterRun)).thenResolve();
+      ruleAfterRun = {
+        name: 'Dumb rule',
+        category: ['Dumb'],
+        script: 'return false',
+        fileRuns: [{id: otherFile.id, value: false}]
+      };
+      when(() => ruleRepository.update(ruleAfterRun)).thenResolve();
+
       mockFilesCacheService([file, otherFile], true);
 
       // Act
@@ -225,7 +290,15 @@ describe('RuleService', () => {
           script: 'return fileContent.includes("test")'
         }]);
 
-      mockFilesCacheService([file], true);
+      let ruleAfterRun = {
+        name: 'Dumb file content rule',
+        category: ['Dumb'],
+        script: 'return fileContent.includes("test")',
+        fileRuns: [{id: file.id, value: false}]
+      };
+      when(() => ruleRepository.update(ruleAfterRun)).thenResolve();
+
+      mockFilesCacheService([file]);
 
       // Act
       let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
@@ -282,6 +355,15 @@ describe('RuleService', () => {
           category: ['Dummy'],
           script: 'return fileContent.startsWith("Dummy");'
         }]);
+
+      // The first rule should be flagged as matching
+      let ruleAfterRun = {
+        name: 'Dummy',
+        category: ['Dummy'],
+        script: 'return fileContent.startsWith("Dummy");',
+        fileRuns: [{id: file.id, value: true}]
+      };
+      when(() => ruleRepository.update(ruleAfterRun)).thenResolve();
 
       mockFilesCacheService([file], true);
 

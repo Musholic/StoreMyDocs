@@ -165,7 +165,7 @@ describe('DatabaseBackupAndRestoreService', () => {
       mockFilesCacheService([dbBackupFile]);
 
       // Act
-      let restorePromise = lastValueFrom(databaseBackupAndRestoreService.restore(), {defaultValue: undefined});
+      let restorePromise = lastValueFrom(databaseBackupAndRestoreService.restore());
 
       // Assert
       tick();

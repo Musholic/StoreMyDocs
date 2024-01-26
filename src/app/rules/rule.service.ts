@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {FileService} from "../file-list/file.service";
-import {BehaviorSubject, concatMap, filter, find, from, last, map, mergeMap, Observable, of, tap, zip} from "rxjs";
+import {BehaviorSubject, concatMap, filter, find, from, map, mergeMap, Observable, of, tap, zip} from "rxjs";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {Rule, RuleRepository} from "./rule.repository";
 import {FilesCacheService} from "../files-cache/files-cache.service";
@@ -34,6 +34,25 @@ export class RuleService {
     this.worker = new Worker(new URL('./rule.worker', import.meta.url));
     const pdfWorkerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
     pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
+
+    //TODO: mark each file to know which rules have already been run and when, then every time we load the page,
+    // we check for all pair of rules/files which have not run or are outdated
+  }
+
+  private static isRuleRunNeeded(rules: Rule[], file: FileElement) {
+    for (const rule of rules) {
+      let previousFileRun = rule.fileRuns?.find(fileRun => fileRun.id === file.id);
+      if (previousFileRun && previousFileRun.value) {
+        // We already know the matching rule
+        return false;
+      }
+      if (!previousFileRun) {
+        // There is a rule we need to run which has not been run before
+        return true;
+      }
+    }
+    // All rules have already been run
+    return false;
   }
 
   runAll(): Observable<void> {
@@ -41,18 +60,16 @@ export class RuleService {
       .pipe(mergeMap(rules => {
         let fileOrFolders = this.filesCacheService.getAll()
         // Get all files
-        let files = fileOrFolders.filter(file => isFileElement(file))
-          .map(value => value as FileElement);
+        let files = fileOrFolders
+          .filter((file): file is FileElement => isFileElement(file));
+
 
         // Run the script for each file to get the associated category
         // The amount of step is one download per file and one per rule running for each file
         let stepAmount = files.length * (1 + rules.length);
         let progress = this.backgroundTaskService.showProgress('Running all rules', '', stepAmount);
-        return this.computeFileToCategoryMap(files, rules, progress)
-          .pipe(mergeMap(fileToCategoryMap => {
-            // Set the computed category for each files
-            return this.setAllFileCategory(fileToCategoryMap);
-          }), tap({complete: () => progress.next({value: 100, index: stepAmount})}))
+        return this.runAllAndSetCategories(files, rules, progress)
+          .pipe(tap({complete: () => progress.next({value: 100, index: stepAmount})}));
       }));
   }
 
@@ -73,63 +90,97 @@ export class RuleService {
   }
 
   /**
-   * Run the given rules on the given files and return the associated category for each file that got a matching rule
+   * Run the given rules on the given files and set the associated category for each file that got a matching rule
    */
-  private computeFileToCategoryMap(files: FileElement[], rules: Rule[], progress: BehaviorSubject<Progress>) {
-    let fileToCategoryMap = new Map<FileElement, string[]>();
+  private runAllAndSetCategories(files: FileElement[], rules: Rule[], progress: BehaviorSubject<Progress>) {
     return zip(from(files)
       .pipe(concatMap((file, fileIndex) => {
         let progressIndex = 1 + fileIndex * (rules.length + 1);
-
-        let fileContentObservable: Observable<string>;
-        if (this.isFileContentReadable(file)) {
-          progress.next({
-            index: progressIndex,
-            value: 0,
-            description: "Downloading file content of '" + file.name + "'"
-          });
-          fileContentObservable = this.fileService.downloadFile(file, progress)
-            .pipe(mergeMap(blobContent => {
-              if (file.mimeType === 'application/pdf') {
-                return fromPromise(blobContent.arrayBuffer()
-                  .then(arrayBuffer => pdfjs.getDocument(arrayBuffer).promise)
-                  .then(pdfDocument => pdfDocument.getPage(1))
-                  .then(firstPage => firstPage.getTextContent())
-                  .then(textContent => textContent.items
-                    .filter((item): item is TextItem => item !== undefined)
-                    .map(item => "" + item.str).join()));
-              } else {
-                return fromPromise(blobContent.text());
-              }
-            }));
-        } else {
-          fileContentObservable = of("");
+        if (!RuleService.isRuleRunNeeded(rules, file)) {
+          return of(undefined);
         }
-        return fileContentObservable.pipe(
+        return this.getFileContent(file, progress, progressIndex).pipe(
           mergeMap(fileContent => {
             // Find the first rule which matches
-            return from(rules).pipe(concatMap((rule, ruleIndex) => {
-                progress.next({
-                  index: progressIndex + 1 + ruleIndex,
-                  value: 0,
-                  description: "Running rule '" + rule.name + "' for '" + file.name + "'"
-                });
-                return this.run(rule, file, fileContent, progress, progressIndex + 1 + ruleIndex);
-              }),
-              // Find will stop running further scripts once we got a match
-              find(result => {
-                return result.value;
-              }),
-              map(result => {
+            return this.runAllRules(rules, progress, progressIndex, file, fileContent)
+              .pipe(mergeMap(result => {
+                // TODO: do the call to change the category immediately instead of constructing this map
+                // TODO: How to handle rules that have not run due to finding another matching rule? flag the matching files?
                 if (result) {
-                  fileToCategoryMap.set(file, result.rule.category);
+                  return this.findOrCreateCategories(Object.assign([], result.rule.category), this.filesCacheService.getBaseFolder())
+                    // There is no need to set the category if the current category is correct
+                    .pipe(filter(categoryId => file.parentId !== categoryId),
+                      mergeMap(categoryId => {
+                        return this.fileService.setCategory(file.id, categoryId);
+                      }));
+                } else {
+                  return of();
                 }
               }));
           }));
       })))
-      .pipe(last(),
-        map(() => fileToCategoryMap));
+      .pipe(map(() => {
+      }));
 
+  }
+
+  private runAllRules(rulesToRun: Rule[], progress: BehaviorSubject<Progress>, progressIndex: number, file: FileElement, fileContent: string) {
+    return from(rulesToRun).pipe(concatMap((rule, ruleIndex) => {
+        let previousFileRun = rule.fileRuns?.find(fileRun => fileRun.id === file.id);
+        if (previousFileRun) {
+          // The rule was run previously, so we already know the result
+          let result: RuleResult = {
+            rule: rule,
+            value: previousFileRun.value
+          };
+          return of(result);
+        }
+        progress.next({
+          index: progressIndex + 1 + ruleIndex,
+          value: 0,
+          description: "Running rule '" + rule.name + "' for '" + file.name + "'"
+        });
+        return this.run(rule, file, fileContent, progress, progressIndex + 1 + ruleIndex)
+          .pipe(tap((result) => {
+            // Add this file run to the rule fileRuns to avoid doing the same run again
+            let rule = result.rule;
+            if (!rule.fileRuns) {
+              rule.fileRuns = [];
+            }
+            rule.fileRuns.push({id: file.id, value: result.value});
+            this.ruleRepository.update(rule);
+          }));
+      }),
+      // Find will stop running further scripts once we got a match
+      find(result => {
+        return result.value;
+      }));
+  }
+
+  private getFileContent(file: FileElement, progress: BehaviorSubject<Progress>, progressIndex: number) {
+    if (this.isFileContentReadable(file)) {
+      progress.next({
+        index: progressIndex,
+        value: 0,
+        description: "Downloading file content of '" + file.name + "'"
+      });
+      return this.fileService.downloadFile(file, progress)
+        .pipe(mergeMap(blobContent => {
+          if (file.mimeType === 'application/pdf') {
+            return fromPromise(blobContent.arrayBuffer()
+              .then(arrayBuffer => pdfjs.getDocument(arrayBuffer).promise)
+              .then(pdfDocument => pdfDocument.getPage(1))
+              .then(firstPage => firstPage.getTextContent())
+              .then(textContent => textContent.items
+                .filter((item): item is TextItem => item !== undefined)
+                .map(item => "" + item.str).join()));
+          } else {
+            return fromPromise(blobContent.text());
+          }
+        }));
+    } else {
+      return of("");
+    }
   }
 
   private isFileContentReadable(file: FileElement) {
@@ -151,27 +202,7 @@ export class RuleService {
     });
   }
 
-  /**
-   * Find or create the categories for each file and associate them
-   */
-  private setAllFileCategory(fileToCategoryMap: Map<FileElement, string[]>): Observable<void> {
-    let baseFolderId = this.filesCacheService.getBaseFolder();
-    let categoryRequests: Observable<void>[] = [];
-    fileToCategoryMap
-      .forEach((category, file) => {
-        categoryRequests.push(this.findOrCreateCategories(category, baseFolderId)
-          // There is no need to set the category if the current category is correct
-          .pipe(filter(categoryId => file.parentId !== categoryId),
-            mergeMap(categoryId => {
-              return this.fileService.setCategory(file.id, categoryId);
-            })));
-      });
-    return zip(categoryRequests).pipe(map(() => {
-    }));
-  }
-
   // TODO: move and refactor duplicate to FileService
-
   private findOrCreateCategories(categories: string[], categoryId: string): Observable<string> {
     let categoryName = categories.shift();
     if (categoryName !== undefined) {

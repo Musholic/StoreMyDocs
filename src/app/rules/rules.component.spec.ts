@@ -1,7 +1,7 @@
 import {RulesComponent} from './rules.component';
 import {MockBuilder, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
-import {when} from "strong-mock";
+import {mock, when} from "strong-mock";
 import {MatButtonHarness} from "@angular/material/button/testing";
 import {HarnessLoader, TestKey} from "@angular/cdk/testing";
 import {ComponentFixture, fakeAsync, tick} from "@angular/core/testing";
@@ -27,7 +27,10 @@ describe('RulesComponent', () => {
     .keep(FormsModule)
     .keep(MatChipsModule)
     .keep(BreakpointObserver)
-    .mock(RuleService)
+    .provide({
+      provide: RuleService,
+      useValue: mock<RuleService>()
+    })
     .replace(BrowserAnimationsModule, NoopAnimationsModule)
   );
 
@@ -140,13 +143,14 @@ describe('RulesComponent', () => {
 
   it('should update an existing rule', fakeAsync(async () => {
     // Arrange
-    let ruleService = mockRuleService();
+    let ruleService = ngMocks.get(RuleService);
 
     let rule: Rule = {
       id: 1,
       name: 'Rule1',
       category: ['Cat1', 'ChildCat1'],
-      script: 'return fileName === "child_cat_1.txt"'
+      script: 'return fileName === "child_cat_1.txt"',
+      fileRuns: [{id: "1", value: true}]
     };
     when(() => ruleService.findAll()).thenResolve([rule]);
 
@@ -155,13 +159,14 @@ describe('RulesComponent', () => {
       id: 1,
       name: 'Rule1 edited',
       category: ['Cat1', 'ChildCat1'],
-      script: 'return fileName === "child_cat_1.txt"'
+      script: 'return fileName === "child_cat_1.txt"',
+      fileRuns: []
     };
     when(() => ruleService.findAll()).thenResolve([editedRule]);
 
     when(() => ruleService.update(editedRule)).thenResolve(undefined);
 
-    let fixture = MockRender(RulesComponent);
+    let fixture = MockRender(RulesComponent, null, {reset: true});
     tick();
 
     let page = new Page(fixture);
