@@ -1,4 +1,4 @@
-import {fakeAsync, tick} from '@angular/core/testing';
+import {fakeAsync, flush, tick} from '@angular/core/testing';
 
 import {
   FileElement,
@@ -694,6 +694,7 @@ describe('FileListComponent', () => {
 
       // Assert
       fixture.detectChanges()
+      flush();
       expect(Page.isCategorySelectedOnFileRow('text.txt', 'TXT')).toBeTruthy();
     }))
 

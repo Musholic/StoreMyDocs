@@ -27,7 +27,17 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/smd_icon.png",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "mode-javascript.js",
+                "input": "node_modules/ace-builds/src-noconflict",
+                "output": "ace"
+              },
+              {
+                "glob": "worker-javascript.js",
+                "input": "node_modules/ace-builds/src-noconflict",
+                "output": "ace"
+              }
             ],
             "styles": [
               "src/theme.scss",

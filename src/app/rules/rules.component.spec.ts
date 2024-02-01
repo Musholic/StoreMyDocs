@@ -18,6 +18,7 @@ import {Rule} from "./rule.repository";
 import {BreakpointObserver} from "@angular/cdk/layout";
 import {RuleService} from "./rule.service";
 import {Router} from "@angular/router";
+import {AceEditorComponent} from "../ace-editor/ace-editor.component";
 
 function mockRouterReloadPage() {
   let router = ngMocks.get(Router);
@@ -33,6 +34,7 @@ describe('RulesComponent', () => {
     .keep(FormsModule)
     .keep(MatChipsModule)
     .keep(BreakpointObserver)
+    .keep(AceEditorComponent)
     .provide({
       provide: Router,
       useValue: mock<Router>()
@@ -93,7 +95,7 @@ describe('RulesComponent', () => {
     fixture.detectChanges();
     await page.setRuleName('New rule');
     await page.setRuleCategory(['Cat1', 'ChildCat1']);
-    await page.setRuleScript('return fileName === "child_cat_1.txt"');
+    page.setRuleScript('return fileName === "child_cat_1.txt"');
     await page.clickOnCreate();
 
     // Assert
@@ -250,9 +252,9 @@ class Page {
     }
   }
 
-  async setRuleScript(script: string) {
-    let inputHarness = await this.getInputByFloatingLabel('Script');
-    await inputHarness.setValue(script);
+  setRuleScript(script: string) {
+    let aceEditorComponent = ngMocks.find(AceEditorComponent).componentInstance;
+    aceEditorComponent.editor?.setValue(script);
   }
 
   async clickOnCreate() {

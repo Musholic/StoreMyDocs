@@ -36,6 +36,7 @@ import {MatExpansionModule} from "@angular/material/expansion";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {UserRootComponent} from './user-root/user-root.component';
 import {routeReuseStrategyProvider} from "./route-strategy.service";
+import {AceEditorComponent} from "./ace-editor/ace-editor.component";
 
 @NgModule({
   declarations: [
@@ -49,7 +50,8 @@ import {routeReuseStrategyProvider} from "./route-strategy.service";
     LoginComponent,
     TitleHeaderComponent,
     RulesComponent,
-    UserRootComponent
+    UserRootComponent,
+    AceEditorComponent
   ],
   imports: [
     BrowserModule,

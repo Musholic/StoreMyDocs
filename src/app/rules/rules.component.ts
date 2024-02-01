@@ -5,7 +5,6 @@ import {MatChipInputEvent} from "@angular/material/chips";
 import {Rule} from "./rule.repository";
 import {Router} from "@angular/router";
 
-
 @Component({
   selector: 'app-rules',
   templateUrl: './rules.component.html',
@@ -25,6 +24,7 @@ export class RulesComponent {
   }
 
   createOrUpdateRule() {
+    // TODO: check if all validations are ok? required fields are not empty
     if (this.ruleToCreateOrUpdate) {
       if (!this.ruleToCreateOrUpdate.id) {
         this.ruleService.create(this.ruleToCreateOrUpdate)
