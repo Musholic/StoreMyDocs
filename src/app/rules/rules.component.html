@@ -34,7 +34,7 @@
     <mat-form-field class="fullWidth">
       <mat-label>Script</mat-label>
       <!--      TODO: Also use for viewing-->
-      <app-ace-editor [(value)]="ruleToCreateOrUpdate.script" [required]="true" name="script"></app-ace-editor>
+      <app-ace-editor [(value)]="ruleToCreateOrUpdate.script" name="script" required></app-ace-editor>
     </mat-form-field>
     <div class="actionButtons">
       <button (click)="cancelCreateOrUpdate()" mat-raised-button>Cancel</button>
@@ -54,9 +54,8 @@
             *ngIf="!first"> &nbsp;&gt; </span>{{ cat }}</span>
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <div class="ruleScript">
-        {{ rule.script }}
-      </div>
+      <app-ace-editor [value]="rule.script" class="ruleScript" disabled>
+      </app-ace-editor>
       <div class="ruleButtons">
         <button (click)="update(rule)" mat-raised-button>Edit</button>
         &nbsp;

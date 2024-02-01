@@ -3,6 +3,7 @@ import * as ace from "ace-builds";
 import {Ace} from "ace-builds";
 import {MatFormFieldControl} from "@angular/material/form-field";
 import {Subject} from "rxjs";
+import {BooleanInput, coerceBooleanProperty} from "@angular/cdk/coercion";
 import Editor = Ace.Editor;
 
 @Component({
@@ -26,7 +27,6 @@ export class AceEditorComponent implements MatFormFieldControl<string>, OnInit {
   focused: boolean = false;
   empty: boolean = false;
   shouldLabelFloat: boolean = true;
-  disabled: boolean = false;
   errorState: boolean = false;
   controlType?: string | undefined = "app-ace-editor";
   autofilled?: boolean | undefined;
@@ -44,22 +44,45 @@ export class AceEditorComponent implements MatFormFieldControl<string>, OnInit {
   private _required = false;
 
   @Input()
-  get required() {
+  get required(): boolean {
     return this._required;
   }
 
-  set required(req: boolean) {
-    this._required = req;
+  set required(req: BooleanInput) {
+    this._required = coerceBooleanProperty(req);
     this.stateChanges.next();
   }
 
+  private _disabled = false;
+
+  @Input()
+  get disabled(): boolean {
+    return this._disabled;
+  }
+
+  set disabled(value: BooleanInput) {
+    this._disabled = coerceBooleanProperty(value);
+    this.stateChanges.next();
+  }
 
   ngOnInit() {
     if (this.ruleScriptEdit) {
-      this.editor = ace.edit(this.ruleScriptEdit.nativeElement);
-      this.editor.session.setMode("ace/mode/javascript");
+      this.editor = ace.edit(this.ruleScriptEdit.nativeElement, {
+        value: this.value,
+        mode: "ace/mode/javascript",
+        minLines: 2,
+        maxLines: 15
+      });
 
-      this.editor.setValue(this.value);
+      if (this.disabled) {
+        this.editor.setReadOnly(true);
+        this.editor.setHighlightActiveLine(false);
+        this.editor.setHighlightGutterLine(false);
+        // hide the cursor
+        // @ts-ignore
+        this.editor.renderer.$cursorLayer.element.style.display = "none"
+      }
+
       this.editor.on("input", () => {
         this.valueChange.emit(this.editor?.getValue());
         this.stateChanges.next();

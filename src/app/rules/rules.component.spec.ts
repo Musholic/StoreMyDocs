@@ -4,7 +4,7 @@ import {AppModule} from "../app.module";
 import {mock, when} from "strong-mock";
 import {MatButtonHarness} from "@angular/material/button/testing";
 import {HarnessLoader, TestKey} from "@angular/cdk/testing";
-import {ComponentFixture, fakeAsync, tick} from "@angular/core/testing";
+import {ComponentFixture, fakeAsync, flush, tick} from "@angular/core/testing";
 import {TestbedHarnessEnvironment} from "@angular/cdk/testing/testbed";
 import {MatInputHarness} from "@angular/material/input/testing";
 import {MatFormFieldHarness} from "@angular/material/form-field/testing";
@@ -67,6 +67,7 @@ describe('RulesComponent', () => {
     // Assert
     tick();
     fixture.detectChanges();
+    flush();
     expect(Page.getRuleNames()).toEqual(['Electric bill', 'Bank account statement']);
     expect(Page.getRuleCategory('Electric bill')).toEqual('Electricity  > Bills');
     expect(Page.getRuleScript('Electric bill')).toEqual('return fileName === "electricity_bill.pdf"');
@@ -220,8 +221,7 @@ class Page {
     let rule = ngMocks.findAll("mat-panel-title")
       .find(row => row.nativeNode.textContent.trim() === name)
       ?.parent?.parent;
-    return ngMocks.find(rule, '.ruleScript')
-      .nativeNode.textContent.trim();
+    return ngMocks.find(rule, AceEditorComponent).componentInstance.editor?.getValue() ?? '';
   }
 
   async clickOnCreateNewRule() {
