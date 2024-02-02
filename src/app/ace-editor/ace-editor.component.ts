@@ -4,7 +4,10 @@ import {Ace} from "ace-builds";
 import {MatFormFieldControl} from "@angular/material/form-field";
 import {Subject} from "rxjs";
 import {BooleanInput, coerceBooleanProperty} from "@angular/cdk/coercion";
+import "ace-builds/src-noconflict/ext-language_tools";
 import Editor = Ace.Editor;
+import Completer = Ace.Completer;
+import Completion = Ace.Completion;
 
 @Component({
   selector: 'app-ace-editor',
@@ -71,8 +74,12 @@ export class AceEditorComponent implements MatFormFieldControl<string>, OnInit {
         value: this.value,
         mode: "ace/mode/javascript",
         minLines: 2,
-        maxLines: 15
+        maxLines: 15,
+        enableBasicAutocompletion: true,
+        enableLiveAutocompletion: true
       });
+
+      this.setupCustomCompletions();
 
       if (this.disabled) {
         this.editor.setReadOnly(true);
@@ -96,6 +103,27 @@ export class AceEditorComponent implements MatFormFieldControl<string>, OnInit {
         this.stateChanges.next();
       });
     }
+  }
+
+  private setupCustomCompletions() {
+    let customCompleter: Completer = {
+      getCompletions(_editor: Ace.Editor, _session: Ace.EditSession, _position: Ace.Point, _prefix: string, callback: Ace.CompleterCallback): void {
+        let completions: Completion[] = [
+          {
+            value: "fileName",
+            meta: "local",
+            score: 100
+          },
+          {
+            value: "fileContent",
+            meta: "local",
+            score: 100
+          }
+        ];
+        callback(null, completions);
+      }
+    }
+    this.editor?.completers.push(customCompleter);
   }
 
   setDescribedByIds(ids: string[]): void {
