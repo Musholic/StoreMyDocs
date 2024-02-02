@@ -79,7 +79,8 @@
               <mat-icon>download</mat-icon>
               <span>Download</span>
             </a>
-            <button (click)="setCategory(element)" class="set-category-file" mat-menu-item>
+            <button (click)="setCategory(element)" [disabled]="hasMatchingRule(element)" class="set-category-file"
+                    mat-menu-item>
               <mat-icon>category</mat-icon>
               <span>Set category</span>
             </button>

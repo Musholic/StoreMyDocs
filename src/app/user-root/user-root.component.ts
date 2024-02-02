@@ -16,6 +16,7 @@ export class UserRootComponent {
     databaseBackupAndRestoreService.restore()
       .subscribe(() => {
         ruleService.runAll().subscribe();
+        // TODO: refresh after if there was any update to one of the file categories
       });
   }
 }

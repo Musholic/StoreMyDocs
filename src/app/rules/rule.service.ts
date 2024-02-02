@@ -86,6 +86,22 @@ export class RuleService {
     return this.ruleRepository.update(rule);
   }
 
+  async getFileToMatchingRuleMap(): Promise<Map<string, string>> {
+    let result = new Map<string, string>();
+    let rules = await this.ruleRepository.findAll();
+    // Search for rules which have fileRuns evaluated to true
+    for (let rule of rules) {
+      if (rule.fileRuns) {
+        for (const fileRun of rule.fileRuns) {
+          if (fileRun.value) {
+            result.set(fileRun.id, rule.name);
+          }
+        }
+      }
+    }
+    return result;
+  }
+
   /**
    * Run the given rules on the given files and set the associated category for each file that got a matching rule
    */

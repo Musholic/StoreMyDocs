@@ -376,6 +376,35 @@ describe('RuleService', () => {
       // No failure in mock setup
     }));
   })
+
+  describe('getFileToMatchingRuleMap', () => {
+    it('should return the mapping with one match', async () => {
+      // Arrange
+      const service = MockRender(RuleService).point.componentInstance;
+
+      let ruleRepository = ngMocks.findInstance(RuleRepository);
+      when(() => ruleRepository.findAll())
+        .thenResolve([{
+          name: 'Matching rule',
+          category: ['Test'],
+          script: 'return true;',
+          fileRuns: [{id: "id-file1", value: true}, {id: "id-file2", value: false}]
+        }, {
+          name: 'False rule',
+          category: ['False'],
+          script: 'return false;',
+          fileRuns: [{id: "id-file1", value: false}, {id: "id-file2", value: false}]
+        }]);
+
+      // Act
+      let fileToMatchingRuleMap = await service.getFileToMatchingRuleMap();
+
+      // Assert
+      expect(fileToMatchingRuleMap)
+        .toEqual(new Map([['id-file1', 'Matching rule']]));
+    })
+
+  });
 });
 
 let ruleServiceMock: RuleService;

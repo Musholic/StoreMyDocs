@@ -37,6 +37,7 @@ import {MatSortModule} from "@angular/material/sort";
 import {BreakpointObserver} from "@angular/cdk/layout";
 import {FilesCacheService} from "../files-cache/files-cache.service";
 import {mockFilesCacheService} from "../files-cache/files-cache.service.spec";
+import {RuleService} from "../rules/rule.service";
 
 function mockRenderAndWaitForChanges() {
   let fixture = MockRender(FileListComponent, null, {reset: true});
@@ -64,6 +65,10 @@ describe('FileListComponent', () => {
     .provide({
       provide: FilesCacheService,
       useValue: mock<FilesCacheService>()
+    })
+    .provide({
+      provide: RuleService,
+      useValue: mock<RuleService>()
     })
     .replace(BrowserAnimationsModule, NoopAnimationsModule)
   );
@@ -518,6 +523,27 @@ describe('FileListComponent', () => {
       let result = await page.getCategoriesInDialog();
       expect(result).toEqual(['cat1', 'cat1b'])
     }))
+
+    it('should prevent category assignment when the file categories were automatically assigned', fakeAsync(async () => {
+      // Arrange
+      let file = mockFileElement('name');
+      mockFilesCacheService([file], true);
+
+      let ruleService = ngMocks.get(RuleService);
+      let fileToMatchingRuleMap = new Map();
+      fileToMatchingRuleMap.set(file.id, "existing rule");
+      when(() => ruleService.getFileToMatchingRuleMap()).thenResolve(fileToMatchingRuleMap);
+
+      let fixture = mockRenderAndWaitForChanges();
+      let page = new Page(fixture);
+
+      // Act
+      Page.openItemMenu('name');
+      let isMenuDisabled = await page.isMenuAssignCategoryDisabled();
+
+      // Assert
+      expect(isMenuDisabled).toBeTruthy();
+    }))
   })
 
   describe('Filter by file name', () => {
@@ -859,6 +885,10 @@ class Page {
     await this.clickMenu('.set-category-file');
   }
 
+  isMenuAssignCategoryDisabled() {
+    return this.isMenuDisabled('.set-category-file');
+  }
+
   async setCategoryInDialog(category: string) {
     let testElement = await this.typeCategoryInDialog(category);
     await testElement.sendKeys(TestKey.ENTER)
@@ -937,6 +967,17 @@ class Page {
     // The menu should be the one opened
     let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
     await matMenuHarness?.clickItem({selector: selector});
+  }
+
+  private async isMenuDisabled(selector: string) {
+    let matMenuHarnesses = await this.loader.getAllHarnesses(MatMenuHarness);
+    // The menu should be the one opened
+    let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
+    if (!matMenuHarness) {
+      throw new Error("No menu for selector: " + selector);
+    }
+    let menuItems = await matMenuHarness.getItems({selector: selector});
+    return menuItems[0].isDisabled();
   }
 
 }

@@ -20,6 +20,7 @@ import {
 } from "@angular/material/autocomplete";
 import {MatSort, MatSortable} from "@angular/material/sort";
 import {FilesCacheService} from "../files-cache/files-cache.service";
+import {RuleService} from "../rules/rule.service";
 
 export interface FileOrFolderElement {
   id: string;
@@ -65,14 +66,15 @@ export class FileListComponent implements OnInit {
   isCategoryPanelExpanded = true;
   private categoryFilters = new Set<FolderElement>();
   private allFiles: FileOrFolderElement[] = [];
+  private fileToMatchingRuleMap = new Map<string, string>();
 
-  constructor(private fileService: FileService, public dialog: MatDialog, private filesCacheService: FilesCacheService) {
+  constructor(private fileService: FileService, public dialog: MatDialog, private filesCacheService: FilesCacheService, private ruleService: RuleService) {
     this.fileDataSource.filterPredicate = data => {
       return this.filterPredicate(data);
     }
   }
 
-  ngOnInit(): void {
+  async ngOnInit() {
     this.baseFolderId = this.filesCacheService.getBaseFolder();
     this.allFiles = this.filesCacheService.getAll();
     this.populateFilesAndCategories();
@@ -83,6 +85,7 @@ export class FileListComponent implements OnInit {
     }
 
     this.checkForEmptyCategoriesToRemove();
+    this.fileToMatchingRuleMap = await this.ruleService.getFileToMatchingRuleMap();
   }
 
   trashFile(element: FileElement) {
@@ -248,6 +251,11 @@ export class FileListComponent implements OnInit {
     return !this.fileDataSource.data.some(fileEl => {
       return this.getCategories(fileEl).includes(category);
     })
+  }
+
+
+  hasMatchingRule(file: FileElement) {
+    return this.fileToMatchingRuleMap.has(file.id);
   }
 }
 
