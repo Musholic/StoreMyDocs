@@ -37,6 +37,7 @@ import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {UserRootComponent} from './user-root/user-root.component';
 import {routeReuseStrategyProvider} from "./route-strategy.service";
 import {AceEditorComponent} from "./ace-editor/ace-editor.component";
+import {MatTooltipModule} from "@angular/material/tooltip";
 
 @NgModule({
   declarations: [
@@ -77,7 +78,8 @@ import {AceEditorComponent} from "./ace-editor/ace-editor.component";
     MatChipsModule,
     MatSortModule,
     MatExpansionModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatTooltipModule
   ],
   providers: [
     httpInterceptorProviders,

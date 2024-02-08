@@ -59,6 +59,8 @@
         <th *matHeaderCellDef mat-header-cell> Category</th>
         <td *matCellDef="let element" mat-cell>
           <mat-chip-listbox [multiple]="true">
+            <mat-icon *ngIf="hasMatchingRule(element)" [matTooltip]="getAssignCategoryTooltip(element)">calculate
+            </mat-icon>
             <mat-chip-option (selectionChange)="filterByCategory(cat, $event.selected)" *ngFor="let cat of getCategories(element)"
                              [selected]="isCategorySelected(cat)">{{cat.name}}</mat-chip-option>
           </mat-chip-listbox>
@@ -80,7 +82,7 @@
               <span>Download</span>
             </a>
             <button (click)="setCategory(element)" [disabled]="hasMatchingRule(element)" class="set-category-file"
-                    mat-menu-item>
+                    [matTooltip]="getAssignCategoryTooltip(element)" mat-menu-item>
               <mat-icon>category</mat-icon>
               <span>Set category</span>
             </button>

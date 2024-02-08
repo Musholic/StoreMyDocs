@@ -38,6 +38,8 @@ import {BreakpointObserver} from "@angular/cdk/layout";
 import {FilesCacheService} from "../files-cache/files-cache.service";
 import {mockFilesCacheService} from "../files-cache/files-cache.service.spec";
 import {RuleService} from "../rules/rule.service";
+import {MatTooltipModule} from "@angular/material/tooltip";
+import {MatTooltipHarness} from "@angular/material/tooltip/testing";
 
 function mockRenderAndWaitForChanges() {
   let fixture = MockRender(FileListComponent, null, {reset: true});
@@ -62,6 +64,7 @@ describe('FileListComponent', () => {
     .keep(MatChipsModule)
     .keep(MatSortModule)
     .keep(BreakpointObserver)
+    .keep(MatTooltipModule)
     .provide({
       provide: FilesCacheService,
       useValue: mock<FilesCacheService>()
@@ -526,12 +529,13 @@ describe('FileListComponent', () => {
 
     it('should prevent category assignment when the file categories were automatically assigned', fakeAsync(async () => {
       // Arrange
-      let file = mockFileElement('name');
-      mockFilesCacheService([file], true);
+      let folder = mockFolderElement('Auto');
+      let file = mockFileElement('name', folder.id);
+      mockFilesCacheService([file, folder], true);
 
       let ruleService = ngMocks.get(RuleService);
       let fileToMatchingRuleMap = new Map();
-      fileToMatchingRuleMap.set(file.id, "existing rule");
+      fileToMatchingRuleMap.set(file.id, "Existing Rule");
       when(() => ruleService.getFileToMatchingRuleMap()).thenResolve(fileToMatchingRuleMap);
 
       let fixture = mockRenderAndWaitForChanges();
@@ -539,10 +543,15 @@ describe('FileListComponent', () => {
 
       // Act
       Page.openItemMenu('name');
-      let isMenuDisabled = await page.isMenuAssignCategoryDisabled();
 
       // Assert
+      fixture.detectChanges();
+      flush();
+      let isMenuDisabled = await page.isMenuAssignCategoryDisabled();
       expect(isMenuDisabled).toBeTruthy();
+      let tooltip = await page.getMenuAssignCategoryTooltip();
+      expect(tooltip).toEqual('Automatically assigned by rule "Existing Rule"');
+      expect(Page.getTableRows()).toEqual([['name', 'calculateAuto', 'Jan 1, 2000, 12:00:00 AM', '0 B', 'more_vert']]);
     }))
   })
 
@@ -878,15 +887,25 @@ class Page {
   }
 
   async clickMenuTrash() {
-    await this.clickMenu('.trash-file');
+    let matMenuItemHarness = await this.getMenu('.trash-file');
+    await matMenuItemHarness.click();
   }
 
   async clickMenuAssignCategory() {
-    await this.clickMenu('.set-category-file');
+    let matMenuItemHarness = await this.getMenu('.set-category-file');
+    await matMenuItemHarness.click();
   }
 
-  isMenuAssignCategoryDisabled() {
-    return this.isMenuDisabled('.set-category-file');
+  async isMenuAssignCategoryDisabled() {
+    let matMenuItemHarness = await this.getMenu('.set-category-file');
+    return matMenuItemHarness.isDisabled();
+  }
+
+  async getMenuAssignCategoryTooltip() {
+    // There is only one toolTip in our tests, so we can simplify this method
+    let matTooltipHarness = await this.loader.getHarness(MatTooltipHarness);
+    await matTooltipHarness.show();
+    return matTooltipHarness.getTooltipText();
   }
 
   async setCategoryInDialog(category: string) {
@@ -962,14 +981,7 @@ class Page {
     return this.fixture.debugElement.parent?.query(By.directive(SelectFileCategoryDialog)).componentInstance as SelectFileCategoryDialog;
   }
 
-  private async clickMenu(selector: string) {
-    let matMenuHarnesses = await this.loader.getAllHarnesses(MatMenuHarness);
-    // The menu should be the one opened
-    let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
-    await matMenuHarness?.clickItem({selector: selector});
-  }
-
-  private async isMenuDisabled(selector: string) {
+  private async getMenu(selector: string) {
     let matMenuHarnesses = await this.loader.getAllHarnesses(MatMenuHarness);
     // The menu should be the one opened
     let matMenuHarness = await findAsyncSequential(matMenuHarnesses, value => value.isOpen());
@@ -977,7 +989,7 @@ class Page {
       throw new Error("No menu for selector: " + selector);
     }
     let menuItems = await matMenuHarness.getItems({selector: selector});
-    return menuItems[0].isDisabled();
+    return menuItems[0];
   }
 
 }

@@ -257,6 +257,14 @@ export class FileListComponent implements OnInit {
   hasMatchingRule(file: FileElement) {
     return this.fileToMatchingRuleMap.has(file.id);
   }
+
+  getAssignCategoryTooltip(file: FileElement) {
+    let matchingRule = this.fileToMatchingRuleMap.get(file.id);
+    if (matchingRule) {
+      return 'Automatically assigned by rule "' + matchingRule + '"'
+    }
+    return "";
+  }
 }
 
 @Component({
