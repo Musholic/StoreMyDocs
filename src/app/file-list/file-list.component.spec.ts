@@ -41,7 +41,11 @@ import {RuleService} from "../rules/rule.service";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {MatTooltipHarness} from "@angular/material/tooltip/testing";
 
-function mockRenderAndWaitForChanges() {
+function mockRenderAndWaitForChanges(mockRuleService: boolean = true) {
+  if (mockRuleService) {
+    let ruleService = ngMocks.get(RuleService);
+    when(() => ruleService.getFileToMatchingRuleMap()).thenResolve(new Map());
+  }
   let fixture = MockRender(FileListComponent, null, {reset: true});
   try {
     tick();
@@ -538,7 +542,7 @@ describe('FileListComponent', () => {
       fileToMatchingRuleMap.set(file.id, "Existing Rule");
       when(() => ruleService.getFileToMatchingRuleMap()).thenResolve(fileToMatchingRuleMap);
 
-      let fixture = mockRenderAndWaitForChanges();
+      let fixture = mockRenderAndWaitForChanges(false);
       let page = new Page(fixture);
 
       // Act
@@ -551,7 +555,7 @@ describe('FileListComponent', () => {
       expect(isMenuDisabled).toBeTruthy();
       let tooltip = await page.getMenuAssignCategoryTooltip();
       expect(tooltip).toEqual('Automatically assigned by rule "Existing Rule"');
-      expect(Page.getTableRows()).toEqual([['name', 'calculateAuto', 'Jan 1, 2000, 12:00:00 AM', '0 B', 'more_vert']]);
+      expect(Page.getTableRows()).toEqual([['name', 'calculate Auto', 'Jan 1, 2000, 12:00:00 AM', '0 B', 'more_vert']]);
     }))
   })
 
