@@ -7,6 +7,8 @@ import {FileService} from "../file-list/file.service";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {BackgroundTaskService} from "../background-task/background-task.service";
 import {FilesCacheService} from "../files-cache/files-cache.service";
+import JSZip from "jszip";
+import {fromPromise} from "rxjs/internal/observable/innerFrom";
 
 @Injectable()
 export class DatabaseBackupAndRestoreService {
@@ -22,9 +24,19 @@ export class DatabaseBackupAndRestoreService {
   }
 
   backup() {
-    let progress = this.backgroundTaskService.showProgress('Backup', 2, "Creating backup");
+    let progress = this.backgroundTaskService.showProgress('Backup', 3, "Creating backup");
     return from(exportDB(db))
-      .pipe(tap(() => progress.next({index: 2, value: 0, description: "Uploading backup"})),
+      .pipe(
+        tap(() => progress.next({index: 2, value: 0, description: "Compressing backup"})),
+        mergeMap(blob => {
+          const zip = new JSZip();
+          zip.file("db.backup", blob);
+          return fromPromise(zip.generateAsync({
+            type: "blob",
+            compression: "DEFLATE"
+          }));
+        }),
+        tap(() => progress.next({index: 3, value: 0, description: "Uploading backup"})),
         mergeMap(blob => {
           let dbFile = this.findExistingDbFile();
           return this.fileUploadService.upload({name: DatabaseBackupAndRestoreService.DB_NAME, blob}, dbFile?.id);
@@ -49,14 +61,24 @@ export class DatabaseBackupAndRestoreService {
     let lastDbBackupTime = this.getLastDbBackupTime();
     let modifiedTime = dbFile?.modifiedTime ?? Date.now();
     if (dbFile && modifiedTime > lastDbBackupTime) {
-      let progress = this.backgroundTaskService.showProgress('Automatic restore', 2, "Downloading last backup");
+      let progress = this.backgroundTaskService.showProgress('Automatic restore', 3, "Downloading last backup");
       return this.fileService.downloadFile(dbFile, progress)
         .pipe(
-          tap(() => progress.next({index: 2, value: 0, description: 'Importing last backup'})),
+          tap(() => progress.next({index: 2, value: 0, description: 'Extracting last backup'})),
           mergeMap(dbDownloadResponse => {
-            return from(db.import(dbDownloadResponse, {clearTablesBeforeImport: true}));
+            let zip = new JSZip();
+            return fromPromise(zip.loadAsync(dbDownloadResponse).then(value => {
+              return value.file("db.backup")?.async("blob");
+            }));
           }),
-          tap(() => progress.next({index: 2, value: 100})),
+          tap(() => progress.next({index: 3, value: 0, description: 'Importing last backup'})),
+          mergeMap(dbBlob => {
+            if (!dbBlob) {
+              return of();
+            }
+            return from(db.import(dbBlob, {clearTablesBeforeImport: true}));
+          }),
+          tap(() => progress.next({index: 3, value: 100})),
           map(() => void 0),
           finalize(() => this.updateLastDbBackupTime())
         );

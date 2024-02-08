@@ -337,7 +337,7 @@ describe('RuleService', () => {
 
       let file = mockFileElement('dummy.pdf');
       file.mimeType = 'application/pdf';
-      let dummyPdfResponse = await fetch('/base/src/app/rules/dummy.pdf');
+      let dummyPdfResponse = await fetch('/base/testing-assets/rules/dummy.pdf');
       let dummyPdfBlob = await dummyPdfResponse.blob();
       when(() => fileService.downloadFile(file, progress))
         .thenReturn(mustBeConsumedAsyncObservable(dummyPdfBlob));

@@ -20,39 +20,26 @@ import {FilesCacheService} from "../files-cache/files-cache.service";
 import {FileElement} from "../file-list/file-list.component";
 import {Rule} from "../rules/rule.repository";
 import {mockFileService} from "../file-list/file.service.spec";
+import JSZip from "jszip";
 
-function setupMockForRestore(dbBackupFile: FileElement) {
+async function setupMockForRestore(dbBackupFileElement: FileElement) {
   let backgroundTaskService = mockBackgroundTaskService();
 
   let progress = mock<BehaviorSubject<Progress>>();
-  when(() => backgroundTaskService.showProgress("Automatic restore", 2, "Downloading last backup"))
+  when(() => backgroundTaskService.showProgress("Automatic restore", 3, "Downloading last backup"))
     .thenReturn(progress);
-  when(() => progress.next({index: 2, value: 0, description: "Importing last backup"})).thenReturn();
-  when(() => progress.next({index: 2, value: 100})).thenReturn();
+  when(() => progress.next({index: 2, value: 0, description: "Extracting last backup"})).thenReturn();
+  when(() => progress.next({index: 3, value: 0, description: "Importing last backup"})).thenReturn();
+  when(() => progress.next({index: 3, value: 100})).thenReturn();
 
   let fileService = mockFileService();
-  when(() => fileService.downloadFile(dbBackupFile, progress))
-    .thenReturn(mustBeConsumedAsyncObservable(new Blob([JSON.stringify({
-      "formatName": "dexie",
-      "formatVersion": 1,
-      "data": {
-        "databaseName": "StoreMyDocsDB",
-        "databaseVersion": 3,
-        "tables": [{"name": "rules", "schema": "++id", "rowCount": 1}],
-        "data": [{
-          "tableName": "rules",
-          "inbound": true,
-          "rows": [{
-            "name": "TestRule",
-            "category": ["Test1", "ChildTest1"],
-            "script": "return true",
-            "id": 1,
-            "$types": {"category": "arrayNonindexKeys"}
-          }]
-        }]
-      }
-    })])));
+  let compressedDbBackupFile = await fetch("/base/testing-assets/database/db.backup.zip");
+  let compressedDbBackupBlob = await compressedDbBackupFile.blob();
+  when(() => fileService.downloadFile(dbBackupFileElement, progress))
+    .thenReturn(mustBeConsumedAsyncObservable(compressedDbBackupBlob));
 }
+
+const EMPTY_DB_BACKUP = `{"formatName":"dexie","formatVersion":1,"data":{"databaseName":"StoreMyDocsDB","databaseVersion":3,"tables":[{"name":"rules","schema":"++id","rowCount":0}],"data":[{"tableName":"rules","inbound":true,"rows":[]}]}}`;
 
 describe('DatabaseBackupAndRestoreService', () => {
   beforeEach(() => MockBuilder(DatabaseBackupAndRestoreService, AppModule)
@@ -82,13 +69,12 @@ describe('DatabaseBackupAndRestoreService', () => {
   describe('restore', () => {
     it('The database should be restored', fakeAsync(async () => {
       // Arrange
-
       let localStorageMock = getLocalStorageMock();
       when(() => localStorageMock.getItem('last_db_backup_time')).thenReturn(null);
       when(() => localStorageMock.setItem('last_db_backup_time', It.isAny())).thenReturn();
 
       let dbBackupFile = mockFileElement('db.backup');
-      setupMockForRestore(dbBackupFile);
+      await setupMockForRestore(dbBackupFile);
 
       let databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
 
@@ -98,7 +84,6 @@ describe('DatabaseBackupAndRestoreService', () => {
       let restorePromise = lastValueFrom(databaseBackupAndRestoreService.restore());
 
       // Assert
-      tick();
       // We need to explicitly wait for the restore to finish
       await restorePromise;
 
@@ -119,7 +104,7 @@ describe('DatabaseBackupAndRestoreService', () => {
       when(() => localStorageMock.setItem('last_db_backup_time', It.isAny())).thenReturn();
 
       let dbBackupFile = mockFileElement('db.backup');
-      setupMockForRestore(dbBackupFile);
+      await setupMockForRestore(dbBackupFile);
 
       let databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
 
@@ -136,8 +121,6 @@ describe('DatabaseBackupAndRestoreService', () => {
       let restorePromise = lastValueFrom(databaseBackupAndRestoreService.restore());
 
       // Assert
-      tick();
-
       // We need to explicitly wait for the restore to finish
       await restorePromise;
 
@@ -184,9 +167,10 @@ describe('DatabaseBackupAndRestoreService', () => {
 
       let backgroundTaskService = mockBackgroundTaskService();
       let progress = mock<BehaviorSubject<Progress>>();
-      when(() => backgroundTaskService.showProgress("Backup", 2, "Creating backup"))
+      when(() => backgroundTaskService.showProgress("Backup", 3, "Creating backup"))
         .thenReturn(progress);
-      when(() => progress.next({index: 2, description: "Uploading backup", value: 0})).thenReturn();
+      when(() => progress.next({index: 2, description: "Compressing backup", value: 0})).thenReturn();
+      when(() => progress.next({index: 3, description: "Uploading backup", value: 0})).thenReturn();
       when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();
 
       const databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
@@ -194,7 +178,8 @@ describe('DatabaseBackupAndRestoreService', () => {
       mockFilesCacheService([]);
 
       let fileUploadService = ngMocks.get(FileUploadService);
-      when(() => fileUploadService.upload(It.isObject({blob: It.isAny(), name: "db.backup"})))
+      let blobUploadCapture = It.willCapture<Blob>();
+      when(() => fileUploadService.upload(It.isObject({blob: blobUploadCapture, name: "db.backup"})))
         .thenReturn(mustBeConsumedAsyncObservable({
           type: HttpEventType.Response
         } as HttpResponse<any>));
@@ -205,6 +190,15 @@ describe('DatabaseBackupAndRestoreService', () => {
       // Assert
       // No failure in mock setup
       await backupPromise;
+
+      // The blob should be a compressed zip, we have to unzip it and check its content
+      let blob = await blobUploadCapture.value;
+      let stringResult: string | undefined;
+      if (blob) {
+        let zipResult = await JSZip.loadAsync(blob);
+        stringResult = await zipResult.file("db.backup")?.async("string");
+      }
+      expect(stringResult).toEqual(EMPTY_DB_BACKUP)
     })
 
     it('should overwrite the existing backup file when there is already an existing backup', async () => {
@@ -214,9 +208,10 @@ describe('DatabaseBackupAndRestoreService', () => {
 
       let backgroundTaskService = mockBackgroundTaskService();
       let progress = mock<BehaviorSubject<Progress>>();
-      when(() => backgroundTaskService.showProgress("Backup", 2, "Creating backup"))
+      when(() => backgroundTaskService.showProgress("Backup", 3, "Creating backup"))
         .thenReturn(progress);
-      when(() => progress.next({index: 2, description: "Uploading backup", value: 0})).thenReturn();
+      when(() => progress.next({index: 2, description: "Compressing backup", value: 0})).thenReturn();
+      when(() => progress.next({index: 3, description: "Uploading backup", value: 0})).thenReturn();
       when(() => backgroundTaskService.updateProgress(progress, It.isAny())).thenReturn();
 
       const databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;

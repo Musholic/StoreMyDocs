@@ -38,7 +38,7 @@ module.exports = function (config) {
     restartOnFileChange: true,
     files: [
       {
-        pattern: 'src/app/rules/dummy.pdf',
+        pattern: 'testing-assets/**',
         included: false,
         watched: false,
         served: true

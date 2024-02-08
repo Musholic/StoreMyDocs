@@ -33,6 +33,7 @@
     "dexie": "^3.2.4",
     "dexie-export-import": "^4.0.7",
     "filesize": "^9.0.11",
+    "jszip": "^3.10.1",
     "ngx-filesize": "^3.0.2",
     "pdfjs-dist": "^3.0.0",
     "rxjs": "~7.8.0",
