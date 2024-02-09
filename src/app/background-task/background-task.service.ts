@@ -53,6 +53,14 @@ export class BackgroundTaskService {
     }
   }
 
+  isEmpty() {
+    if (this.snackBarRef) {
+      // A message is shown, but we must check if the task are already finished
+      return this.snackBarRef.instance.isAllTaskFinished();
+    }
+    return true;
+  }
+
   private showSnackBar() {
     if (!this.snackBarRef) {
       this.snackBarRef = this.snackBar.openFromComponent(SnackBarProgressIndicatorComponent);
@@ -128,6 +136,10 @@ class SnackBarProgressIndicatorComponent {
         this.isEmpty = false;
       }
     })
+  }
+
+  isAllTaskFinished() {
+    return this.dataList.every(this.isFinished);
   }
 
   private dismissIfEmpty() {

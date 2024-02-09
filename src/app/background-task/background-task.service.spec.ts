@@ -247,6 +247,42 @@ describe('BackgroundTaskService', () => {
         description: "Testing download"
       });
     });
+
+  })
+
+  describe('isEmpty', () => {
+    it('Should return false when there is a task in progress', async () => {
+      // Arrange
+      let fixture = MockRender(BackgroundTaskService);
+      const backgroundTaskService = fixture.point.componentInstance;
+      backgroundTaskService.showProgress("Test", 2, "Doing first test");
+
+      // Act
+      let result = backgroundTaskService.isEmpty();
+
+      // Assert
+      expect(result).toBeFalsy();
+    });
+
+    it('Should return true when there is no more task in progress (even if there is still a message)', async () => {
+      // Arrange
+      let fixture = MockRender(BackgroundTaskService);
+      const backgroundTaskService = fixture.point.componentInstance;
+      let progress = backgroundTaskService.showProgress("Test", 2, "Doing first test");
+      // Finish the task, a message should be shown for 3 seconds
+      progress.next({
+        index: 2,
+        value: 100
+      });
+      fixture.detectChanges();
+
+      // Act
+      let result = backgroundTaskService.isEmpty();
+
+      // Assert
+      fixture.detectChanges();
+      expect(result).toBeTruthy();
+    });
   })
 });
 
