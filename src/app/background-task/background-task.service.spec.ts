@@ -170,6 +170,28 @@ describe('BackgroundTaskService', () => {
       expect(result).toEqual("1/2 0% Second test: Starting second test...");
       flush();
     }))
+
+    it('Should not show message for a second task finishing before the first and with no actual step', fakeAsync(async () => {
+      // Arrange
+      let fixture = MockRender(BackgroundTaskService);
+      const backgroundTaskService = fixture.point.componentInstance;
+      backgroundTaskService.showProgress("Test", 4, "Doing first test");
+      fixture.detectChanges();
+      let progress2 = backgroundTaskService.showProgress("Second test", 2);
+
+      // Act
+      // Finish the second task with no actual step
+      progress2.next({
+        index: 2,
+        value: 100
+      })
+
+      // Assert
+      fixture.detectChanges();
+      let result = await Page.getProgressMessage();
+      expect(result).toEqual("1/4 0% Test: Doing first test...");
+      flush();
+    }))
   })
   describe('updateProgress', () => {
     it('Should update progress with intermediate download progress event', () => {

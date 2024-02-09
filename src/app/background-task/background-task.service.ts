@@ -103,7 +103,6 @@ export interface Progress {
 })
 class SnackBarProgressIndicatorComponent {
   public dataList: ProgressData[] = [];
-  private isEmpty = true;
 
   constructor(private snackBarRef: MatSnackBarRef<SnackBarProgressIndicatorComponent>) {
   }
@@ -120,12 +119,11 @@ class SnackBarProgressIndicatorComponent {
   public addProgressData(progressData: ProgressData) {
     let initialProgress = progressData.progress.value;
     this.dataList.push(progressData);
-    if (initialProgress.description) {
-      this.isEmpty = false;
-    }
+    let isEmpty = !initialProgress.description;
+
     progressData.progress.subscribe(progress => {
       if (this.isFinished(progressData)) {
-        if (this.isEmpty) {
+        if (isEmpty) {
           this.removeProgressData(progressData);
         } else {
           setTimeout(() => {
@@ -133,7 +131,7 @@ class SnackBarProgressIndicatorComponent {
           }, 3000);
         }
       } else if (progress.description) {
-        this.isEmpty = false;
+        isEmpty = false;
       }
     })
   }
