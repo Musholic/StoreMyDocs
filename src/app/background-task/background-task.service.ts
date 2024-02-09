@@ -56,6 +56,10 @@ export class BackgroundTaskService {
   private showSnackBar() {
     if (!this.snackBarRef) {
       this.snackBarRef = this.snackBar.openFromComponent(SnackBarProgressIndicatorComponent);
+      this.snackBarRef.afterDismissed()
+        .subscribe(() => {
+          this.snackBarRef = undefined;
+        });
     }
   }
 }
@@ -97,7 +101,8 @@ class SnackBarProgressIndicatorComponent {
   }
 
   getTotalProgress(data: ProgressData) {
-    return Math.floor(((data.progress.value.index - 1) * 100 + data.progress.value.value) / data.stepAmount);
+    let totalProgress = Math.floor(((data.progress.value.index - 1) * 100 + data.progress.value.value) / data.stepAmount);
+    return totalProgress + '%';
   }
 
   isFinished(data: ProgressData) {

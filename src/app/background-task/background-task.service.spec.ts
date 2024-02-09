@@ -3,7 +3,7 @@ import {mock} from "strong-mock";
 import {MockBuilder, MockInstance, MockRender} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
-import {fakeAsync, tick} from "@angular/core/testing";
+import {fakeAsync, flush, tick} from "@angular/core/testing";
 import {BrowserAnimationsModule, NoopAnimationsModule} from "@angular/platform-browser/animations";
 import {BehaviorSubject} from "rxjs";
 import {HttpDownloadProgressEvent, HttpEventType, HttpResponse, HttpUploadProgressEvent} from "@angular/common/http";
@@ -146,6 +146,29 @@ describe('BackgroundTaskService', () => {
       fixture.detectChanges();
       let result = await Page.getProgressMessage();
       expect(result).toEqual("1/2 0% Second test: Starting second test...");
+    }))
+
+    it('Should start showing a second task progress after the first task finished', fakeAsync(async () => {
+      // Arrange
+      let fixture = MockRender(BackgroundTaskService);
+      const backgroundTaskService = fixture.point.componentInstance;
+      // Task with no actual step to show which is dismissed immediately
+      let progress1 = backgroundTaskService.showProgress("Test", 4);
+      progress1.next({
+        index: 4,
+        value: 100
+      });
+      tick();
+
+      // Act
+      backgroundTaskService.showProgress("Second test", 2, "Starting second test");
+
+      // Assert
+      tick();
+      fixture.detectChanges();
+      let result = await Page.getProgressMessage();
+      expect(result).toEqual("1/2 0% Second test: Starting second test...");
+      flush();
     }))
   })
   describe('updateProgress', () => {

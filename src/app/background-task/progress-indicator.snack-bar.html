@@ -1,7 +1,7 @@
 <div matSnackBarLabel>
   <div *ngFor="let data of dataList">
     <span>{{ data.progress.value.index }}/{{ data.stepAmount }} {{ getTotalProgress(data) }}
-      % {{ data.globalDescription }}</span>
+      {{ data.globalDescription }}</span>
     <span *ngIf="!isFinished(data)">: {{ data.progress.value.description }}...</span>
     <span *ngIf="isFinished(data)"> finished!</span>
   </div>
