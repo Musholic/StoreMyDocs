@@ -1,13 +1,15 @@
-import {Component, Inject, Injectable} from '@angular/core';
+import {Component, Injectable} from '@angular/core';
 import {BehaviorSubject} from "rxjs";
-import {MAT_SNACK_BAR_DATA, MatSnackBar, MatSnackBarModule, MatSnackBarRef} from "@angular/material/snack-bar";
-import {NgIf} from "@angular/common";
+import {MatSnackBar, MatSnackBarModule, MatSnackBarRef} from "@angular/material/snack-bar";
+import {NgForOf, NgIf} from "@angular/common";
 import {HttpEventType, HttpProgressEvent, HttpResponse} from "@angular/common/http";
 
 @Injectable({
   providedIn: 'root'
 })
 export class BackgroundTaskService {
+
+  private snackBarRef?: MatSnackBarRef<SnackBarProgressIndicatorComponent>;
 
   constructor(private snackBar: MatSnackBar) {
   }
@@ -24,7 +26,12 @@ export class BackgroundTaskService {
       stepAmount: stepAmount,
       progress: progress
     };
-    this.openSnackBar(progressData);
+
+    this.showSnackBar();
+
+    if (this.snackBarRef) {
+      this.snackBarRef.instance.addProgressData(progressData)
+    }
 
     return progress;
   }
@@ -46,8 +53,10 @@ export class BackgroundTaskService {
     }
   }
 
-  private openSnackBar(data: ProgressData) {
-    return this.snackBar.openFromComponent(SnackBarProgressIndicatorComponent, {data: data});
+  private showSnackBar() {
+    if (!this.snackBarRef) {
+      this.snackBarRef = this.snackBar.openFromComponent(SnackBarProgressIndicatorComponent);
+    }
   }
 }
 
@@ -76,36 +85,57 @@ export interface Progress {
   standalone: true,
   imports: [
     MatSnackBarModule,
-    NgIf
+    NgIf,
+    NgForOf
   ]
 })
 class SnackBarProgressIndicatorComponent {
-  progress: Progress;
+  public dataList: ProgressData[] = [];
+  private isEmpty = true;
 
-  constructor(@Inject(MAT_SNACK_BAR_DATA) public data: ProgressData, snackBarRef: MatSnackBarRef<SnackBarProgressIndicatorComponent>) {
-    this.progress = data.progress.getValue();
+  constructor(private snackBarRef: MatSnackBarRef<SnackBarProgressIndicatorComponent>) {
+  }
 
-    data.progress.subscribe(progress => {
-      let noStepYet = !this.progress.description;
-      this.progress = progress;
-      if (this.isFinished()) {
-        if (noStepYet) {
-          // There was no step, and it's already finished,
-          // we can simply dismiss the message since there is actually nothing to inform the users about
-          snackBarRef.dismiss();
+  getTotalProgress(data: ProgressData) {
+    return Math.floor(((data.progress.value.index - 1) * 100 + data.progress.value.value) / data.stepAmount);
+  }
+
+  isFinished(data: ProgressData) {
+    return data.progress.value.index === data.stepAmount && data.progress.value.value === 100;
+  }
+
+  public addProgressData(progressData: ProgressData) {
+    let initialProgress = progressData.progress.value;
+    this.dataList.push(progressData);
+    if (initialProgress.description) {
+      this.isEmpty = false;
+    }
+    progressData.progress.subscribe(progress => {
+      if (this.isFinished(progressData)) {
+        if (this.isEmpty) {
+          this.removeProgressData(progressData);
         } else {
-          // The user must see that something happened
-          snackBarRef._dismissAfter(3000);
+          setTimeout(() => {
+            this.removeProgressData(progressData);
+          }, 3000);
         }
+      } else if (progress.description) {
+        this.isEmpty = false;
       }
     })
   }
 
-  getTotalProgress() {
-    return Math.floor(((this.progress.index - 1) * 100 + this.progress.value) / this.data.stepAmount);
+  private dismissIfEmpty() {
+    if (this.dataList.length === 0) {
+      this.snackBarRef.dismiss();
+    }
   }
 
-  isFinished() {
-    return this.progress.index === this.data.stepAmount && this.progress.value === 100;
+  private removeProgressData(progressData: ProgressData) {
+    let index = this.dataList.indexOf(progressData);
+    if (index > -1) {
+      this.dataList.splice(index, 1)
+    }
+    this.dismissIfEmpty();
   }
 }

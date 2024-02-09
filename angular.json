@@ -44,7 +44,13 @@
               "src/styles.scss"
             ],
             "scripts": [],
-            "webWorkerTsConfig": "tsconfig.worker.json"
+            "webWorkerTsConfig": "tsconfig.worker.json",
+            "allowedCommonJsDependencies": [
+              "filesize",
+              "ace-builds",
+              "jszip",
+              "pdfjs-dist"
+            ]
           },
           "configurations": {
             "production": {

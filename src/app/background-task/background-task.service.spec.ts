@@ -32,6 +32,7 @@ describe('BackgroundTaskService', () => {
       backgroundTaskService.showProgress("Test", 2, "Doing first test");
 
       // Assert
+      fixture.detectChanges();
       let result = await Page.getProgressMessage();
       expect(result).toEqual("1/2 0% Test: Doing first test...");
     })
@@ -74,7 +75,7 @@ describe('BackgroundTaskService', () => {
       let resultMessage = await Page.getProgressMessage();
       expect(resultMessage).toEqual("2/2 100% Test finished!");
       tick(3000);
-      // The message should be gone after 5 seconds at least
+      // The message should be gone after 3 seconds
       resultMessage = await Page.getProgressMessage();
       expect(resultMessage).toEqual(undefined);
     }))
@@ -97,6 +98,54 @@ describe('BackgroundTaskService', () => {
       tick();
       let resultMessage = await Page.getProgressMessage();
       expect(resultMessage).toEqual(undefined);
+    }))
+
+    it('Should support showing a second ongoing task', async () => {
+      // Arrange
+      let fixture = MockRender(BackgroundTaskService);
+      const backgroundTaskService = fixture.point.componentInstance;
+      let progress1 = backgroundTaskService.showProgress("Test", 4, "Doing first test");
+      fixture.detectChanges();
+
+      // Act
+      let progress2 = backgroundTaskService.showProgress("Second test", 2, "Starting second test");
+      progress1.next({
+        index: 2,
+        value: 50,
+        description: "Doing more test"
+      })
+      progress2.next({
+        index: 1,
+        value: 50,
+        description: "Doing second test"
+      })
+
+      // Assert
+      fixture.detectChanges();
+      let result = await Page.getProgressMessage();
+      expect(result).toEqual("2/4 37% Test: Doing more test...1/2 25% Second test: Doing second test...");
+    })
+
+    it('Should support hiding the first ongoing task and still showing the second ongoing task', fakeAsync(async () => {
+      // Arrange
+      let fixture = MockRender(BackgroundTaskService);
+      const backgroundTaskService = fixture.point.componentInstance;
+      let progress1 = backgroundTaskService.showProgress("Test", 4, "Doing first test");
+      fixture.detectChanges();
+
+      // Act
+      backgroundTaskService.showProgress("Second test", 2, "Starting second test");
+      progress1.next({
+        index: 4,
+        value: 100
+      })
+
+      // Assert
+      fixture.detectChanges();
+      tick(3000);
+      fixture.detectChanges();
+      let result = await Page.getProgressMessage();
+      expect(result).toEqual("1/2 0% Second test: Starting second test...");
     }))
   })
   describe('updateProgress', () => {
