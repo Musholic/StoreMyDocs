@@ -1,5 +1,5 @@
 import {Component, Injectable} from '@angular/core';
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, mergeMap, Observable, of, share} from "rxjs";
 import {MatSnackBar, MatSnackBarModule, MatSnackBarRef} from "@angular/material/snack-bar";
 import {NgForOf, NgIf} from "@angular/common";
 import {HttpEventType, HttpProgressEvent, HttpResponse} from "@angular/common/http";
@@ -10,6 +10,8 @@ import {HttpEventType, HttpProgressEvent, HttpResponse} from "@angular/common/ht
 export class BackgroundTaskService {
 
   private snackBarRef?: MatSnackBarRef<SnackBarProgressIndicatorComponent>;
+  private readonly scheduledTasks = new Map<string, Observable<void>>();
+  private readonly runningTasks = new Map<string, Observable<void>>();
 
   constructor(private snackBar: MatSnackBar) {
   }
@@ -59,6 +61,31 @@ export class BackgroundTaskService {
       return this.snackBarRef.instance.isAllTaskFinished();
     }
     return true;
+  }
+
+  schedule(taskName: string, task: () => Observable<void>): Observable<void> {
+    let alreadyScheduledTask = this.scheduledTasks.get(taskName);
+    if (alreadyScheduledTask) {
+      return alreadyScheduledTask;
+    }
+
+    let alreadyRunningTask = this.runningTasks.get(taskName);
+    if (!alreadyRunningTask) {
+      // Initialize the running task with an already finished one for simplicity
+      alreadyRunningTask = of(undefined);
+    }
+    let scheduledTask = alreadyRunningTask.pipe(mergeMap(() => {
+        let runningTask = task()
+          // Multicast the result to all future subscribers since we don't want to rerun the task once for each subscriber
+          .pipe(share());
+        this.runningTasks.set(taskName, runningTask);
+        this.scheduledTasks.delete(taskName);
+        return runningTask;
+      }),
+      // Multicast the result to all future subscribers since we don't want to rerun the task once for each subscriber
+      share());
+    this.scheduledTasks.set(taskName, scheduledTask);
+    return scheduledTask;
   }
 
   private showSnackBar() {
@@ -135,6 +162,7 @@ class SnackBarProgressIndicatorComponent {
       }
     })
   }
+
 
   isAllTaskFinished() {
     return this.dataList.every(this.isFinished);

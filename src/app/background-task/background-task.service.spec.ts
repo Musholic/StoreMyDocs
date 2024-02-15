@@ -5,8 +5,9 @@ import {AppModule} from "../app.module";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {fakeAsync, flush, tick} from "@angular/core/testing";
 import {BrowserAnimationsModule, NoopAnimationsModule} from "@angular/platform-browser/animations";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, delay, map, of} from "rxjs";
 import {HttpDownloadProgressEvent, HttpEventType, HttpResponse, HttpUploadProgressEvent} from "@angular/common/http";
+import {mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
 
 describe('BackgroundTaskService', () => {
   beforeEach(() => MockBuilder(BackgroundTaskService, AppModule)
@@ -305,6 +306,118 @@ describe('BackgroundTaskService', () => {
       fixture.detectChanges();
       expect(result).toBeTruthy();
     });
+  })
+  describe('schedule', () => {
+    it('prevent duplicates of the same task when they are not run yet', fakeAsync(() => {
+      // Arrange
+      let fixture = MockRender(BackgroundTaskService);
+      const backgroundTaskService = fixture.point.componentInstance;
+
+      // Act
+      let result1 = 0;
+      let result2 = 0;
+      let task1 = () => {
+        result1++;
+        return mustBeConsumedAsyncObservable(undefined);
+      };
+      // First instance will be running now
+      backgroundTaskService.schedule("task1", task1).subscribe();
+      // Second instance will be scheduled for later
+      backgroundTaskService.schedule("task1", task1).subscribe();
+      // Third instance will be dropped since it's already scheduled for later
+      backgroundTaskService.schedule("task1", task1).subscribe();
+
+      backgroundTaskService.schedule("task2", () => {
+        result2++;
+        return mustBeConsumedAsyncObservable(undefined);
+      }).subscribe();
+
+      // Assert
+      tick();
+      expect(result1).toEqual(2);
+      expect(result2).toEqual(1);
+    }));
+
+    it('allows duplicates of the same task if the first task already completed', fakeAsync(() => {
+      // Arrange
+      let fixture = MockRender(BackgroundTaskService);
+      const backgroundTaskService = fixture.point.componentInstance;
+      // Schedule a first instance of task1
+      let result1 = 0;
+      let task1 = () => {
+        result1++;
+        return mustBeConsumedAsyncObservable(undefined);
+      };
+      backgroundTaskService.schedule("task1", task1).subscribe();
+      tick();
+
+      // Act
+      backgroundTaskService.schedule("task1", task1).subscribe();
+
+      // Assert
+      tick();
+      expect(result1).toEqual(2);
+    }));
+
+    it('allows duplicates of the same task if the first task already completed two times', fakeAsync(() => {
+      // Arrange
+      let fixture = MockRender(BackgroundTaskService);
+      const backgroundTaskService = fixture.point.componentInstance;
+      // Schedule a first instance of task1
+      let result1a = 0;
+      let result1b = 0;
+      let result1c = 0;
+      backgroundTaskService.schedule("task1", () => {
+        result1a++;
+        return mustBeConsumedAsyncObservable(undefined);
+      }).subscribe();
+      tick();
+      backgroundTaskService.schedule("task1", () => {
+        result1b++;
+        return mustBeConsumedAsyncObservable(undefined);
+      }).subscribe();
+      tick();
+
+      // Act
+      backgroundTaskService.schedule("task1", () => {
+        result1c++;
+        return mustBeConsumedAsyncObservable(undefined);
+      }).subscribe();
+
+      // Assert
+      tick();
+      expect(result1a).toEqual(1);
+      expect(result1b).toEqual(1);
+      expect(result1c).toEqual(1);
+    }));
+
+    it('delay duplicate task if the first task is currently running', fakeAsync(() => {
+      // Arrange
+      let fixture = MockRender(BackgroundTaskService);
+      const backgroundTaskService = fixture.point.componentInstance;
+      // Schedule a first instance of task1 with a 5 seconds delay
+      let result1 = 0;
+      backgroundTaskService.schedule("task1", () => {
+        return of(undefined).pipe(
+          delay(5000),
+          map(() => {
+            result1++;
+          }));
+      }).subscribe();
+      tick();
+
+      // Act
+      backgroundTaskService.schedule("task1", () => {
+        result1++;
+        return mustBeConsumedAsyncObservable(undefined);
+      }).subscribe();
+
+      // Assert
+      tick();
+      expect(result1).toEqual(0);
+      tick(5000);
+      expect(result1).toEqual(2);
+    }));
   })
 });
 
