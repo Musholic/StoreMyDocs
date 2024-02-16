@@ -30,7 +30,7 @@ export class FileService {
           .filter(f => f.name !== FileService.BASE_FOLDER_NAME)
           .map(f => {
             if (f.mimeType == 'application/vnd.google-apps.folder') {
-              let folderElement: FolderElement = {
+              const folderElement: FolderElement = {
                 id: f.id ?? '',
                 name: f.name ?? '',
                 createdTime: new Date(f.createdTime ?? '0'),
@@ -40,7 +40,7 @@ export class FileService {
               };
               return folderElement;
             } else {
-              let fileElement: FileElement = {
+              const fileElement: FileElement = {
                 id: f.id ?? '',
                 name: f.name ?? '',
                 createdTime: new Date(f.createdTime ?? '0'),
@@ -81,7 +81,7 @@ export class FileService {
   }
 
   downloadFile(fileElement: FileElement, progress: BehaviorSubject<Progress>): Observable<Blob> {
-    let dlLink = FileService.DRIVE_API_FILES_BASE_URL + '/' + fileElement.id + '?alt=media';
+    const dlLink = FileService.DRIVE_API_FILES_BASE_URL + '/' + fileElement.id + '?alt=media';
     return this.http.get(dlLink, {responseType: "blob", observe: "events", reportProgress: true})
       .pipe(
         filter((e: HttpEvent<any>): e is HttpProgressEvent | HttpResponse<any> =>
@@ -112,7 +112,7 @@ export class FileService {
   }
 
   private createFolder(folderName: string, parentId: string | null) {
-    let metadata: any = {
+    const metadata: any = {
       'name': folderName,
       'mimeType': 'application/vnd.google-apps.folder'
     };

@@ -10,7 +10,7 @@ export interface FilesCache {
 }
 
 export const filesResolver: ResolveFn<Observable<FilesCache>> = (route, state) => {
-  let fileService = inject(FileService);
+  const fileService = inject(FileService);
   return zip(
     fileService.findOrCreateBaseFolder(),
     fileService.findAll()

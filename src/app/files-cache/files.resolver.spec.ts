@@ -37,8 +37,8 @@ describe('filesResolver', () => {
 
   it('should fetch baseFolder and files', fakeAsync(() => {
     // Arrange
-    let fileService = mockFileService();
-    let fileElement = mockFileElement('file1');
+    const fileService = mockFileService();
+    const fileElement = mockFileElement('file1');
     when(() => fileService.findAll()).thenReturn(of([fileElement]))
     when(() => fileService.findOrCreateBaseFolder()).thenReturn(of('baseFolderId'));
 

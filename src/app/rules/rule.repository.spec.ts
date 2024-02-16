@@ -8,7 +8,7 @@ import {DatabaseBackupAndRestoreService} from "../database/database-backup-and-r
 
 
 function mockBackupCall() {
-  let databaseBackupAndRestoreService = ngMocks.get(DatabaseBackupAndRestoreService);
+  const databaseBackupAndRestoreService = ngMocks.get(DatabaseBackupAndRestoreService);
   return when(() => databaseBackupAndRestoreService.scheduleBackup())
     .thenReturn();
 }
@@ -39,13 +39,13 @@ describe('RuleRepository', () => {
       // Arrange
       const ruleRepository = MockRender(RuleRepository).point.componentInstance;
       mockBackupCall().times(2);
-      let rule1: Rule = {
+      const rule1: Rule = {
         name: 'TestRule',
         category: ['Test1', 'ChildTest1'],
         script: 'return true'
       };
       await ruleRepository.create(rule1)
-      let rule2: Rule = {
+      const rule2: Rule = {
         name: 'TestRule2',
         category: ['Test2', 'ChildTest2'],
         script: 'return false'
@@ -53,7 +53,7 @@ describe('RuleRepository', () => {
       await ruleRepository.create(rule2)
 
       // Act
-      let result = await ruleRepository.findAll();
+      const result = await ruleRepository.findAll();
 
       // Assert
       expect(result)
@@ -76,7 +76,7 @@ describe('RuleRepository', () => {
       // Arrange
       const ruleRepository = MockRender(RuleRepository).point.componentInstance;
       mockBackupCall();
-      let rule: Rule = {
+      const rule: Rule = {
         name: 'TestRule',
         category: ['Test1', 'ChildTest1'],
         script: 'return true'
@@ -86,7 +86,7 @@ describe('RuleRepository', () => {
       await ruleRepository.create(rule)
 
       // Assert
-      let rules = await db.rules.toArray();
+      const rules = await db.rules.toArray();
       expect(rules)
         .toEqual([{
           id: 1,
@@ -104,7 +104,7 @@ describe('RuleRepository', () => {
       const ruleRepository = MockRender(RuleRepository).point.componentInstance;
       // 2 calls to 'backup' expected, from create, and then from delete
       mockBackupCall().times(2);
-      let rule: Rule = {
+      const rule: Rule = {
         name: 'TestRule',
         category: ['Test1', 'ChildTest1'],
         script: 'return true'
@@ -115,7 +115,7 @@ describe('RuleRepository', () => {
       await ruleRepository.delete(rule);
 
       // Assert
-      let rules = await db.rules.toArray();
+      const rules = await db.rules.toArray();
       expect(rules).toEqual([]);
     });
   });
@@ -125,11 +125,11 @@ describe('RuleRepository', () => {
       // Arrange
       const ruleRepository = MockRender(RuleRepository).point.componentInstance;
       // 2 calls to 'backup' then 'scheduleBackup' expected, from create, and then from update
-      let databaseBackupAndRestoreService = ngMocks.get(DatabaseBackupAndRestoreService);
+      const databaseBackupAndRestoreService = ngMocks.get(DatabaseBackupAndRestoreService);
       mockBackupCall();
       when(() => databaseBackupAndRestoreService.scheduleBackup()).thenReturn();
 
-      let rule: Rule = {
+      const rule: Rule = {
         name: 'TestRule',
         category: ['Test1', 'ChildTest1'],
         script: 'return true'
@@ -141,7 +141,7 @@ describe('RuleRepository', () => {
       await ruleRepository.update(rule)
 
       // Assert
-      let rules = await db.rules.toArray();
+      const rules = await db.rules.toArray();
       expect(rules)
         .toEqual([{
           id: 1,
@@ -154,7 +154,7 @@ describe('RuleRepository', () => {
 });
 
 export function mockRuleRepository() {
-  let ruleRepositoryMock = mock<RuleRepository>();
+  const ruleRepositoryMock = mock<RuleRepository>();
   MockInstance(RuleRepository, (instance, injector) => {
     return {
       findAll: ruleRepositoryMock.findAll

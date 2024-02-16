@@ -29,10 +29,10 @@ describe('FileUploadService', () => {
   describe('upload', () => {
     it('should upload', fakeAsync(() => {
       // Arrange
-      let f = new File(["test_content"], "test.txt", {type: 'application/txt'});
+      const f = new File(["test_content"], "test.txt", {type: 'application/txt'});
       const service = MockRender(FileUploadService).point.componentInstance;
       mockFilesCacheServiceGetBaseFolder()
-      let httpTestingController = TestBed.inject(HttpTestingController);
+      const httpTestingController = TestBed.inject(HttpTestingController);
 
       // Act
       let completedRequest = false;
@@ -70,10 +70,10 @@ describe('FileUploadService', () => {
      */
     it('should filter out unwanted http events when uploading', fakeAsync(() => {
       // Arrange
-      let f = new File(["test_content"], "test.txt", {type: 'application/txt'});
+      const f = new File(["test_content"], "test.txt", {type: 'application/txt'});
       const service = MockRender(FileUploadService).point.componentInstance;
       mockFilesCacheServiceGetBaseFolder()
-      let httpTestingController = TestBed.inject(HttpTestingController);
+      const httpTestingController = TestBed.inject(HttpTestingController);
 
       // Act
       let result: any = undefined;
@@ -102,9 +102,9 @@ describe('FileUploadService', () => {
       const req2 = httpTestingController.expectOne('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&upload_id=ADPycdtRB5_hUde03FI0b');
       expect(req2.request.method).toEqual('PUT');
       expect(req2.request.body).toEqual(f);
-      let event: HttpSentEvent = {type: HttpEventType.Sent};
+      const event: HttpSentEvent = {type: HttpEventType.Sent};
       req2.event(event)
-      let event2: HttpProgressEvent = {type: HttpEventType.UploadProgress, total: 100, loaded: 50}
+      const event2: HttpProgressEvent = {type: HttpEventType.UploadProgress, total: 100, loaded: 50}
       req2.event(event2)
 
       expect(result.type).toEqual(HttpEventType.UploadProgress);
@@ -115,10 +115,10 @@ describe('FileUploadService', () => {
 
     it('should overwrite an existing file when provided with an id', fakeAsync(() => {
       // Arrange
-      let f = new File(["test_content"], "test.txt", {type: 'application/txt'});
+      const f = new File(["test_content"], "test.txt", {type: 'application/txt'});
       const service = MockRender(FileUploadService).point.componentInstance;
       mockFilesCacheServiceGetBaseFolder()
-      let httpTestingController = TestBed.inject(HttpTestingController);
+      const httpTestingController = TestBed.inject(HttpTestingController);
 
       // Act
       let completedRequest = false;

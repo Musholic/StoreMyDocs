@@ -45,8 +45,8 @@ describe('FileUploadComponent', () => {
       const fixture = MockRender(FileUploadComponent);
       const page = new Page(fixture);
 
-      let fileUploadService = ngMocks.get(FileUploadService);
-      let file = new File([''], 'TestFile.txt');
+      const fileUploadService = ngMocks.get(FileUploadService);
+      const file = new File([''], 'TestFile.txt');
       when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(new Observable())
 
       // Act
@@ -62,8 +62,8 @@ describe('FileUploadComponent', () => {
       const fixture = MockRender(FileUploadComponent);
       const page = new Page(fixture);
 
-      let fileUploadService = ngMocks.get(FileUploadService);
-      let file = new File([''], 'TestFile.txt');
+      const fileUploadService = ngMocks.get(FileUploadService);
+      const file = new File([''], 'TestFile.txt');
       when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(of({
         loaded: 50,
         total: 100,
@@ -86,13 +86,13 @@ describe('FileUploadComponent', () => {
       const fixture = MockRender(FileUploadComponent);
       const page = new Page(fixture);
 
-      let fileUploadService = ngMocks.get(FileUploadService);
-      let file = new File([''], 'TestFile.txt');
+      const fileUploadService = ngMocks.get(FileUploadService);
+      const file = new File([''], 'TestFile.txt');
       when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(of({
         type: HttpEventType.Response
       } as HttpResponse<any>))
 
-      let filesCacheService = ngMocks.get(FilesCacheService);
+      const filesCacheService = ngMocks.get(FilesCacheService);
       // A page refresh is expected
       when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
@@ -107,14 +107,14 @@ describe('FileUploadComponent', () => {
   describe('When selecting a file with the google picker', () => {
     it('Should refresh files', async () => {
       // Arrange
-      let showMock = MockInstance(GooglePickerService, 'show', mock<GooglePickerService['show']>());
+      const showMock = MockInstance(GooglePickerService, 'show', mock<GooglePickerService['show']>());
       // The user has picked a file when we show the picker
       when(() => showMock()).thenResolve(undefined);
 
       const fixture = MockRender(FileUploadComponent);
       const page = new Page(fixture);
 
-      let filesCacheService = ngMocks.findInstance(FilesCacheService);
+      const filesCacheService = ngMocks.findInstance(FilesCacheService);
       // A page refresh is expected
       when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
@@ -149,16 +149,16 @@ class Page {
     const dataTransfer = new DataTransfer()
     dataTransfer.items.add(file)
 
-    let event = new InputEvent('change', {dataTransfer: dataTransfer});
+    const event = new InputEvent('change', {dataTransfer: dataTransfer});
 
-    let uploadInput = this.uploadInput;
+    const uploadInput = this.uploadInput;
     uploadInput.files = dataTransfer.files;
     uploadInput.dispatchEvent(event);
     this.fixture.detectChanges();
   }
 
   async openGooglePicker() {
-    let button = await this.harnessLoader.getHarness(MatButtonHarness.with({text: 'Add file from Google Drive...'}));
+    const button = await this.harnessLoader.getHarness(MatButtonHarness.with({text: 'Add file from Google Drive...'}));
     await button.click();
   }
 

@@ -38,7 +38,7 @@ export class RuleService {
 
   private static isRuleRunNeeded(rules: Rule[], file: FileElement) {
     for (const rule of rules) {
-      let previousFileRun = rule.fileRuns?.find(fileRun => fileRun.id === file.id);
+      const previousFileRun = rule.fileRuns?.find(fileRun => fileRun.id === file.id);
       if (previousFileRun && previousFileRun.value) {
         // We already know the matching rule
         return false;
@@ -55,15 +55,15 @@ export class RuleService {
   runAll(): Observable<void> {
     return from(this.ruleRepository.findAll())
       .pipe(mergeMap(rules => {
-        let fileOrFolders = this.filesCacheService.getAll()
+        const fileOrFolders = this.filesCacheService.getAll()
         // Get all files
-        let files = fileOrFolders
+        const files = fileOrFolders
           .filter((file): file is FileElement => isFileElement(file));
 
         // Run the script for each file to get the associated category
         // The amount of step is one download per file and one per rule running for each file
-        let stepAmount = files.length * (1 + rules.length);
-        let progress = this.backgroundTaskService.showProgress('Running all rules', stepAmount);
+        const stepAmount = files.length * (1 + rules.length);
+        const progress = this.backgroundTaskService.showProgress('Running all rules', stepAmount);
         return this.runAllAndSetCategories(files, rules, progress)
           .pipe(tap({complete: () => progress.next({value: 100, index: stepAmount})}));
       }));
@@ -86,10 +86,10 @@ export class RuleService {
   }
 
   async getFileToMatchingRuleMap(): Promise<Map<string, string>> {
-    let result = new Map<string, string>();
-    let rules = await this.ruleRepository.findAll();
+    const result = new Map<string, string>();
+    const rules = await this.ruleRepository.findAll();
     // Search for rules which have fileRuns evaluated to true
-    for (let rule of rules) {
+    for (const rule of rules) {
       if (rule.fileRuns) {
         for (const fileRun of rule.fileRuns) {
           if (fileRun.value) {
@@ -111,7 +111,7 @@ export class RuleService {
   private runAllAndSetCategories(files: FileElement[], rules: Rule[], progress: BehaviorSubject<Progress>) {
     return zip(from(files)
       .pipe(concatMap((file, fileIndex) => {
-        let progressIndex = 1 + fileIndex * (rules.length + 1);
+        const progressIndex = 1 + fileIndex * (rules.length + 1);
         if (!RuleService.isRuleRunNeeded(rules, file)) {
           return of(undefined);
         }
@@ -140,10 +140,10 @@ export class RuleService {
 
   private runAllRules(rulesToRun: Rule[], progress: BehaviorSubject<Progress>, progressIndex: number, file: FileElement, fileContent: string) {
     return from(rulesToRun).pipe(concatMap((rule, ruleIndex) => {
-        let previousFileRun = rule.fileRuns?.find(fileRun => fileRun.id === file.id);
+        const previousFileRun = rule.fileRuns?.find(fileRun => fileRun.id === file.id);
         if (previousFileRun) {
           // The rule was run previously, so we already know the result
-          let result: RuleResult = {
+          const result: RuleResult = {
             rule: rule,
             value: previousFileRun.value
           };
@@ -157,7 +157,7 @@ export class RuleService {
         return this.run(rule, file, fileContent, progress, progressIndex + 1 + ruleIndex)
           .pipe(tap((result) => {
             // Add this file run to the rule fileRuns to avoid doing the same run again
-            let rule = result.rule;
+            const rule = result.rule;
             if (!rule.fileRuns) {
               rule.fileRuns = [];
             }
@@ -207,7 +207,7 @@ export class RuleService {
         subscriber.next({rule: rule, value: data});
         subscriber.complete();
       };
-      let params: RuleWorkerParams = {
+      const params: RuleWorkerParams = {
         script: rule.script,
         fileName: file.name,
         fileContent: fileContent
@@ -218,7 +218,7 @@ export class RuleService {
 
   // TODO: move and refactor duplicate to FileService
   private findOrCreateCategories(categories: string[], categoryId: string): Observable<string> {
-    let categoryName = categories.shift();
+    const categoryName = categories.shift();
     if (categoryName !== undefined) {
       return this.fileService.findOrCreateFolder(categoryName, categoryId)
         .pipe(mergeMap(newCategoryId => {

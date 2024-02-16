@@ -21,7 +21,7 @@ import {Router} from "@angular/router";
 import {AceEditorComponent} from "../ace-editor/ace-editor.component";
 
 function mockRouterReloadPage() {
-  let router = ngMocks.get(Router);
+  const router = ngMocks.get(Router);
   when(() => router.url).thenReturn("currentUrl")
   when(() => router.navigate(['currentUrl'], {onSameUrlNavigation: "reload"}))
     .thenResolve(true);
@@ -51,7 +51,7 @@ describe('RulesComponent', () => {
     mockSampleRules()
 
     // Act
-    let component = MockRender(RulesComponent, null, {reset: true}).point.componentInstance;
+    const component = MockRender(RulesComponent, null, {reset: true}).point.componentInstance;
 
     // Assert
     expect(component).toBeTruthy();
@@ -62,7 +62,7 @@ describe('RulesComponent', () => {
     mockSampleRules();
 
     // Act
-    let fixture = MockRender(RulesComponent, null, {reset: true});
+    const fixture = MockRender(RulesComponent, null, {reset: true});
 
     // Assert
     tick();
@@ -75,10 +75,10 @@ describe('RulesComponent', () => {
 
   it('should create a new rule', fakeAsync(async () => {
     // Arrange
-    let ruleService = ngMocks.get(RuleService);
+    const ruleService = ngMocks.get(RuleService);
     when(() => ruleService.findAll()).thenResolve([]);
 
-    let expectedRule: Rule = {
+    const expectedRule: Rule = {
       name: 'New rule',
       category: ['Cat1', 'ChildCat1'],
       script: 'return fileName === "child_cat_1.txt"'
@@ -87,9 +87,9 @@ describe('RulesComponent', () => {
 
     // After refresh, there should be the new rule
     mockRouterReloadPage();
-    let fixture = MockRender(RulesComponent, null, {reset: true});
+    const fixture = MockRender(RulesComponent, null, {reset: true});
 
-    let page = new Page(fixture);
+    const page = new Page(fixture);
 
     // Act
     await page.clickOnCreateNewRule();
@@ -107,9 +107,9 @@ describe('RulesComponent', () => {
 
   it('should delete an existing rule', fakeAsync(async () => {
     // Arrange
-    let ruleService = ngMocks.get(RuleService);
+    const ruleService = ngMocks.get(RuleService);
 
-    let rule: Rule = {
+    const rule: Rule = {
       name: 'Rule1',
       category: ['Cat1', 'ChildCat1'],
       script: 'return fileName === "child_cat_1.txt"'
@@ -121,10 +121,10 @@ describe('RulesComponent', () => {
 
     when(() => ruleService.delete(rule)).thenResolve();
 
-    let fixture = MockRender(RulesComponent, null, {reset: true});
+    const fixture = MockRender(RulesComponent, null, {reset: true});
     tick();
 
-    let page = new Page(fixture);
+    const page = new Page(fixture);
 
     // Act
     await page.deleteFirstRule();
@@ -137,9 +137,9 @@ describe('RulesComponent', () => {
 
   it('should update an existing rule', fakeAsync(async () => {
     // Arrange
-    let ruleService = ngMocks.get(RuleService);
+    const ruleService = ngMocks.get(RuleService);
 
-    let rule: Rule = {
+    const rule: Rule = {
       id: 1,
       name: 'Rule1',
       category: ['Cat1', 'ChildCat1'],
@@ -151,7 +151,7 @@ describe('RulesComponent', () => {
     // A refresh is expected after update
     mockRouterReloadPage();
 
-    let editedRule: Rule = {
+    const editedRule: Rule = {
       id: 1,
       name: 'Rule1 edited',
       category: ['Cat1', 'ChildCat1'],
@@ -161,10 +161,10 @@ describe('RulesComponent', () => {
 
     when(() => ruleService.update(editedRule)).thenResolve(undefined);
 
-    let fixture = MockRender(RulesComponent, null, {reset: true});
+    const fixture = MockRender(RulesComponent, null, {reset: true});
     tick();
 
-    let page = new Page(fixture);
+    const page = new Page(fixture);
 
     // Act
     await page.clickOnEditFirstRule();
@@ -181,7 +181,7 @@ describe('RulesComponent', () => {
 
 
 function mockSampleRules() {
-  let ruleService = ngMocks.get(RuleService);
+  const ruleService = ngMocks.get(RuleService);
   when(() => ruleService.findAll()).thenResolve(getSampleRules());
 }
 
@@ -210,7 +210,7 @@ class Page {
   }
 
   static getRuleCategory(name: string): string {
-    let rule = ngMocks.findAll("mat-panel-title")
+    const rule = ngMocks.findAll("mat-panel-title")
       .find(row => row.nativeNode.textContent.trim() === name)
       ?.parent;
     return ngMocks.find(rule, 'mat-panel-description')
@@ -218,63 +218,63 @@ class Page {
   }
 
   static getRuleScript(name: string): string {
-    let rule = ngMocks.findAll("mat-panel-title")
+    const rule = ngMocks.findAll("mat-panel-title")
       .find(row => row.nativeNode.textContent.trim() === name)
       ?.parent?.parent;
     return ngMocks.find(rule, AceEditorComponent).componentInstance.editor?.getValue() ?? '';
   }
 
   async clickOnCreateNewRule() {
-    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Create new rule'}));
+    const button = await this.loader.getHarness(MatButtonHarness.with({text: 'Create new rule'}));
     await button.click();
   }
 
   async clickOnEditFirstRule() {
-    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Edit'}));
+    const button = await this.loader.getHarness(MatButtonHarness.with({text: 'Edit'}));
     await button.click();
   }
 
   async setRuleName(name: string) {
-    let input = await this.getInputByFloatingLabel('Name');
+    const input = await this.getInputByFloatingLabel('Name');
     await input.setValue(name);
   }
 
   async setRuleCategory(category: string[]) {
     // let inputHarness = await this.loader.getHarness(MatInputHarness.with({placeholder: 'Select category...'}));
-    let chipGridHarness = await this.loader.getHarness(MatChipGridHarness);
-    let inputHarness = await chipGridHarness.getInput()
+    const chipGridHarness = await this.loader.getHarness(MatChipGridHarness);
+    const inputHarness = await chipGridHarness.getInput()
     if (inputHarness) {
       for (const catElement of category) {
         await inputHarness.setValue(catElement);
-        let testElement = await inputHarness.host();
+        const testElement = await inputHarness.host();
         await testElement.sendKeys(TestKey.ENTER)
       }
     }
   }
 
   setRuleScript(script: string) {
-    let aceEditorComponent = ngMocks.find(AceEditorComponent).componentInstance;
+    const aceEditorComponent = ngMocks.find(AceEditorComponent).componentInstance;
     aceEditorComponent.editor?.setValue(script);
   }
 
   async clickOnCreate() {
-    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Create'}));
+    const button = await this.loader.getHarness(MatButtonHarness.with({text: 'Create'}));
     await button.click();
   }
 
   async clickOnUpdate() {
-    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Update'}));
+    const button = await this.loader.getHarness(MatButtonHarness.with({text: 'Update'}));
     await button.click();
   }
 
   async deleteFirstRule() {
-    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Delete'}));
+    const button = await this.loader.getHarness(MatButtonHarness.with({text: 'Delete'}));
     await button.click();
   }
 
   private async getInputByFloatingLabel(floatingLabelText: string | RegExp) {
-    let formFieldHarness = await this.loader.getHarness(MatFormFieldHarness.with({floatingLabelText: floatingLabelText}));
-    let control = await formFieldHarness.getControl();
+    const formFieldHarness = await this.loader.getHarness(MatFormFieldHarness.with({floatingLabelText: floatingLabelText}));
+    const control = await formFieldHarness.getControl();
     if (control) {
       return control as MatInputHarness;
     }

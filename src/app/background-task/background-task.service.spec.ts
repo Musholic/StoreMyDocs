@@ -26,7 +26,7 @@ describe('BackgroundTaskService', () => {
   describe('showProgress', () => {
     it('Should show initial 0 progress', async () => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
+      const fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
 
       // Act
@@ -34,15 +34,15 @@ describe('BackgroundTaskService', () => {
 
       // Assert
       fixture.detectChanges();
-      let result = await Page.getProgressMessage();
+      const result = await Page.getProgressMessage();
       expect(result).toEqual("1/2 0% Test: Doing first test...");
     })
 
     it('Should show in progress', async () => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
+      const fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
-      let progress = backgroundTaskService.showProgress("Test", 4, "Doing first test");
+      const progress = backgroundTaskService.showProgress("Test", 4, "Doing first test");
 
       // Act
       progress.next({
@@ -53,16 +53,16 @@ describe('BackgroundTaskService', () => {
 
       // Assert
       fixture.detectChanges();
-      let result = await Page.getProgressMessage();
+      const result = await Page.getProgressMessage();
       expect(result).toEqual("2/4 37% Test: Doing more test...");
     })
 
     it('Should show as completed and should dismiss after 3s', fakeAsync(async () => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
-      let page = new Page();
+      const fixture = MockRender(BackgroundTaskService);
+      const page = new Page();
       const backgroundTaskService = fixture.point.componentInstance;
-      let progress = backgroundTaskService.showProgress("Test", 2, "Doing first test");
+      const progress = backgroundTaskService.showProgress("Test", 2, "Doing first test");
 
       // Act
       progress.next({
@@ -83,10 +83,10 @@ describe('BackgroundTaskService', () => {
 
     it('Should dismiss immediately if it finished with no actual step', fakeAsync(async () => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
-      let page = new Page();
+      const fixture = MockRender(BackgroundTaskService);
+      const page = new Page();
       const backgroundTaskService = fixture.point.componentInstance;
-      let progress = backgroundTaskService.showProgress("Test", 2);
+      const progress = backgroundTaskService.showProgress("Test", 2);
 
       // Act
       progress.next({
@@ -97,19 +97,19 @@ describe('BackgroundTaskService', () => {
       // Assert
       fixture.detectChanges();
       tick();
-      let resultMessage = await Page.getProgressMessage();
+      const resultMessage = await Page.getProgressMessage();
       expect(resultMessage).toEqual(undefined);
     }))
 
     it('Should support showing a second ongoing task', async () => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
+      const fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
-      let progress1 = backgroundTaskService.showProgress("Test", 4, "Doing first test");
+      const progress1 = backgroundTaskService.showProgress("Test", 4, "Doing first test");
       fixture.detectChanges();
 
       // Act
-      let progress2 = backgroundTaskService.showProgress("Second test", 2, "Starting second test");
+      const progress2 = backgroundTaskService.showProgress("Second test", 2, "Starting second test");
       progress1.next({
         index: 2,
         value: 50,
@@ -123,15 +123,15 @@ describe('BackgroundTaskService', () => {
 
       // Assert
       fixture.detectChanges();
-      let result = await Page.getProgressMessage();
+      const result = await Page.getProgressMessage();
       expect(result).toEqual("2/4 37% Test: Doing more test...1/2 25% Second test: Doing second test...");
     })
 
     it('Should support hiding the first ongoing task and still showing the second ongoing task', fakeAsync(async () => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
+      const fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
-      let progress1 = backgroundTaskService.showProgress("Test", 4, "Doing first test");
+      const progress1 = backgroundTaskService.showProgress("Test", 4, "Doing first test");
       fixture.detectChanges();
 
       // Act
@@ -145,16 +145,16 @@ describe('BackgroundTaskService', () => {
       fixture.detectChanges();
       tick(3000);
       fixture.detectChanges();
-      let result = await Page.getProgressMessage();
+      const result = await Page.getProgressMessage();
       expect(result).toEqual("1/2 0% Second test: Starting second test...");
     }))
 
     it('Should start showing a second task progress after the first task finished', fakeAsync(async () => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
+      const fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
       // Task with no actual step to show which is dismissed immediately
-      let progress1 = backgroundTaskService.showProgress("Test", 4);
+      const progress1 = backgroundTaskService.showProgress("Test", 4);
       progress1.next({
         index: 4,
         value: 100
@@ -167,18 +167,18 @@ describe('BackgroundTaskService', () => {
       // Assert
       tick();
       fixture.detectChanges();
-      let result = await Page.getProgressMessage();
+      const result = await Page.getProgressMessage();
       expect(result).toEqual("1/2 0% Second test: Starting second test...");
       flush();
     }))
 
     it('Should not show message for a second task finishing before the first and with no actual step', fakeAsync(async () => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
+      const fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
       backgroundTaskService.showProgress("Test", 4, "Doing first test");
       fixture.detectChanges();
-      let progress2 = backgroundTaskService.showProgress("Second test", 2);
+      const progress2 = backgroundTaskService.showProgress("Second test", 2);
 
       // Act
       // Finish the second task with no actual step
@@ -189,7 +189,7 @@ describe('BackgroundTaskService', () => {
 
       // Assert
       fixture.detectChanges();
-      let result = await Page.getProgressMessage();
+      const result = await Page.getProgressMessage();
       expect(result).toEqual("1/4 0% Test: Doing first test...");
       flush();
     }))
@@ -198,13 +198,13 @@ describe('BackgroundTaskService', () => {
     it('Should update progress with intermediate download progress event', () => {
       // Arrange
       const backgroundTaskService = MockRender(BackgroundTaskService).point.componentInstance;
-      let progress = new BehaviorSubject<Progress>({
+      const progress = new BehaviorSubject<Progress>({
         index: 2,
         value: 0,
         description: "Testing download"
       });
 
-      let httpEvent: HttpDownloadProgressEvent = {
+      const httpEvent: HttpDownloadProgressEvent = {
         type: HttpEventType.DownloadProgress,
         loaded: 50,
         total: 200
@@ -224,13 +224,13 @@ describe('BackgroundTaskService', () => {
     it('Should update progress with intermediate upload progress event', () => {
       // Arrange
       const backgroundTaskService = MockRender(BackgroundTaskService).point.componentInstance;
-      let progress = new BehaviorSubject<Progress>({
+      const progress = new BehaviorSubject<Progress>({
         index: 2,
         value: 0,
         description: "Testing download"
       });
 
-      let httpEvent: HttpUploadProgressEvent = {
+      const httpEvent: HttpUploadProgressEvent = {
         type: HttpEventType.UploadProgress,
         loaded: 50,
         total: 200
@@ -250,13 +250,13 @@ describe('BackgroundTaskService', () => {
     it('Should update progress with response event', () => {
       // Arrange
       const backgroundTaskService = MockRender(BackgroundTaskService).point.componentInstance;
-      let progress = new BehaviorSubject<Progress>({
+      const progress = new BehaviorSubject<Progress>({
         index: 2,
         value: 0,
         description: "Testing download"
       });
 
-      let httpEvent: HttpResponse<any> = {
+      const httpEvent: HttpResponse<any> = {
         type: HttpEventType.Response,
       } as HttpResponse<any>;
 
@@ -276,12 +276,12 @@ describe('BackgroundTaskService', () => {
   describe('isEmpty', () => {
     it('Should return false when there is a task in progress', async () => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
+      const fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
       backgroundTaskService.showProgress("Test", 2, "Doing first test");
 
       // Act
-      let result = backgroundTaskService.isEmpty();
+      const result = backgroundTaskService.isEmpty();
 
       // Assert
       expect(result).toBeFalsy();
@@ -289,9 +289,9 @@ describe('BackgroundTaskService', () => {
 
     it('Should return true when there is no more task in progress (even if there is still a message)', async () => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
+      const fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
-      let progress = backgroundTaskService.showProgress("Test", 2, "Doing first test");
+      const progress = backgroundTaskService.showProgress("Test", 2, "Doing first test");
       // Finish the task, a message should be shown for 3 seconds
       progress.next({
         index: 2,
@@ -300,7 +300,7 @@ describe('BackgroundTaskService', () => {
       fixture.detectChanges();
 
       // Act
-      let result = backgroundTaskService.isEmpty();
+      const result = backgroundTaskService.isEmpty();
 
       // Assert
       fixture.detectChanges();
@@ -310,13 +310,13 @@ describe('BackgroundTaskService', () => {
   describe('schedule', () => {
     it('prevent duplicates of the same task when they are not run yet', fakeAsync(() => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
+      const fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
 
       // Act
       let result1 = 0;
       let result2 = 0;
-      let task1 = () => {
+      const task1 = () => {
         result1++;
         return mustBeConsumedAsyncObservable(undefined);
       };
@@ -340,11 +340,11 @@ describe('BackgroundTaskService', () => {
 
     it('allows duplicates of the same task if the first task already completed', fakeAsync(() => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
+      const fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
       // Schedule a first instance of task1
       let result1 = 0;
-      let task1 = () => {
+      const task1 = () => {
         result1++;
         return mustBeConsumedAsyncObservable(undefined);
       };
@@ -361,7 +361,7 @@ describe('BackgroundTaskService', () => {
 
     it('allows duplicates of the same task if the first task already completed two times', fakeAsync(() => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
+      const fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
       // Schedule a first instance of task1
       let result1a = 0;
@@ -393,7 +393,7 @@ describe('BackgroundTaskService', () => {
 
     it('delay duplicate task if the first task is currently running', fakeAsync(() => {
       // Arrange
-      let fixture = MockRender(BackgroundTaskService);
+      const fixture = MockRender(BackgroundTaskService);
       const backgroundTaskService = fixture.point.componentInstance;
       // Schedule a first instance of task1 with a 5 seconds delay
       let result1 = 0;
@@ -423,9 +423,9 @@ describe('BackgroundTaskService', () => {
 
 class Page {
   static async getProgressMessage() {
-    let element = document.body.querySelector('mat-snack-bar-container');
+    const element = document.body.querySelector('mat-snack-bar-container');
     if (element) {
-      let textContent = element.textContent;
+      const textContent = element.textContent;
       return textContent || undefined;
     }
     return undefined
@@ -433,7 +433,7 @@ class Page {
 }
 
 export function mockBackgroundTaskService() {
-  let backgroundTaskService = mock<BackgroundTaskService>();
+  const backgroundTaskService = mock<BackgroundTaskService>();
   MockInstance(BackgroundTaskService, () => {
     return {
       showProgress: backgroundTaskService.showProgress,

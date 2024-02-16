@@ -8,18 +8,18 @@ describe('AceEditorComponent', () => {
   beforeEach(() => MockBuilder(AceEditorComponent, AppModule));
 
   it('should create', () => {
-    let component = MockRender(AceEditorComponent).point.componentInstance;
+    const component = MockRender(AceEditorComponent).point.componentInstance;
     expect(component).toBeTruthy();
   });
 
   it('should set the input', () => {
     // Arrange
-    let params = {
+    const params = {
       value: "initialValue"
     };
 
     // Act
-    let component = MockRender(AceEditorComponent, params).point.componentInstance;
+    const component = MockRender(AceEditorComponent, params).point.componentInstance;
 
     // Assert
     expect(component.editor?.getValue()).toEqual("initialValue")
@@ -27,12 +27,12 @@ describe('AceEditorComponent', () => {
 
   it('should get the new output', fakeAsync(() => {
     // Arrange
-    let output = new BehaviorSubject<string>("");
-    let params = {
+    const output = new BehaviorSubject<string>("");
+    const params = {
       value: "oldValue",
       valueChange: output
     };
-    let component = MockRender(AceEditorComponent, params).point.componentInstance;
+    const component = MockRender(AceEditorComponent, params).point.componentInstance;
 
     // Act
     component.editor?.setValue("newValue");

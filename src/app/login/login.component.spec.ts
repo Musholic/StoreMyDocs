@@ -13,7 +13,7 @@ describe('LoginComponent', () => {
   beforeEach(() => MockBuilder(LoginComponent, AppModule));
 
   it('should create', () => {
-    let component = MockRender(LoginComponent).point.componentInstance;
+    const component = MockRender(LoginComponent).point.componentInstance;
     expect(component).toBeTruthy();
   });
 
@@ -21,12 +21,12 @@ describe('LoginComponent', () => {
     // Arrange
     // Ensure we don't try to authorize
     MockInstance(GoogleDriveAuthService, 'requestApiToken', mock<GoogleDriveAuthService['requestApiToken']>());
-    let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
+    const isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
     when(() => isAuthenticatedMock()).thenReturn(false).atLeast(1);
     MockRender(LoginComponent);
 
     // Act
-    let message = Page.getMessage();
+    const message = Page.getMessage();
 
     // Assert
     expect(message).toEqual('You must be logged in to use this application')
@@ -36,15 +36,15 @@ describe('LoginComponent', () => {
     it('should automatically request authorization', async () => {
       // Arrange
       // Expect the api token to be requested
-      let getApiTokenMock = MockInstance(GoogleDriveAuthService, 'requestApiToken', mock<GoogleDriveAuthService['requestApiToken']>());
+      const getApiTokenMock = MockInstance(GoogleDriveAuthService, 'requestApiToken', mock<GoogleDriveAuthService['requestApiToken']>());
       when(() => getApiTokenMock()).thenResolve('apiToken');
 
       // Expect a redirection
-      let navigateByUrlMock = MockInstance(Router, 'navigateByUrl', mock<Router['navigateByUrl']>());
+      const navigateByUrlMock = MockInstance(Router, 'navigateByUrl', mock<Router['navigateByUrl']>());
       when(() => navigateByUrlMock('/')).thenResolve(true)
 
       // The user is already authenticated
-      let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
+      const isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
       when(() => isAuthenticatedMock()).thenReturn(true).atLeast(1);
 
       // Act
@@ -53,12 +53,12 @@ describe('LoginComponent', () => {
 
     it('should ask for authorization', () => {
       // Arrange
-      let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
+      const isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
       when(() => isAuthenticatedMock()).thenReturn(true).atLeast(1);
       MockRender(LoginComponent);
 
       // Act
-      let message = Page.getMessage();
+      const message = Page.getMessage();
 
       // Assert
       expect(message).toEqual('You need to authorize the access to your Google Drive files. ' +
@@ -67,21 +67,21 @@ describe('LoginComponent', () => {
 
     it('should authorize and then redirect when clicking on authorize button', async () => {
       // Arrange
-      let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
+      const isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
       when(() => isAuthenticatedMock()).thenReturn(true).atLeast(1);
 
-      let getApiTokenMock = MockInstance(GoogleDriveAuthService, 'requestApiToken', mock<GoogleDriveAuthService['requestApiToken']>());
+      const getApiTokenMock = MockInstance(GoogleDriveAuthService, 'requestApiToken', mock<GoogleDriveAuthService['requestApiToken']>());
       // Reject the automatic authorization
       when(() => getApiTokenMock()).thenReject();
       // Expect the api token to be requested a second time when clicking on the button
       when(() => getApiTokenMock()).thenResolve('apiToken');
 
       // Expect a redirection
-      let navigateByUrlMock = MockInstance(Router, 'navigateByUrl', mock<Router['navigateByUrl']>());
+      const navigateByUrlMock = MockInstance(Router, 'navigateByUrl', mock<Router['navigateByUrl']>());
       when(() => navigateByUrlMock('/')).thenResolve(true)
 
-      let fixture = MockRender(LoginComponent);
-      let page = new Page(fixture);
+      const fixture = MockRender(LoginComponent);
+      const page = new Page(fixture);
 
       // Act
       await page.clickAuthorize();
@@ -101,7 +101,7 @@ class Page {
   }
 
   async clickAuthorize() {
-    let button = await this.loader.getHarness(MatButtonHarness.with({text: 'Authorize'}));
+    const button = await this.loader.getHarness(MatButtonHarness.with({text: 'Authorize'}));
     return button.click();
   }
 }

@@ -34,7 +34,7 @@ export class FileUploadComponent {
   }
 
   private upload(file: File) {
-    let fileProgress: FileUploadProgress = {fileName: file.name, loaded: 0, total: file.size};
+    const fileProgress: FileUploadProgress = {fileName: file.name, loaded: 0, total: file.size};
     this.files.push(fileProgress);
     this.fileUploadService.upload(toFileOrBlob(file))
       .subscribe(e => {

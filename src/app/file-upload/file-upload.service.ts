@@ -34,7 +34,7 @@ export class FileUploadService {
   upload(file: FileOrBlob, fileId?: string): Observable<HttpProgressEvent | HttpResponse<any>> {
     const contentType = file.blob.type || 'application/octet-stream';
 
-    let baseFolderId = this.filesCacheService.getBaseFolder();
+    const baseFolderId = this.filesCacheService.getBaseFolder();
     return this.createUploadFileRequest(file, contentType, baseFolderId, fileId).pipe(
       mergeMap(metadataRes => {
         const locationUrl = metadataRes.headers.get('Location') ?? '';
@@ -71,7 +71,7 @@ export class FileUploadService {
     }
     url += '?uploadType=resumable';
 
-    let metadata: any = {
+    const metadata: any = {
       'Content-Type': contentType,
       'Content-Length': file.blob.size,
     };

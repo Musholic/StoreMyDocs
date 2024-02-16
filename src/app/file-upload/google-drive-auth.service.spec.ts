@@ -9,7 +9,7 @@ import TokenResponse = google.accounts.oauth2.TokenResponse;
 
 
 function setupValidAuthenticationAndApiToken() {
-  let localStorageMock = getLocalStorageMock();
+  const localStorageMock = getLocalStorageMock();
   when(() => localStorageMock.getItem('google_auth_token')).thenReturn(encodedTestUserAuthToken);
   when(() => localStorageMock.getItem('google_api_token')).thenReturn('at54613');
   when(() => localStorageMock.getItem('google_api_token_expires_at')).thenReturn('' + (new Date().getTime() + 60 * 1000));
@@ -22,7 +22,7 @@ describe('GoogleDriveAuthService', () => {
 
   it('should be created', () => {
     // Arrange
-    let localStorageMock = getLocalStorageMock();
+    const localStorageMock = getLocalStorageMock();
     when(() => localStorageMock.getItem('google_auth_token')).thenReturn('');
     when(() => localStorageMock.getItem('google_api_token')).thenReturn('');
 
@@ -36,7 +36,7 @@ describe('GoogleDriveAuthService', () => {
   describe('When there is no available token', () => {
     it('Should request a new token (user is authenticated)', async () => {
       // Arrange
-      let localStorageMock = getLocalStorageMock();
+      const localStorageMock = getLocalStorageMock();
       when(() => localStorageMock.getItem('google_auth_token')).thenReturn(encodedTestUserAuthToken);
       when(() => localStorageMock.getItem('google_api_token')).thenReturn('');
 
@@ -54,7 +54,7 @@ describe('GoogleDriveAuthService', () => {
 
     it('Should authenticate', () => {
       // Arrange
-      let localStorageMock = getLocalStorageMock();
+      const localStorageMock = getLocalStorageMock();
       when(() => localStorageMock.getItem('google_auth_token')).thenReturn('');
       when(() => localStorageMock.getItem('google_api_token')).thenReturn('');
       when(() => localStorageMock.setItem('google_auth_token', encodedTestUserAuthToken)).thenReturn();
@@ -86,7 +86,7 @@ describe('GoogleDriveAuthService', () => {
 
     it('Should refresh existing expired token', async () => {
       // Arrange
-      let localStorageMock = getLocalStorageMock();
+      const localStorageMock = getLocalStorageMock();
       when(() => localStorageMock.getItem('google_auth_token')).thenReturn(encodedTestUserAuthToken);
       when(() => localStorageMock.getItem('google_api_token')).thenReturn('at54613_expired');
       when(() => localStorageMock.getItem('google_api_token_expires_at')).thenReturn(new Date().getTime() + '');
@@ -104,12 +104,12 @@ describe('GoogleDriveAuthService', () => {
 
     it('Should logout', () => {
       // Arrange
-      let localStorageMock = getLocalStorageMock();
+      const localStorageMock = getLocalStorageMock();
       when(() => localStorageMock.getItem('google_auth_token')).thenReturn(encodedTestUserAuthToken);
       when(() => localStorageMock.getItem('google_api_token')).thenReturn('at8454');
       when(() => localStorageMock.removeItem('google_auth_token')).thenReturn();
       when(() => localStorageMock.removeItem('google_api_token')).thenReturn();
-      let disableAutoSelectMock = mock<() => void>();
+      const disableAutoSelectMock = mock<() => void>();
       window['google'] = {
         accounts: {
           id: {
@@ -120,7 +120,7 @@ describe('GoogleDriveAuthService', () => {
       when(() => disableAutoSelectMock()).thenReturn();
 
       // Expect a redirection to the login page
-      let navigateByUrlMock = MockInstance(Router, 'navigateByUrl', mock<Router['navigateByUrl']>());
+      const navigateByUrlMock = MockInstance(Router, 'navigateByUrl', mock<Router['navigateByUrl']>());
       when(() => navigateByUrlMock('/login')).thenResolve(true)
 
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
@@ -142,7 +142,7 @@ describe('GoogleDriveAuthService', () => {
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
       // Act
-      let result = service.isAuthenticatedAndHasValidApiToken();
+      const result = service.isAuthenticatedAndHasValidApiToken();
 
       // Assert
       expect(result).toBeTruthy();
@@ -150,14 +150,14 @@ describe('GoogleDriveAuthService', () => {
 
     it('Should return false when not authenticated', () => {
       // Arrange
-      let localStorageMock = getLocalStorageMock();
+      const localStorageMock = getLocalStorageMock();
       when(() => localStorageMock.getItem('google_auth_token')).thenReturn(null);
       when(() => localStorageMock.getItem('google_api_token')).thenReturn('at54613');
 
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
       // Act
-      let result = service.isAuthenticatedAndHasValidApiToken();
+      const result = service.isAuthenticatedAndHasValidApiToken();
 
       // Assert
       expect(result).toBeFalsy();
@@ -165,14 +165,14 @@ describe('GoogleDriveAuthService', () => {
 
     it('Should return false when there is no api token', () => {
       // Arrange
-      let localStorageMock = getLocalStorageMock();
+      const localStorageMock = getLocalStorageMock();
       when(() => localStorageMock.getItem('google_auth_token')).thenReturn(encodedTestUserAuthToken);
       when(() => localStorageMock.getItem('google_api_token')).thenReturn(null);
 
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
       // Act
-      let result = service.isAuthenticatedAndHasValidApiToken();
+      const result = service.isAuthenticatedAndHasValidApiToken();
 
       // Assert
       expect(result).toBeFalsy();
@@ -180,7 +180,7 @@ describe('GoogleDriveAuthService', () => {
 
     it('Should return false when api token is not valid', () => {
       // Arrange
-      let localStorageMock = getLocalStorageMock();
+      const localStorageMock = getLocalStorageMock();
       when(() => localStorageMock.getItem('google_auth_token')).thenReturn(encodedTestUserAuthToken);
       when(() => localStorageMock.getItem('google_api_token')).thenReturn('at54613');
       when(() => localStorageMock.getItem('google_api_token_expires_at')).thenReturn('' + (new Date().getTime() - 60 * 1000));
@@ -188,7 +188,7 @@ describe('GoogleDriveAuthService', () => {
       const service = MockRender(GoogleDriveAuthService).point.componentInstance;
 
       // Act
-      let result = service.isAuthenticatedAndHasValidApiToken();
+      const result = service.isAuthenticatedAndHasValidApiToken();
 
       // Assert
       expect(result).toBeFalsy();
@@ -199,7 +199,7 @@ describe('GoogleDriveAuthService', () => {
 
 function setupAuthExchange() {
   type initTokenClientCallbackType = google.accounts.oauth2.TokenClientConfig['callback'];
-  let initTokenClientMock = mock<typeof google.accounts.oauth2['initTokenClient']>();
+  const initTokenClientMock = mock<typeof google.accounts.oauth2['initTokenClient']>();
   window['google'] = {
     accounts: {
       oauth2: {
@@ -207,18 +207,18 @@ function setupAuthExchange() {
       }
     }
   } as typeof google;
-  let localStorageMock = window.localStorage;
+  const localStorageMock = window.localStorage;
   when(() => localStorageMock.setItem('google_api_token', 'at8765465')).thenReturn();
   when(() => localStorageMock.setItem('google_api_token_expires_at',
     It.matches(expires_at => {
-      let num = Number(expires_at);
-      let date = new Date().getTime();
+      const num = Number(expires_at);
+      const date = new Date().getTime();
       return num > date && num <= date + 3600 * 1000
     })
   )).thenReturn();
 
-  let tokenClientMock = mock<TokenClient>();
-  let initTokenClientCallback = It.willCapture<initTokenClientCallbackType>();
+  const tokenClientMock = mock<TokenClient>();
+  const initTokenClientCallback = It.willCapture<initTokenClientCallbackType>();
   when(() => initTokenClientMock(It.isObject({
     client_id: '99873064994-bn94ep45ugmo6u1s3fl3li84fr3olvnv.apps.googleusercontent.com',
     callback: initTokenClientCallback,

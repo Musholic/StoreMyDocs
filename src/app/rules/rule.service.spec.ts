@@ -26,8 +26,8 @@ function mockBillCategoryFindOrCreate(fileService: FileService) {
 }
 
 function mockElectricityBillSample(file: FileElement, fileService: FileService) {
-  let backgroundTaskService = mockBackgroundTaskService();
-  let progress = mock<BehaviorSubject<Progress>>();
+  const backgroundTaskService = mockBackgroundTaskService();
+  const progress = mock<BehaviorSubject<Progress>>();
   when(() => backgroundTaskService.showProgress("Running all rules", 3))
     .thenReturn(progress);
   when(() => progress.next({
@@ -52,12 +52,12 @@ function mockElectricityBillSample(file: FileElement, fileService: FileService) 
 
   const service = MockRender(RuleService).point.componentInstance;
 
-  let ruleRepository = ngMocks.findInstance(RuleRepository);
+  const ruleRepository = ngMocks.findInstance(RuleRepository);
   when(() => ruleRepository.findAll())
     .thenResolve(getSampleRules());
 
   // The first rule should be flagged as matching
-  let ruleAfterRun = getSampleRules()[0];
+  const ruleAfterRun = getSampleRules()[0];
   ruleAfterRun.fileRuns = [{id: file.id, value: true}];
   when(() => ruleRepository.update(ruleAfterRun)).thenResolve();
 
@@ -89,17 +89,17 @@ describe('RuleService', () => {
   describe('runAll', () => {
     it('should automatically categorize a file', fakeAsync(async () => {
       // Arrange
-      let file = mockFileElement('electricity_bill.pdf');
-      let fileService = mockFileService();
+      const file = mockFileElement('electricity_bill.pdf');
+      const fileService = mockFileService();
 
       // The file should be set to the bills category
       when(() => fileService.setCategory(file.id, 'billsCatId489'))
         .thenReturn(mustBeConsumedAsyncObservable(undefined));
 
-      let service = mockElectricityBillSample(file, fileService);
+      const service = mockElectricityBillSample(file, fileService);
 
       // Act
-      let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+      const runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
 
       // Assert
       tick();
@@ -109,12 +109,12 @@ describe('RuleService', () => {
 
     it('should not categorize a file which is already in the correct category', fakeAsync(async () => {
       // Arrange
-      let file = mockFileElement('electricity_bill.pdf', 'billsCatId489');
-      let fileService = mockFileService();
-      let service = mockElectricityBillSample(file, fileService);
+      const file = mockFileElement('electricity_bill.pdf', 'billsCatId489');
+      const fileService = mockFileService();
+      const service = mockElectricityBillSample(file, fileService);
 
       // Act
-      let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+      const runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
 
       // Assert
       tick();
@@ -124,8 +124,8 @@ describe('RuleService', () => {
 
     it('should not run a rule for a file it was already run on', fakeAsync(async () => {
       // Arrange
-      let backgroundTaskService = mockBackgroundTaskService();
-      let progress = mock<BehaviorSubject<Progress>>();
+      const backgroundTaskService = mockBackgroundTaskService();
+      const progress = mock<BehaviorSubject<Progress>>();
       when(() => backgroundTaskService.showProgress("Running all rules", 2))
         .thenReturn(progress);
       when(() => progress.next({
@@ -133,11 +133,11 @@ describe('RuleService', () => {
         value: 100,
       })).thenReturn();
 
-      let file = mockFileElement('electricity_bill.txt');
+      const file = mockFileElement('electricity_bill.txt');
 
       const service = MockRender(RuleService).point.componentInstance;
 
-      let ruleRepository = ngMocks.findInstance(RuleRepository);
+      const ruleRepository = ngMocks.findInstance(RuleRepository);
       when(() => ruleRepository.findAll())
         .thenResolve([{
           name: 'Electric bill',
@@ -149,7 +149,7 @@ describe('RuleService', () => {
       mockFilesCacheService([file]);
 
       // Act
-      let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+      const runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
 
       // Assert
       tick();
@@ -159,8 +159,8 @@ describe('RuleService', () => {
 
     it('should automatically categorize a file (using txt file content)', fakeAsync(async () => {
       // Arrange
-      let backgroundTaskService = mockBackgroundTaskService();
-      let progress = mock<BehaviorSubject<Progress>>();
+      const backgroundTaskService = mockBackgroundTaskService();
+      const progress = mock<BehaviorSubject<Progress>>();
       when(() => backgroundTaskService.showProgress("Running all rules", 6))
         .thenReturn(progress);
       when(() => progress.next({
@@ -194,14 +194,14 @@ describe('RuleService', () => {
         value: 100,
       })).thenReturn();
 
-      let fileService = mockFileService();
+      const fileService = mockFileService();
       mockBillCategoryFindOrCreate(fileService);
 
-      let file = mockFileElement('electricity_bill.txt');
+      const file = mockFileElement('electricity_bill.txt');
       when(() => fileService.downloadFile(file, progress))
         .thenReturn(mustBeConsumedAsyncObservable(new Blob(['Electricity Bill. XXXXXX'])));
 
-      let otherFile = mockFileElement('something_else.txt');
+      const otherFile = mockFileElement('something_else.txt');
       when(() => fileService.downloadFile(otherFile, progress))
         .thenReturn(mustBeConsumedAsyncObservable(new Blob(['Something else'])));
 
@@ -211,7 +211,7 @@ describe('RuleService', () => {
 
       const service = MockRender(RuleService).point.componentInstance;
 
-      let ruleRepository = ngMocks.findInstance(RuleRepository);
+      const ruleRepository = ngMocks.findInstance(RuleRepository);
       when(() => ruleRepository.findAll())
         .thenResolve([{
           name: 'Electric bill',
@@ -251,7 +251,7 @@ describe('RuleService', () => {
       mockFilesCacheService([file, otherFile], true);
 
       // Act
-      let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+      const runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
 
       // Assert
       tick();
@@ -261,8 +261,8 @@ describe('RuleService', () => {
 
     it('should not download content of a binary file', fakeAsync(async () => {
       // Arrange
-      let backgroundTaskService = mockBackgroundTaskService();
-      let progress = mock<BehaviorSubject<Progress>>();
+      const backgroundTaskService = mockBackgroundTaskService();
+      const progress = mock<BehaviorSubject<Progress>>();
       when(() => backgroundTaskService.showProgress("Running all rules", 2))
         .thenReturn(progress);
       when(() => progress.next({
@@ -277,12 +277,12 @@ describe('RuleService', () => {
 
       mockFileService();
 
-      let file = mockFileElement('test.png');
+      const file = mockFileElement('test.png');
       file.mimeType = 'image/png'
 
       const service = MockRender(RuleService).point.componentInstance;
 
-      let ruleRepository = ngMocks.findInstance(RuleRepository);
+      const ruleRepository = ngMocks.findInstance(RuleRepository);
       when(() => ruleRepository.findAll())
         .thenResolve([{
           name: 'Dumb file content rule',
@@ -290,7 +290,7 @@ describe('RuleService', () => {
           script: 'return fileContent.includes("test")'
         }]);
 
-      let ruleAfterRun = {
+      const ruleAfterRun = {
         name: 'Dumb file content rule',
         category: ['Dumb'],
         script: 'return fileContent.includes("test")',
@@ -301,7 +301,7 @@ describe('RuleService', () => {
       mockFilesCacheService([file]);
 
       // Act
-      let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+      const runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
 
       // Assert
       tick();
@@ -311,8 +311,8 @@ describe('RuleService', () => {
 
     it('should automatically categorize a file (using pdf file content)', fakeAsync(async () => {
       // Arrange
-      let backgroundTaskService = mockBackgroundTaskService();
-      let progress = mock<BehaviorSubject<Progress>>();
+      const backgroundTaskService = mockBackgroundTaskService();
+      const progress = mock<BehaviorSubject<Progress>>();
       when(() => backgroundTaskService.showProgress("Running all rules", 2))
         .thenReturn(progress);
       when(() => progress.next({
@@ -331,14 +331,14 @@ describe('RuleService', () => {
         value: 100,
       })).thenReturn();
 
-      let fileService = mockFileService();
+      const fileService = mockFileService();
       when(() => fileService.findOrCreateFolder("Dummy", "baseFolderId"))
         .thenReturn(mustBeConsumedAsyncObservable('dummyCatId548'));
 
-      let file = mockFileElement('dummy.pdf');
+      const file = mockFileElement('dummy.pdf');
       file.mimeType = 'application/pdf';
-      let dummyPdfResponse = await fetch('/base/testing-assets/rules/dummy.pdf');
-      let dummyPdfBlob = await dummyPdfResponse.blob();
+      const dummyPdfResponse = await fetch('/base/testing-assets/rules/dummy.pdf');
+      const dummyPdfBlob = await dummyPdfResponse.blob();
       when(() => fileService.downloadFile(file, progress))
         .thenReturn(mustBeConsumedAsyncObservable(dummyPdfBlob));
 
@@ -348,7 +348,7 @@ describe('RuleService', () => {
 
       const service = MockRender(RuleService).point.componentInstance;
 
-      let ruleRepository = ngMocks.findInstance(RuleRepository);
+      const ruleRepository = ngMocks.findInstance(RuleRepository);
       when(() => ruleRepository.findAll())
         .thenResolve([{
           name: 'Dummy',
@@ -357,7 +357,7 @@ describe('RuleService', () => {
         }]);
 
       // The first rule should be flagged as matching
-      let ruleAfterRun = {
+      const ruleAfterRun = {
         name: 'Dummy',
         category: ['Dummy'],
         script: 'return fileContent.startsWith("Dummy");',
@@ -368,7 +368,7 @@ describe('RuleService', () => {
       mockFilesCacheService([file], true);
 
       // Act
-      let runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+      const runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
 
       // Assert
       // fakeAsync(() => tick());
@@ -382,7 +382,7 @@ describe('RuleService', () => {
       // Arrange
       const service = MockRender(RuleService).point.componentInstance;
 
-      let ruleRepository = ngMocks.findInstance(RuleRepository);
+      const ruleRepository = ngMocks.findInstance(RuleRepository);
       when(() => ruleRepository.findAll())
         .thenResolve([{
           name: 'Matching rule',
@@ -397,7 +397,7 @@ describe('RuleService', () => {
         }]);
 
       // Act
-      let fileToMatchingRuleMap = await service.getFileToMatchingRuleMap();
+      const fileToMatchingRuleMap = await service.getFileToMatchingRuleMap();
 
       // Assert
       expect(fileToMatchingRuleMap)

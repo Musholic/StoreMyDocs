@@ -34,17 +34,17 @@ describe('FilesCacheService', () => {
       // Arrange
       const service = MockRender(FilesCacheService).point.componentInstance;
 
-      let fileElement = mockFileElement('inCache');
-      let filesCache: FilesCache = {
+      const fileElement = mockFileElement('inCache');
+      const filesCache: FilesCache = {
         all: [fileElement],
         baseFolder: ''
       };
 
-      let activatedRoute = ngMocks.get(ActivatedRoute);
+      const activatedRoute = ngMocks.get(ActivatedRoute);
       when(() => activatedRoute.snapshot).thenReturn({data: {files: filesCache} as Data} as ActivatedRouteSnapshot);
 
       // Act
-      let all = service.getAll();
+      const all = service.getAll();
 
       // Assert
       expect(all).toEqual([fileElement])
@@ -56,17 +56,17 @@ describe('FilesCacheService', () => {
       // Arrange
       const service = MockRender(FilesCacheService).point.componentInstance;
 
-      let fileElement = mockFileElement('inCache');
-      let filesCache: FilesCache = {
+      const fileElement = mockFileElement('inCache');
+      const filesCache: FilesCache = {
         all: [fileElement],
         baseFolder: 'baseFolderId'
       };
 
-      let activatedRoute = ngMocks.get(ActivatedRoute);
+      const activatedRoute = ngMocks.get(ActivatedRoute);
       when(() => activatedRoute.snapshot).thenReturn({data: {files: filesCache} as Data} as ActivatedRouteSnapshot);
 
       // Act
-      let baseFolder = service.getBaseFolder();
+      const baseFolder = service.getBaseFolder();
 
       // Assert
       expect(baseFolder).toEqual('baseFolderId')
@@ -78,7 +78,7 @@ describe('FilesCacheService', () => {
       // Arrange
       const service = MockRender(FilesCacheService).point.componentInstance;
 
-      let router = ngMocks.get(Router);
+      const router = ngMocks.get(Router);
       when(() => router.url).thenReturn("currentUrl")
       when(() => router.navigate(['currentUrl'], {onSameUrlNavigation: "reload"}))
         .thenResolve(true);
@@ -95,12 +95,12 @@ describe('FilesCacheService', () => {
 });
 
 export function mockFilesCacheServiceGetBaseFolder() {
-  let filesCacheService = ngMocks.findInstance(FilesCacheService);
+  const filesCacheService = ngMocks.findInstance(FilesCacheService);
   when(() => filesCacheService.getBaseFolder()).thenReturn('baseFolderId')
 }
 
 export function mockFilesCacheService(files: FileOrFolderElement[], mockBaseFolder: boolean = false) {
-  let filesCacheService = ngMocks.findInstance(FilesCacheService);
+  const filesCacheService = ngMocks.findInstance(FilesCacheService);
   when(() => filesCacheService.getAll()).thenReturn(files);
   if (mockBaseFolder) {
     mockFilesCacheServiceGetBaseFolder();

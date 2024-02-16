@@ -29,7 +29,7 @@ describe('AppRoutingModule', () => {
 
   beforeEach(() => {
     // Since we use the real UserRootComponent, we need to mock the automatic restore
-    let databaseBackupAndRestoreService = mockDatabaseBackupAndRestoreService();
+    const databaseBackupAndRestoreService = mockDatabaseBackupAndRestoreService();
     when(() => databaseBackupAndRestoreService.restore())
       .thenReturn(mustBeConsumedAsyncObservable(undefined));
   })
@@ -37,7 +37,7 @@ describe('AppRoutingModule', () => {
   describe('when logged in', () => {
     beforeEach(() => {
       // Mock that the user is logged in
-      let authService = mock<GoogleDriveAuthService>();
+      const authService = mock<GoogleDriveAuthService>();
       MockInstance(GoogleDriveAuthService, () => {
         return {
           isAuthenticatedAndHasValidApiToken: authService.isAuthenticatedAndHasValidApiToken

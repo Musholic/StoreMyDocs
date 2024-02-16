@@ -18,14 +18,14 @@ export async function findAsyncSequential<T>(
   return undefined;
 }
 
-let notConsumedObservables = new Set<Observable<any>>();
+const notConsumedObservables = new Set<Observable<any>>();
 
 /**
  * Return an asynchronous observable (the call is delayed until next flush or tick call),
  * and ensure the observable is ultimately consumed
  */
 export function mustBeConsumedAsyncObservable<T>(value: T, mustBeConsumedAfter: Observable<any> | undefined = undefined): Observable<T> {
-  let observable = new TestObservable<T>(subscriber => {
+  const observable = new TestObservable<T>(subscriber => {
     if (mustBeConsumedAfter) {
       expect(notConsumedObservables.has(mustBeConsumedAfter))
         .withContext("This observable must not be subscribed to until the other observable it depends on has been consumed")
@@ -93,7 +93,7 @@ export function navigateTo(path: string) {
 }
 
 export function getLocalStorageMock() {
-  let localStorageMock = mock<Storage>();
+  const localStorageMock = mock<Storage>();
   Object.defineProperty(window, 'localStorage', {
     value: localStorageMock
   });

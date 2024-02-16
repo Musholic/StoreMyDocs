@@ -105,10 +105,17 @@ export class AceEditorComponent implements MatFormFieldControl<string>, OnInit {
     }
   }
 
+  setDescribedByIds(ids: string[]): void {
+  }
+
+  onContainerClick(event: MouseEvent): void {
+    this.editor?.focus();
+  }
+
   private setupCustomCompletions() {
-    let customCompleter: Completer = {
+    const customCompleter: Completer = {
       getCompletions(_editor: Ace.Editor, _session: Ace.EditSession, _position: Ace.Point, _prefix: string, callback: Ace.CompleterCallback): void {
-        let completions: Completion[] = [
+        const completions: Completion[] = [
           {
             value: "fileName",
             meta: "local",
@@ -124,12 +131,5 @@ export class AceEditorComponent implements MatFormFieldControl<string>, OnInit {
       }
     }
     this.editor?.completers.push(customCompleter);
-  }
-
-  setDescribedByIds(ids: string[]): void {
-  }
-
-  onContainerClick(event: MouseEvent): void {
-    this.editor?.focus();
   }
 }

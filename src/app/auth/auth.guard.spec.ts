@@ -42,7 +42,7 @@ describe('authGuard', () => {
   describe('when we are not logged in', () => {
     it('redirects to login', fakeAsync(() => {
       // Arrange
-      let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticatedAndHasValidApiToken',
+      const isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticatedAndHasValidApiToken',
         mock<GoogleDriveAuthService['isAuthenticatedAndHasValidApiToken']>());
       when(() => isAuthenticatedMock()).thenReturn(false);
 
@@ -61,7 +61,7 @@ describe('authGuard', () => {
   describe('when we are already logged in', () => {
     it('allows navigation to root', fakeAsync(() => {
       // Arrange
-      let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticatedAndHasValidApiToken',
+      const isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticatedAndHasValidApiToken',
         mock<GoogleDriveAuthService['isAuthenticatedAndHasValidApiToken']>());
       when(() => isAuthenticatedMock()).thenReturn(true);
 

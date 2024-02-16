@@ -17,13 +17,13 @@ export class BackgroundTaskService {
   }
 
   showProgress(globalDescription: string, stepAmount: number, stepDescription?: string): BehaviorSubject<Progress> {
-    let progress = new BehaviorSubject<Progress>({
+    const progress = new BehaviorSubject<Progress>({
       index: 1,
       value: 0,
       description: stepDescription,
     });
 
-    let progressData: ProgressData = {
+    const progressData: ProgressData = {
       globalDescription: globalDescription,
       stepAmount: stepAmount,
       progress: progress
@@ -39,7 +39,7 @@ export class BackgroundTaskService {
   }
 
   updateProgress(progress: BehaviorSubject<Progress>, httpEvent: HttpProgressEvent | HttpResponse<any>) {
-    let lastProgress = progress.getValue();
+    const lastProgress = progress.getValue();
     if ((httpEvent.type === HttpEventType.DownloadProgress || httpEvent.type === HttpEventType.UploadProgress) && httpEvent.total) {
       progress.next({
         index: lastProgress.index,
@@ -64,7 +64,7 @@ export class BackgroundTaskService {
   }
 
   schedule(taskName: string, task: () => Observable<void>): void {
-    let alreadyScheduledTask = this.scheduledTasks.has(taskName);
+    const alreadyScheduledTask = this.scheduledTasks.has(taskName);
     if (alreadyScheduledTask) {
       return;
     }
@@ -74,8 +74,8 @@ export class BackgroundTaskService {
       // Initialize the running task with an already finished one for simplicity
       alreadyRunningTask = of(undefined);
     }
-    let scheduledTask = alreadyRunningTask.pipe(mergeMap(() => {
-      let runningTask = task()
+    const scheduledTask = alreadyRunningTask.pipe(mergeMap(() => {
+      const runningTask = task()
         // Multicast the result to all future subscribers since we don't want to rerun the task once for each subscriber
         .pipe(share());
       this.runningTasks.set(taskName, runningTask);
@@ -133,7 +133,7 @@ class SnackBarProgressIndicatorComponent {
   }
 
   getTotalProgress(data: ProgressData) {
-    let totalProgress = Math.floor(((data.progress.value.index - 1) * 100 + data.progress.value.value) / data.stepAmount);
+    const totalProgress = Math.floor(((data.progress.value.index - 1) * 100 + data.progress.value.value) / data.stepAmount);
     return totalProgress + '%';
   }
 
@@ -142,7 +142,7 @@ class SnackBarProgressIndicatorComponent {
   }
 
   public addProgressData(progressData: ProgressData) {
-    let initialProgress = progressData.progress.value;
+    const initialProgress = progressData.progress.value;
     this.dataList.push(progressData);
     let isEmpty = !initialProgress.description;
 
@@ -173,7 +173,7 @@ class SnackBarProgressIndicatorComponent {
   }
 
   private removeProgressData(progressData: ProgressData) {
-    let index = this.dataList.indexOf(progressData);
+    const index = this.dataList.indexOf(progressData);
     if (index > -1) {
       this.dataList.splice(index, 1)
     }

@@ -96,11 +96,11 @@ export class FileListComponent implements OnInit {
   }
 
   setCategory(element: FileElement) {
-    let data: SelectFileCategoryDialogData = {
+    const data: SelectFileCategoryDialogData = {
       file: element,
       componentRef: this
     };
-    let dialogRef = this.dialog.open(SelectFileCategoryDialog, {
+    const dialogRef = this.dialog.open(SelectFileCategoryDialog, {
       data: data,
       // False otherwise tests are failing abnormally...
       closeOnNavigation: false
@@ -145,14 +145,26 @@ export class FileListComponent implements OnInit {
   }
 
   getAncestorCategories(catId: string): FolderElement[] {
-    let category = this.categories.get(catId);
+    const category = this.categories.get(catId);
     if (category) {
-      let categories = this.getAncestorCategories(category.parentId);
+      const categories = this.getAncestorCategories(category.parentId);
       categories.push(category);
       return categories;
     } else {
       return [];
     }
+  }
+
+  getAssignCategoryTooltip(file: FileElement) {
+    const matchingRule = this.fileToMatchingRuleMap.get(file.id);
+    if (matchingRule) {
+      return 'Automatically assigned by rule "' + matchingRule + '"'
+    }
+    return "";
+  }
+
+  hasMatchingRule(file: FileElement) {
+    return this.fileToMatchingRuleMap.has(file.id);
   }
 
   private refresh() {
@@ -169,18 +181,6 @@ export class FileListComponent implements OnInit {
       .forEach(category => this.categories.set(category.id, category));
 
     this.constructCategoryTree();
-  }
-
-  private checkForEmptyCategoriesToRemove() {
-    // Also remove empty categories which can happen when removing a category from a file
-    let removeCategoryRequests = this.removeEmptyCategories();
-    if (removeCategoryRequests) {
-      zip(removeCategoryRequests)
-        .subscribe(() => {
-          // Do a refresh when all categories were removed
-          this.refresh()
-        })
-    }
   }
 
   /**
@@ -207,10 +207,22 @@ export class FileListComponent implements OnInit {
     return this.parentToCategoryMap.get(catId) ?? []
   }
 
+  private checkForEmptyCategoriesToRemove() {
+    // Also remove empty categories which can happen when removing a category from a file
+    const removeCategoryRequests = this.removeEmptyCategories();
+    if (removeCategoryRequests) {
+      zip(removeCategoryRequests)
+        .subscribe(() => {
+          // Do a refresh when all categories were removed
+          this.refresh()
+        })
+    }
+  }
+
   private constructCategoryTree() {
     // Populate parentToCategoryMap
     this.parentToCategoryMap.clear();
-    for (let category of this.categories.values()) {
+    for (const category of this.categories.values()) {
       if (!this.parentToCategoryMap.has(category.parentId)) {
         this.parentToCategoryMap.set(category.parentId, []);
       }
@@ -223,20 +235,6 @@ export class FileListComponent implements OnInit {
     }
     // Add the root categories
     this.categoryDataSource.data = this.getChildren(this.baseFolderId);
-  }
-
-  /**
-   * Return the last category id of the list
-   */
-  private findOrCreateCategories(categories: string[], categoryId: string): Observable<string> {
-    let categoryName = categories.shift();
-    if (categoryName !== undefined) {
-      return this.fileService.findOrCreateFolder(categoryName, categoryId)
-        .pipe(mergeMap(newCategoryId => {
-          return this.findOrCreateCategories(categories, newCategoryId);
-        }));
-    }
-    return of(categoryId);
   }
 
   private removeEmptyCategories() {
@@ -253,17 +251,18 @@ export class FileListComponent implements OnInit {
     })
   }
 
-
-  hasMatchingRule(file: FileElement) {
-    return this.fileToMatchingRuleMap.has(file.id);
-  }
-
-  getAssignCategoryTooltip(file: FileElement) {
-    let matchingRule = this.fileToMatchingRuleMap.get(file.id);
-    if (matchingRule) {
-      return 'Automatically assigned by rule "' + matchingRule + '"'
+  /**
+   * Return the last category id of the list
+   */
+  private findOrCreateCategories(categories: string[], categoryId: string): Observable<string> {
+    const categoryName = categories.shift();
+    if (categoryName !== undefined) {
+      return this.fileService.findOrCreateFolder(categoryName, categoryId)
+        .pipe(mergeMap(newCategoryId => {
+          return this.findOrCreateCategories(categories, newCategoryId);
+        }));
     }
-    return "";
+    return of(categoryId);
   }
 }
 
@@ -343,7 +342,7 @@ export class SelectFileCategoryDialog {
 
   private filterSuggestedOptions(currentInput: string) {
     // Filter on the last selected category as we want to suggest the children only
-    let parentIdFilter = this.getIdOfLastSelectedCategory();
+    const parentIdFilter = this.getIdOfLastSelectedCategory();
     return Array.from(this.existingCategories.values())
       // We need the root categories only
       .filter(value => value.parentId === parentIdFilter)
@@ -358,7 +357,7 @@ export class SelectFileCategoryDialog {
   private getIdOfLastSelectedCategory() {
     let parentIdFilter = this.baseFolderId;
     for (const category of this.categories) {
-      let match = Array.from(this.existingCategories.values())
+      const match = Array.from(this.existingCategories.values())
         .filter(value => value.parentId === parentIdFilter)
         .find(value => value.name === category);
       if (!match) {

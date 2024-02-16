@@ -27,7 +27,7 @@ describe('FileUploadElementComponent', () => {
   describe('When a file is partially uploaded', () => {
     it('should show current progress', async () => {
       // Arrange
-      let fileProgress: FileUploadProgress = {fileName: 'Test.txt', total: 100, loaded: 40};
+      const fileProgress: FileUploadProgress = {fileName: 'Test.txt', total: 100, loaded: 40};
 
       // Act
       const fixture = MockRender(FileUploadElementComponent, {fileProgress: fileProgress} as FileUploadElementComponent);
@@ -53,7 +53,7 @@ class Page {
   }
 
   async getUploadProgress() {
-    let progressBar = await this.loader.getHarness(MatProgressBarHarness);
+    const progressBar = await this.loader.getHarness(MatProgressBarHarness);
     return progressBar.getValue();
   }
 }

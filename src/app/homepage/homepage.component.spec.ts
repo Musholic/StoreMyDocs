@@ -7,7 +7,7 @@ describe('HomepageComponent', () => {
   beforeEach(() => MockBuilder(HomepageComponent, AppModule));
 
   it('should create', () => {
-    let component = MockRender(HomepageComponent).point.componentInstance;
+    const component = MockRender(HomepageComponent).point.componentInstance;
     expect(component).toBeTruthy();
   });
 });

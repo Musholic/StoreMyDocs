@@ -23,7 +23,7 @@ describe('FileService', () => {
   it('findAll', fakeAsync(() => {
     // Arrange
     const service = MockRender(FileService).point.componentInstance;
-    let httpTestingController = TestBed.inject(HttpTestingController);
+    const httpTestingController = TestBed.inject(HttpTestingController);
 
     // Act
     let result: FileOrFolderElement[] = [];
@@ -143,7 +143,7 @@ describe('FileService', () => {
   it('should trash file', fakeAsync(() => {
     // Arrange
     const service = MockRender(FileService).point.componentInstance;
-    let httpTestingController = TestBed.inject(HttpTestingController);
+    const httpTestingController = TestBed.inject(HttpTestingController);
 
     // Act
     service.trash('id545').subscribe();
@@ -167,7 +167,7 @@ describe('FileService', () => {
       it('should create and return a new id', fakeAsync(() => {
         // Arrange
         const service = MockRender(FileService).point.componentInstance;
-        let httpTestingController = TestBed.inject(HttpTestingController);
+        const httpTestingController = TestBed.inject(HttpTestingController);
 
         // Act
         let result = '';
@@ -210,7 +210,7 @@ describe('FileService', () => {
       it('with no parent, should create root folder and return a new id', fakeAsync(() => {
         // Arrange
         const service = MockRender(FileService).point.componentInstance;
-        let httpTestingController = TestBed.inject(HttpTestingController);
+        const httpTestingController = TestBed.inject(HttpTestingController);
 
         // Act
         let result = '';
@@ -253,7 +253,7 @@ describe('FileService', () => {
       it('should return existing id', fakeAsync(() => {
         // Arrange
         const service = MockRender(FileService).point.componentInstance;
-        let httpTestingController = TestBed.inject(HttpTestingController);
+        const httpTestingController = TestBed.inject(HttpTestingController);
 
         // Act
         let result = '';
@@ -292,7 +292,7 @@ describe('FileService', () => {
         // Arrange
         const service = MockRender(FileService).point.componentInstance;
 
-        let httpTestingController = TestBed.inject(HttpTestingController);
+        const httpTestingController = TestBed.inject(HttpTestingController);
 
         // Act
         let result = false;
@@ -323,7 +323,7 @@ describe('FileService', () => {
   describe('findOrCreateBaseFolder', function () {
     it('should find or create base folder', fakeAsync(() => {
       // Arrange
-      let fileServiceMock = mockFileService();
+      const fileServiceMock = mockFileService();
 
       when(() => fileServiceMock.findOrCreateFolder('storemydocs.ovh'))
         .thenReturn(of('folderId51'))
@@ -346,7 +346,7 @@ describe('FileService', () => {
       // Arrange
       const service = MockRender(FileService).point.componentInstance;
 
-      let fileElement = mockFileElement('file');
+      const fileElement = mockFileElement('file');
 
       // Act
       let result: Blob | undefined = undefined;
@@ -354,8 +354,8 @@ describe('FileService', () => {
         .subscribe(value => result = value);
 
       // Assert
-      let httpTestingController = TestBed.inject(HttpTestingController);
-      let request = httpTestingController.expectOne('https://www.googleapis.com/drive/v3/files/' + fileElement.id + '?alt=media');
+      const httpTestingController = TestBed.inject(HttpTestingController);
+      const request = httpTestingController.expectOne('https://www.googleapis.com/drive/v3/files/' + fileElement.id + '?alt=media');
       request.flush(new Blob(['testContent']));
 
       let textResult = '';
@@ -370,7 +370,7 @@ describe('FileService', () => {
 });
 
 export function mockFileService() {
-  let fileServiceMock: FileService = mock<FileService>();
+  const fileServiceMock: FileService = mock<FileService>();
   MockInstance(FileService, (instance, injector) => {
     return {
       findOrCreateFolder: fileServiceMock.findOrCreateFolder,
