@@ -4,10 +4,10 @@ on:
     branches:
       - master
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ opened, synchronize, reopened ]
 jobs:
-  sonarcloud:
-    name: SonarCloud
+  buildAndTest:
+    name: Build and test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -26,6 +26,11 @@ jobs:
       - name: Run tests
         run: npm run test:headless
 
+  mutationTesting:
+    name: Mutation testing
+    runs-on: ubuntu-latest
+    needs: [ buildAndTest ]
+    steps:
       - name: Cache stryker incremental file
         uses: actions/cache@v3
         with:
@@ -47,6 +52,11 @@ jobs:
       - name: Convert mutation issues to sonarcloud generic issues
         run: jq -f stryker-tool/mutation-report-to-sonar.jq reports/mutation/mutation.json > mutation-sonar.json
 
+  sonarcloud:
+    name: SonarCloud
+    runs-on: ubuntu-latest
+    needs: [ buildAndTest ]
+    steps:
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
