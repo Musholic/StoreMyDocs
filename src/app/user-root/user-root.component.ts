@@ -17,7 +17,7 @@ export class UserRootComponent {
               private backgroundTaskService: BackgroundTaskService) {
     databaseBackupAndRestoreService.restore()
       .subscribe(() => {
-        ruleService.runAll().subscribe();
+        ruleService.scheduleRunAll();
         // TODO: refresh after if there was any update to one of the file categories
       });
   }

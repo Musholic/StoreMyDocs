@@ -419,7 +419,8 @@ export function mockRuleService() {
       create: ruleServiceMock.create,
       findAll: ruleServiceMock.findAll,
       delete: ruleServiceMock.delete,
-      update: ruleServiceMock.update
+      update: ruleServiceMock.update,
+      scheduleRunAll: ruleServiceMock.scheduleRunAll
     }
   });
   return ruleServiceMock;

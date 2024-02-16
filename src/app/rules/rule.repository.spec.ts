@@ -3,15 +3,14 @@ import {MockBuilder, MockInstance, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
 import {db} from "../database/db";
 import {mock, when} from "strong-mock";
-import {dbCleanUp, mustBeConsumedAsyncObservable} from "../../testing/common-testing-function.spec";
-import {HttpEventType, HttpResponse} from "@angular/common/http";
+import {dbCleanUp} from "../../testing/common-testing-function.spec";
 import {DatabaseBackupAndRestoreService} from "../database/database-backup-and-restore.service";
 
 
 function mockBackupCall() {
   let databaseBackupAndRestoreService = ngMocks.get(DatabaseBackupAndRestoreService);
-  return when(() => databaseBackupAndRestoreService.backup())
-    .thenReturn(mustBeConsumedAsyncObservable({type: HttpEventType.Response} as HttpResponse<any>));
+  return when(() => databaseBackupAndRestoreService.scheduleBackup())
+    .thenReturn();
 }
 
 describe('RuleRepository', () => {

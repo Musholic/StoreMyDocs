@@ -10,7 +10,7 @@ import {HttpEventType, HttpProgressEvent, HttpResponse} from "@angular/common/ht
 export class BackgroundTaskService {
 
   private snackBarRef?: MatSnackBarRef<SnackBarProgressIndicatorComponent>;
-  private readonly scheduledTasks = new Map<string, Observable<void>>();
+  private readonly scheduledTasks = new Set<string>();
   private readonly runningTasks = new Map<string, Observable<void>>();
 
   constructor(private snackBar: MatSnackBar) {
@@ -63,10 +63,10 @@ export class BackgroundTaskService {
     return true;
   }
 
-  schedule(taskName: string, task: () => Observable<void>): Observable<void> {
-    let alreadyScheduledTask = this.scheduledTasks.get(taskName);
+  schedule(taskName: string, task: () => Observable<void>): void {
+    let alreadyScheduledTask = this.scheduledTasks.has(taskName);
     if (alreadyScheduledTask) {
-      return alreadyScheduledTask;
+      return;
     }
 
     let alreadyRunningTask = this.runningTasks.get(taskName);
@@ -75,17 +75,15 @@ export class BackgroundTaskService {
       alreadyRunningTask = of(undefined);
     }
     let scheduledTask = alreadyRunningTask.pipe(mergeMap(() => {
-        let runningTask = task()
-          // Multicast the result to all future subscribers since we don't want to rerun the task once for each subscriber
-          .pipe(share());
-        this.runningTasks.set(taskName, runningTask);
-        this.scheduledTasks.delete(taskName);
-        return runningTask;
-      }),
-      // Multicast the result to all future subscribers since we don't want to rerun the task once for each subscriber
-      share());
-    this.scheduledTasks.set(taskName, scheduledTask);
-    return scheduledTask;
+      let runningTask = task()
+        // Multicast the result to all future subscribers since we don't want to rerun the task once for each subscriber
+        .pipe(share());
+      this.runningTasks.set(taskName, runningTask);
+      this.scheduledTasks.delete(taskName);
+      return runningTask;
+    }));
+    this.scheduledTasks.add(taskName);
+    scheduledTask.subscribe();
   }
 
   private showSnackBar() {

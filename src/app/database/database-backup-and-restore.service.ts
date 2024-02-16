@@ -16,8 +16,6 @@ export class DatabaseBackupAndRestoreService {
 
   private static readonly LAST_DB_BACKUP_TIME = 'last_db_backup_time';
   private static readonly DB_NAME = 'db.backup';
-  private static readonly BACKUP_DELAY = 5_000;
-  private static backupScheduled = false;
 
   constructor(private fileUploadService: FileUploadService, private fileService: FileService,
               private backgroundTaskService: BackgroundTaskService, private filesCacheService: FilesCacheService) {
@@ -42,18 +40,13 @@ export class DatabaseBackupAndRestoreService {
           return this.fileUploadService.upload({name: DatabaseBackupAndRestoreService.DB_NAME, blob}, dbFile?.id);
         }),
         tap(httpEvent => this.backgroundTaskService.updateProgress(progress, httpEvent)),
-        finalize(() => this.updateLastDbBackupTime()));
+        finalize(() => this.updateLastDbBackupTime()),
+        map(() => {
+        }));
   }
 
   scheduleBackup() {
-    if (!DatabaseBackupAndRestoreService.backupScheduled) {
-      DatabaseBackupAndRestoreService.backupScheduled = true;
-
-      setTimeout(() => {
-        DatabaseBackupAndRestoreService.backupScheduled = false;
-        this.backup().subscribe();
-      }, DatabaseBackupAndRestoreService.BACKUP_DELAY);
-    }
+    this.backgroundTaskService.schedule("backupDatabase", () => this.backup());
   }
 
   restore(): Observable<void> {

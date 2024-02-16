@@ -19,12 +19,11 @@ describe('UserRootComponent', () => {
   it('should restore and run all rules automatically', fakeAsync(() => {
     // Arrange
     let databaseBackupAndRestoreService = mockDatabaseBackupAndRestoreService();
-    let restoreObservable = mustBeConsumedAsyncObservable(undefined);
     when(() => databaseBackupAndRestoreService.restore())
-      .thenReturn(restoreObservable);
+      .thenReturn(mustBeConsumedAsyncObservable(undefined));
     let ruleService = mockRuleService();
-    when(() => ruleService.runAll())
-      .thenReturn(mustBeConsumedAsyncObservable(undefined, restoreObservable))
+    when(() => ruleService.scheduleRunAll())
+      .thenReturn();
 
     // Act
     MockRender(UserRootComponent);

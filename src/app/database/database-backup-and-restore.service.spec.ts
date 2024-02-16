@@ -233,49 +233,6 @@ describe('DatabaseBackupAndRestoreService', () => {
       await backupPromise;
     });
   })
-
-  describe('scheduleBackup', () => {
-    it('should only do one backup after multiple calls', fakeAsync(() => {
-      // Arrange
-      const databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
-      // Mock the backup call since we already test it above
-      databaseBackupAndRestoreService.backup = mock<DatabaseBackupAndRestoreService['backup']>();
-
-      when(() => databaseBackupAndRestoreService.backup())
-        .thenReturn(mustBeConsumedAsyncObservable({type: HttpEventType.Response} as HttpResponse<any>))
-        .times(1);
-
-      // Act
-      databaseBackupAndRestoreService.scheduleBackup();
-      databaseBackupAndRestoreService.scheduleBackup();
-
-      // Assert
-      // No failure with mockup setup
-      tick(5000);
-    }));
-
-    it('should do a second backup after the previous backup finished', fakeAsync(() => {
-      // Arrange
-      const databaseBackupAndRestoreService = MockRender(DatabaseBackupAndRestoreService).point.componentInstance;
-      // Mock the backup call since we already test it above
-      databaseBackupAndRestoreService.backup = mock<DatabaseBackupAndRestoreService['backup']>();
-
-      when(() => databaseBackupAndRestoreService.backup())
-        .thenReturn(mustBeConsumedAsyncObservable({type: HttpEventType.Response} as HttpResponse<any>))
-        .times(2);
-
-      // Do a first backup and wait 30s
-      databaseBackupAndRestoreService.scheduleBackup();
-      tick(30_000);
-
-      // Act
-      databaseBackupAndRestoreService.scheduleBackup();
-
-      // Assert
-      // No failure with mockup setup
-      tick(5000);
-    }));
-  })
 });
 
 export function mockDatabaseBackupAndRestoreService() {

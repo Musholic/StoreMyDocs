@@ -60,7 +60,6 @@ export class RuleService {
         let files = fileOrFolders
           .filter((file): file is FileElement => isFileElement(file));
 
-
         // Run the script for each file to get the associated category
         // The amount of step is one download per file and one per rule running for each file
         let stepAmount = files.length * (1 + rules.length);
@@ -100,6 +99,10 @@ export class RuleService {
       }
     }
     return result;
+  }
+
+  scheduleRunAll() {
+    return this.backgroundTaskService.schedule('runAllRules', () => this.runAll());
   }
 
   /**

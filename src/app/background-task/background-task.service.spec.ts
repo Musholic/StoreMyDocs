@@ -321,16 +321,16 @@ describe('BackgroundTaskService', () => {
         return mustBeConsumedAsyncObservable(undefined);
       };
       // First instance will be running now
-      backgroundTaskService.schedule("task1", task1).subscribe();
+      backgroundTaskService.schedule("task1", task1);
       // Second instance will be scheduled for later
-      backgroundTaskService.schedule("task1", task1).subscribe();
+      backgroundTaskService.schedule("task1", task1);
       // Third instance will be dropped since it's already scheduled for later
-      backgroundTaskService.schedule("task1", task1).subscribe();
+      backgroundTaskService.schedule("task1", task1);
 
       backgroundTaskService.schedule("task2", () => {
         result2++;
         return mustBeConsumedAsyncObservable(undefined);
-      }).subscribe();
+      });
 
       // Assert
       tick();
@@ -348,11 +348,11 @@ describe('BackgroundTaskService', () => {
         result1++;
         return mustBeConsumedAsyncObservable(undefined);
       };
-      backgroundTaskService.schedule("task1", task1).subscribe();
+      backgroundTaskService.schedule("task1", task1);
       tick();
 
       // Act
-      backgroundTaskService.schedule("task1", task1).subscribe();
+      backgroundTaskService.schedule("task1", task1);
 
       // Assert
       tick();
@@ -370,19 +370,19 @@ describe('BackgroundTaskService', () => {
       backgroundTaskService.schedule("task1", () => {
         result1a++;
         return mustBeConsumedAsyncObservable(undefined);
-      }).subscribe();
+      });
       tick();
       backgroundTaskService.schedule("task1", () => {
         result1b++;
         return mustBeConsumedAsyncObservable(undefined);
-      }).subscribe();
+      });
       tick();
 
       // Act
       backgroundTaskService.schedule("task1", () => {
         result1c++;
         return mustBeConsumedAsyncObservable(undefined);
-      }).subscribe();
+      });
 
       // Assert
       tick();
@@ -403,14 +403,14 @@ describe('BackgroundTaskService', () => {
           map(() => {
             result1++;
           }));
-      }).subscribe();
+      });
       tick();
 
       // Act
       backgroundTaskService.schedule("task1", () => {
         result1++;
         return mustBeConsumedAsyncObservable(undefined);
-      }).subscribe();
+      });
 
       // Assert
       tick();
@@ -437,7 +437,8 @@ export function mockBackgroundTaskService() {
   MockInstance(BackgroundTaskService, () => {
     return {
       showProgress: backgroundTaskService.showProgress,
-      updateProgress: backgroundTaskService.updateProgress
+      updateProgress: backgroundTaskService.updateProgress,
+      schedule: backgroundTaskService.schedule
     }
   });
   return backgroundTaskService;
