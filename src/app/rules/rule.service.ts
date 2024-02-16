@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {FileService} from "../file-list/file.service";
-import {BehaviorSubject, concatMap, filter, find, from, map, mergeMap, Observable, of, tap, zip} from "rxjs";
+import {BehaviorSubject, concatMap, filter, find, from, last, map, mergeMap, Observable, of, tap, zip} from "rxjs";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {Rule, RuleRepository} from "./rule.repository";
 import {FilesCacheService} from "../files-cache/files-cache.service";
@@ -54,19 +54,21 @@ export class RuleService {
 
   runAll(): Observable<void> {
     return from(this.ruleRepository.findAll())
-      .pipe(mergeMap(rules => {
-        const fileOrFolders = this.filesCacheService.getAll()
-        // Get all files
-        const files = fileOrFolders
-          .filter((file): file is FileElement => isFileElement(file));
+      .pipe(
+        mergeMap(rules => {
+          const fileOrFolders = this.filesCacheService.getAll()
+          // Get all files
+          const files = fileOrFolders
+            .filter((file): file is FileElement => isFileElement(file));
 
-        // Run the script for each file to get the associated category
-        // The amount of step is one download per file and one per rule running for each file
-        const stepAmount = files.length * (1 + rules.length);
-        const progress = this.backgroundTaskService.showProgress('Running all rules', stepAmount);
-        return this.runAllAndSetCategories(files, rules, progress)
-          .pipe(tap({complete: () => progress.next({value: 100, index: stepAmount})}));
-      }));
+          // Run the script for each file to get the associated category
+          // The amount of step is one download per file and one per rule running for each file
+          const stepAmount = files.length * (1 + rules.length);
+          const progress = this.backgroundTaskService.showProgress('Running all rules', stepAmount);
+          return this.runAllAndSetCategories(files, rules, progress)
+            .pipe(tap({complete: () => progress.next({value: 100, index: stepAmount})}));
+        }),
+        last(null, undefined));
   }
 
   create(rule: Rule) {

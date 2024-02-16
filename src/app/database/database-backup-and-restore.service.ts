@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {exportDB} from "dexie-export-import";
 import {db} from "./db";
 import {FileUploadService} from "../file-upload/file-upload.service";
-import {finalize, from, map, mergeMap, Observable, of, tap} from "rxjs";
+import {finalize, from, last, map, mergeMap, Observable, of, tap} from "rxjs";
 import {FileService} from "../file-list/file.service";
 import {FileElement, isFileElement} from "../file-list/file-list.component";
 import {BackgroundTaskService} from "../background-task/background-task.service";
@@ -40,9 +40,8 @@ export class DatabaseBackupAndRestoreService {
           return this.fileUploadService.upload({name: DatabaseBackupAndRestoreService.DB_NAME, blob}, dbFile?.id);
         }),
         tap(httpEvent => this.backgroundTaskService.updateProgress(progress, httpEvent)),
-        finalize(() => this.updateLastDbBackupTime()),
-        map(() => {
-        }));
+        last(null, undefined),
+        map(() => this.updateLastDbBackupTime()));
   }
 
   scheduleBackup() {

@@ -11,7 +11,7 @@ import {HttpEventType, HttpResponse} from "@angular/common/http";
 import {mockFileElement} from "../file-list/file-list.component.spec";
 import {fakeAsync, tick} from "@angular/core/testing";
 import {db} from "./db";
-import {BehaviorSubject, lastValueFrom} from "rxjs";
+import {BehaviorSubject, firstValueFrom} from "rxjs";
 import {mockBackgroundTaskService} from "../background-task/background-task.service.spec";
 import {Progress} from "../background-task/background-task.service";
 import {mockFilesCacheService} from "../files-cache/files-cache.service.spec";
@@ -81,7 +81,7 @@ describe('DatabaseBackupAndRestoreService', () => {
       mockFilesCacheService([dbBackupFile]);
 
       // Act
-      const restorePromise = lastValueFrom(databaseBackupAndRestoreService.restore());
+      const restorePromise = firstValueFrom(databaseBackupAndRestoreService.restore());
 
       // Assert
       // We need to explicitly wait for the restore to finish
@@ -118,7 +118,7 @@ describe('DatabaseBackupAndRestoreService', () => {
       db.rules.add(oldRule)
 
       // Act
-      const restorePromise = lastValueFrom(databaseBackupAndRestoreService.restore());
+      const restorePromise = firstValueFrom(databaseBackupAndRestoreService.restore());
 
       // Assert
       // We need to explicitly wait for the restore to finish
@@ -148,7 +148,7 @@ describe('DatabaseBackupAndRestoreService', () => {
       mockFilesCacheService([dbBackupFile]);
 
       // Act
-      const restorePromise = lastValueFrom(databaseBackupAndRestoreService.restore());
+      const restorePromise = firstValueFrom(databaseBackupAndRestoreService.restore());
 
       // Assert
       tick();
@@ -185,7 +185,7 @@ describe('DatabaseBackupAndRestoreService', () => {
         } as HttpResponse<any>));
 
       // Act
-      const backupPromise = lastValueFrom(databaseBackupAndRestoreService.backup());
+      const backupPromise = firstValueFrom(databaseBackupAndRestoreService.backup());
 
       // Assert
       // No failure in mock setup
@@ -226,7 +226,7 @@ describe('DatabaseBackupAndRestoreService', () => {
         } as HttpResponse<any>));
 
       // Act
-      const backupPromise = lastValueFrom(databaseBackupAndRestoreService.backup());
+      const backupPromise = firstValueFrom(databaseBackupAndRestoreService.backup());
 
       // Assert
       // No failure in mock setup

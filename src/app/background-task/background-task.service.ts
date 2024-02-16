@@ -1,5 +1,5 @@
 import {Component, Injectable} from '@angular/core';
-import {BehaviorSubject, mergeMap, Observable, of, share} from "rxjs";
+import {BehaviorSubject, delay, mergeMap, Observable, of, shareReplay} from "rxjs";
 import {MatSnackBar, MatSnackBarModule, MatSnackBarRef} from "@angular/material/snack-bar";
 import {NgForOf, NgIf} from "@angular/common";
 import {HttpEventType, HttpProgressEvent, HttpResponse} from "@angular/common/http";
@@ -12,6 +12,7 @@ export class BackgroundTaskService {
   private snackBarRef?: MatSnackBarRef<SnackBarProgressIndicatorComponent>;
   private readonly scheduledTasks = new Set<string>();
   private readonly runningTasks = new Map<string, Observable<void>>();
+  private readonly DELAY_BEFORE_RESCHEDULE = 500;
 
   constructor(private snackBar: MatSnackBar) {
   }
@@ -76,8 +77,9 @@ export class BackgroundTaskService {
     }
     const scheduledTask = alreadyRunningTask.pipe(mergeMap(() => {
       const runningTask = task()
-        // Multicast the result to all future subscribers since we don't want to rerun the task once for each subscriber
-        .pipe(share());
+        .pipe(delay(this.DELAY_BEFORE_RESCHEDULE))
+        // Cache the result to all future subscribers since we don't want to rerun the task for each future subscriber
+        .pipe(shareReplay(1));
       this.runningTasks.set(taskName, runningTask);
       this.scheduledTasks.delete(taskName);
       return runningTask;

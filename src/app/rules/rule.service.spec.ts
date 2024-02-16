@@ -12,7 +12,7 @@ import {RuleRepository} from "./rule.repository";
 import {FilesCacheService} from "../files-cache/files-cache.service";
 import {mockFilesCacheService} from "../files-cache/files-cache.service.spec";
 import {mockBackgroundTaskService} from "../background-task/background-task.service.spec";
-import {BehaviorSubject, lastValueFrom} from "rxjs";
+import {BehaviorSubject, firstValueFrom} from "rxjs";
 import {Progress} from "../background-task/background-task.service";
 import {FileElement} from "../file-list/file-list.component";
 
@@ -99,7 +99,7 @@ describe('RuleService', () => {
       const service = mockElectricityBillSample(file, fileService);
 
       // Act
-      const runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+      const runAllPromise = firstValueFrom(service.runAll(), {defaultValue: undefined});
 
       // Assert
       tick();
@@ -114,7 +114,7 @@ describe('RuleService', () => {
       const service = mockElectricityBillSample(file, fileService);
 
       // Act
-      const runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+      const runAllPromise = firstValueFrom(service.runAll(), {defaultValue: undefined});
 
       // Assert
       tick();
@@ -149,7 +149,7 @@ describe('RuleService', () => {
       mockFilesCacheService([file]);
 
       // Act
-      const runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+      const runAllPromise = firstValueFrom(service.runAll(), {defaultValue: undefined});
 
       // Assert
       tick();
@@ -251,7 +251,7 @@ describe('RuleService', () => {
       mockFilesCacheService([file, otherFile], true);
 
       // Act
-      const runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+      const runAllPromise = firstValueFrom(service.runAll(), {defaultValue: undefined});
 
       // Assert
       tick();
@@ -301,7 +301,7 @@ describe('RuleService', () => {
       mockFilesCacheService([file]);
 
       // Act
-      const runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+      const runAllPromise = firstValueFrom(service.runAll(), {defaultValue: undefined});
 
       // Assert
       tick();
@@ -368,7 +368,7 @@ describe('RuleService', () => {
       mockFilesCacheService([file], true);
 
       // Act
-      const runAllPromise = lastValueFrom(service.runAll(), {defaultValue: undefined});
+      const runAllPromise = firstValueFrom(service.runAll(), {defaultValue: undefined});
 
       // Assert
       // fakeAsync(() => tick());

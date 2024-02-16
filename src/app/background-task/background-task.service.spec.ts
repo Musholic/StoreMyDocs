@@ -333,7 +333,7 @@ describe('BackgroundTaskService', () => {
       });
 
       // Assert
-      tick();
+      tick(1000);
       expect(result1).toEqual(2);
       expect(result2).toEqual(1);
     }));
@@ -349,13 +349,13 @@ describe('BackgroundTaskService', () => {
         return mustBeConsumedAsyncObservable(undefined);
       };
       backgroundTaskService.schedule("task1", task1);
-      tick();
+      tick(500);
 
       // Act
       backgroundTaskService.schedule("task1", task1);
 
       // Assert
-      tick();
+      tick(500);
       expect(result1).toEqual(2);
     }));
 
@@ -371,12 +371,12 @@ describe('BackgroundTaskService', () => {
         result1a++;
         return mustBeConsumedAsyncObservable(undefined);
       });
-      tick();
+      tick(500);
       backgroundTaskService.schedule("task1", () => {
         result1b++;
         return mustBeConsumedAsyncObservable(undefined);
       });
-      tick();
+      tick(500);
 
       // Act
       backgroundTaskService.schedule("task1", () => {
@@ -385,7 +385,7 @@ describe('BackgroundTaskService', () => {
       });
 
       // Assert
-      tick();
+      tick(500);
       expect(result1a).toEqual(1);
       expect(result1b).toEqual(1);
       expect(result1c).toEqual(1);
@@ -404,7 +404,7 @@ describe('BackgroundTaskService', () => {
             result1++;
           }));
       });
-      tick();
+      tick(500);
 
       // Act
       backgroundTaskService.schedule("task1", () => {
@@ -413,7 +413,7 @@ describe('BackgroundTaskService', () => {
       });
 
       // Assert
-      tick();
+      tick(500);
       expect(result1).toEqual(0);
       tick(5000);
       expect(result1).toEqual(2);
