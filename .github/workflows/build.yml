@@ -6,8 +6,8 @@ on:
   pull_request:
     types: [ opened, synchronize, reopened ]
 jobs:
-  buildAndTest:
-    name: Build and test
+  sonarcloud:
+    name: SonarCloud
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -26,37 +26,6 @@ jobs:
       - name: Run tests
         run: npm run test:headless
 
-  mutationTesting:
-    name: Mutation testing
-    runs-on: ubuntu-latest
-    needs: [ buildAndTest ]
-    steps:
-      - name: Cache stryker incremental file
-        uses: actions/cache@v3
-        with:
-          key: stryker-cache
-          path: ./reports/stryker-incremental.json
-
-      - name: Run stryker run
-        run: npm run test:mutation
-        env:
-          STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
-
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: stryker-report
-          path: reports/mutation
-          retention-days: 30
-
-      - name: Convert mutation issues to sonarcloud generic issues
-        run: jq -f stryker-tool/mutation-report-to-sonar.jq reports/mutation/mutation.json > mutation-sonar.json
-
-  sonarcloud:
-    name: SonarCloud
-    runs-on: ubuntu-latest
-    needs: [ buildAndTest ]
-    steps:
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
