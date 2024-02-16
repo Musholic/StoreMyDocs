@@ -1,5 +1,13 @@
 import {authGuard} from './auth.guard';
-import {MockBuilder, MockedComponentFixture, MockInstance, MockRender, NG_MOCKS_GUARDS, ngMocks} from "ng-mocks";
+import {
+  MockBuilder,
+  MockedComponentFixture,
+  MockInstance,
+  MockRender,
+  NG_MOCKS_GUARDS,
+  NG_MOCKS_RESOLVERS,
+  ngMocks
+} from "ng-mocks";
 import {Router, RouterModule, RouterOutlet} from "@angular/router";
 import {RouterTestingModule} from "@angular/router/testing";
 import {AppModule} from "../app.module";
@@ -26,6 +34,7 @@ describe('authGuard', () => {
     )
       // excluding all guards to avoid side effects
       .exclude(NG_MOCKS_GUARDS)
+      .exclude(NG_MOCKS_RESOLVERS)
       // keeping guard for testing
       .keep(authGuard)
   );
@@ -33,7 +42,7 @@ describe('authGuard', () => {
   describe('when we are not logged in', () => {
     it('redirects to login', fakeAsync(() => {
       // Arrange
-      let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticatedAndHasValidApiToken',
+      const isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticatedAndHasValidApiToken',
         mock<GoogleDriveAuthService['isAuthenticatedAndHasValidApiToken']>());
       when(() => isAuthenticatedMock()).thenReturn(false);
 
@@ -52,7 +61,7 @@ describe('authGuard', () => {
   describe('when we are already logged in', () => {
     it('allows navigation to root', fakeAsync(() => {
       // Arrange
-      let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticatedAndHasValidApiToken',
+      const isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticatedAndHasValidApiToken',
         mock<GoogleDriveAuthService['isAuthenticatedAndHasValidApiToken']>());
       when(() => isAuthenticatedMock()).thenReturn(true);
 

@@ -6,7 +6,7 @@ describe('TitleHeaderComponent', () => {
   beforeEach(() => MockBuilder(TitleHeaderComponent, AppModule))
 
   it('should create', () => {
-    let component = MockRender(TitleHeaderComponent).point.componentInstance;
+    const component = MockRender(TitleHeaderComponent).point.componentInstance;
     expect(component).toBeTruthy();
   });
 });

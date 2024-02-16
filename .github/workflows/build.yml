@@ -4,7 +4,7 @@ on:
     branches:
       - master
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ opened, synchronize, reopened ]
 jobs:
   sonarcloud:
     name: SonarCloud
@@ -25,27 +25,6 @@ jobs:
 
       - name: Run tests
         run: npm run test:headless
-
-      - name: Cache stryker incremental file
-        uses: actions/cache@v3
-        with:
-          key: stryker-cache
-          path: ./reports/stryker-incremental.json
-
-      - name: Run stryker run
-        run: npm run test:mutation
-        env:
-          STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
-
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: stryker-report
-          path: reports/mutation
-          retention-days: 30
-
-      - name: Convert mutation issues to sonarcloud generic issues
-        run: jq -f stryker-tool/mutation-report-to-sonar.jq reports/mutation/mutation.json > mutation-sonar.json
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master

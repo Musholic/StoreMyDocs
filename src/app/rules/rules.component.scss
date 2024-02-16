@@ -1,0 +1,37 @@
+.smd-main-content {
+  padding: 20px 70px;
+}
+
+.goBackButton {
+  padding: 20px;
+}
+
+.actionButtons {
+  padding: 20px 0;
+}
+
+.scriptFormField {
+  width: 100%;
+}
+
+form {
+  width: 100%;
+  max-width: 800px;
+}
+
+.nameAndCategoryFields {
+  width: 100%;
+  display: flex;
+}
+
+mat-form-field {
+  flex-grow: 1;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.ruleButtons {
+  margin-top: 20px;
+}

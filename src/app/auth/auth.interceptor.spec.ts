@@ -16,7 +16,7 @@ describe('AuthInterceptor', () => {
 
   it('triggers interceptor', () => {
     //Arrange
-    let getApiTokenMock = MockInstance(GoogleDriveAuthService, 'getApiToken', mock<GoogleDriveAuthService['getApiToken']>());
+    const getApiTokenMock = MockInstance(GoogleDriveAuthService, 'getApiToken', mock<GoogleDriveAuthService['getApiToken']>());
     when(() => getApiTokenMock()).thenReturn('apiToken548');
     MockRender();
     const client = ngMocks.findInstance(HttpClient);

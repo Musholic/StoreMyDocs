@@ -1,0 +1,65 @@
+<app-title-header></app-title-header>
+<div class="goBackButton">
+  <a mat-raised-button routerLink="/">Go back</a>
+</div>
+<div class="smd-main-content">
+  <h1>Setup rules</h1>
+  <div class="actionButtons">
+    <button (click)="showCreate()" [disabled]="ruleToCreateOrUpdate" mat-raised-button>Create new rule</button>
+  </div>
+  <form (ngSubmit)="createOrUpdateRule()" *ngIf="ruleToCreateOrUpdate">
+    <div class="nameAndCategoryFields">
+      <mat-form-field>
+        <mat-label>Name</mat-label>
+        <input [(ngModel)]="ruleToCreateOrUpdate.name" matInput name="name" required>
+      </mat-form-field>
+      &nbsp;
+      <mat-form-field>
+        <mat-label>Category</mat-label>
+        <mat-chip-grid #chipGrid aria-label="Enter category">
+          <mat-chip-row *ngFor="let cat of ruleToCreateOrUpdate.category">
+            {{ cat }}
+            <!--            TODO: implement chip removal-->
+            <button matChipRemove>
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+          <input (matChipInputTokenEnd)="add($event)"
+                 [matChipInputFor]="chipGrid"
+                 [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                 placeholder="Select category..."/>
+        </mat-chip-grid>
+      </mat-form-field>
+    </div>
+    <mat-form-field class="fullWidth">
+      <mat-label>Script</mat-label>
+      <app-ace-editor [(value)]="ruleToCreateOrUpdate.script" name="script" required></app-ace-editor>
+    </mat-form-field>
+    <div class="actionButtons">
+      <button (click)="cancelCreateOrUpdate()" mat-raised-button>Cancel</button>
+      &nbsp;
+      <button *ngIf="ruleToCreateOrUpdate.id" color="primary" mat-raised-button type="submit">Update</button>
+      <button *ngIf="!ruleToCreateOrUpdate.id" color="primary" mat-raised-button type="submit">Create</button>
+    </div>
+  </form>
+  <mat-accordion [multi]="true">
+    <mat-expansion-panel *ngFor="let rule of rules">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ rule.name }}
+        </mat-panel-title>
+        <mat-panel-description>
+          <span *ngFor="let cat of rule.category; first as first"><span
+            *ngIf="!first"> &nbsp;&gt; </span>{{ cat }}</span>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <app-ace-editor [value]="rule.script" class="ruleScript" disabled>
+      </app-ace-editor>
+      <div class="ruleButtons">
+        <button (click)="update(rule)" mat-raised-button>Edit</button>
+        &nbsp;
+        <button (click)="delete(rule)" color="warn" mat-raised-button>Delete</button>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>

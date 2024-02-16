@@ -27,13 +27,30 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/smd_icon.png",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "mode-javascript.js",
+                "input": "node_modules/ace-builds/src-noconflict",
+                "output": "ace"
+              },
+              {
+                "glob": "worker-javascript.js",
+                "input": "node_modules/ace-builds/src-noconflict",
+                "output": "ace"
+              }
             ],
             "styles": [
               "src/theme.scss",
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "webWorkerTsConfig": "tsconfig.worker.json",
+            "allowedCommonJsDependencies": [
+              "filesize",
+              "ace-builds",
+              "jszip",
+              "pdfjs-dist"
+            ]
           },
           "configurations": {
             "production": {
@@ -66,10 +83,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "storemydocs:build:production"
+              "buildTarget": "storemydocs:build:production"
             },
             "development": {
-              "browserTarget": "storemydocs:build:development"
+              "buildTarget": "storemydocs:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -77,7 +94,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "storemydocs:build"
+            "buildTarget": "storemydocs:build"
           }
         },
         "test": {
@@ -99,7 +116,8 @@
               "src/styles.scss"
             ],
             "scripts": [],
-            "karmaConfig": "karma.conf.js"
+            "karmaConfig": "karma.conf.js",
+            "webWorkerTsConfig": "tsconfig.worker.json"
           }
         }
       }

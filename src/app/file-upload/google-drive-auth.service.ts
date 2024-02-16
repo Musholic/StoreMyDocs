@@ -17,7 +17,7 @@ export class GoogleDriveAuthService {
 
   constructor(private router: Router) {
     this.jwtHelper = new JwtHelperService();
-    let encodedAuthToken = localStorage.getItem(GoogleDriveAuthService.LOCAL_STORAGE_AUTH_TOKEN);
+    const encodedAuthToken = localStorage.getItem(GoogleDriveAuthService.LOCAL_STORAGE_AUTH_TOKEN);
     this.setAuthTokenFromEncodedToken(encodedAuthToken);
     this.apiToken = localStorage.getItem(GoogleDriveAuthService.LOCAL_STORAGE_API_TOKEN);
   }
@@ -29,9 +29,9 @@ export class GoogleDriveAuthService {
   }
 
   private async auth() {
-    let tokenResponsePromise = new Promise<google.accounts.oauth2.TokenResponse>((resolve, reject) => {
+    const tokenResponsePromise = new Promise<google.accounts.oauth2.TokenResponse>((resolve, reject) => {
       try {
-        let tokenClient = google.accounts.oauth2.initTokenClient({
+        const tokenClient = google.accounts.oauth2.initTokenClient({
           client_id: this.CLIENT_ID,
           scope: this.SCOPE,
           callback: resolve,
@@ -42,10 +42,10 @@ export class GoogleDriveAuthService {
         reject(err);
       }
     });
-    let tokenResponse = await tokenResponsePromise;
+    const tokenResponse = await tokenResponsePromise;
     localStorage.setItem(GoogleDriveAuthService.LOCAL_STORAGE_API_TOKEN, tokenResponse.access_token)
 
-    let expires_at = new Date();
+    const expires_at = new Date();
     expires_at.setSeconds(expires_at.getSeconds() + Number(tokenResponse.expires_in));
     localStorage.setItem(GoogleDriveAuthService.LOCAL_STORAGE_API_TOKEN_EXPIRES_AT, expires_at.getTime() + '')
     this.apiToken = tokenResponse.access_token;
@@ -65,7 +65,7 @@ export class GoogleDriveAuthService {
 
   private hasValidApiToken(): boolean {
     if (this.apiToken) {
-      let expires_at = Number(localStorage.getItem(GoogleDriveAuthService.LOCAL_STORAGE_API_TOKEN_EXPIRES_AT));
+      const expires_at = Number(localStorage.getItem(GoogleDriveAuthService.LOCAL_STORAGE_API_TOKEN_EXPIRES_AT));
       if (expires_at < new Date().getTime()) {
         this.apiToken = null;
       }

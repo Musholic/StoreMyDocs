@@ -31,6 +31,13 @@ import {MatTreeModule} from "@angular/material/tree";
 import {MatChipsModule} from "@angular/material/chips";
 import {TitleHeaderComponent} from './title-header/title-header.component';
 import {MatSortModule} from "@angular/material/sort";
+import {RulesComponent} from './rules/rules.component';
+import {MatExpansionModule} from "@angular/material/expansion";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
+import {UserRootComponent} from './user-root/user-root.component';
+import {routeReuseStrategyProvider} from "./route-strategy.service";
+import {AceEditorComponent} from "./ace-editor/ace-editor.component";
+import {MatTooltipModule} from "@angular/material/tooltip";
 
 @NgModule({
   declarations: [
@@ -42,7 +49,10 @@ import {MatSortModule} from "@angular/material/sort";
     FooterComponent,
     FileListComponent,
     LoginComponent,
-    TitleHeaderComponent
+    TitleHeaderComponent,
+    RulesComponent,
+    UserRootComponent,
+    AceEditorComponent
   ],
   imports: [
     BrowserModule,
@@ -66,11 +76,16 @@ import {MatSortModule} from "@angular/material/sort";
     FormsModule,
     MatTreeModule,
     MatChipsModule,
-    MatSortModule
+    MatSortModule,
+    MatExpansionModule,
+    MatSnackBarModule,
+    MatTooltipModule
   ],
   providers: [
-    httpInterceptorProviders
+    httpInterceptorProviders,
+    routeReuseStrategyProvider
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}

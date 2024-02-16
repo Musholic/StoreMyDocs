@@ -35,6 +35,14 @@ module.exports = function (config) {
     },
     reporters: ['mocha', 'kjhtml'],
     browsers: ['ChromeHeadless'],
-    restartOnFileChange: true
+    restartOnFileChange: true,
+    files: [
+      {
+        pattern: 'testing-assets/**',
+        included: false,
+        watched: false,
+        served: true
+      }
+    ]
   });
 };

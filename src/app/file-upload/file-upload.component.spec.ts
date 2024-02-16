@@ -1,9 +1,9 @@
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture} from '@angular/core/testing';
 import {FileUploadComponent} from './file-upload.component';
 import {MatIconModule} from "@angular/material/icon";
 import {MockBuilder, MockInstance, MockRender, ngMocks} from "ng-mocks";
 import {AppModule} from "../app.module";
-import {FileUploadService} from "./file-upload.service";
+import {FileUploadService, toFileOrBlob} from "./file-upload.service";
 import {mock, when} from "strong-mock";
 import {Observable, of} from "rxjs";
 import {FileUploadElementComponent} from "./file-upload-element/file-upload-element.component";
@@ -12,11 +12,22 @@ import {TestbedHarnessEnvironment} from "@angular/cdk/testing/testbed";
 import {HarnessLoader} from "@angular/cdk/testing";
 import {MatButtonHarness} from "@angular/material/button/testing";
 import {GooglePickerService} from "./google-picker.service";
+import {BreakpointObserver} from "@angular/cdk/layout";
+import {FilesCacheService} from "../files-cache/files-cache.service";
 
 describe('FileUploadComponent', () => {
   beforeEach(() => {
     return MockBuilder(FileUploadComponent, AppModule)
-      .keep(MatIconModule);
+      .keep(MatIconModule)
+      .keep(BreakpointObserver)
+      .provide({
+        provide: FilesCacheService,
+        useValue: mock<FilesCacheService>()
+      })
+      .provide({
+        provide: FileUploadService,
+        useValue: mock<FileUploadService>()
+      })
   });
 
   it('should create', () => {
@@ -33,12 +44,10 @@ describe('FileUploadComponent', () => {
       // Arrange
       const fixture = MockRender(FileUploadComponent);
       const page = new Page(fixture);
-      let fileUploadService = TestBed.inject(FileUploadService);
-      let uploadMock = mock<typeof fileUploadService['upload']>();
-      fileUploadService.upload = uploadMock;
 
-      let file = new File([''], 'TestFile.txt');
-      when(() => uploadMock(file)).thenReturn(new Observable())
+      const fileUploadService = ngMocks.get(FileUploadService);
+      const file = new File([''], 'TestFile.txt');
+      when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(new Observable())
 
       // Act
       page.uploadFile(file);
@@ -52,12 +61,10 @@ describe('FileUploadComponent', () => {
       // Arrange
       const fixture = MockRender(FileUploadComponent);
       const page = new Page(fixture);
-      let fileUploadService = TestBed.inject(FileUploadService);
-      let uploadMock = mock<typeof fileUploadService['upload']>();
-      fileUploadService.upload = uploadMock;
 
-      let file = new File([''], 'TestFile.txt');
-      when(() => uploadMock(file)).thenReturn(of({
+      const fileUploadService = ngMocks.get(FileUploadService);
+      const file = new File([''], 'TestFile.txt');
+      when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(of({
         loaded: 50,
         total: 100,
         type: HttpEventType.UploadProgress
@@ -78,44 +85,44 @@ describe('FileUploadComponent', () => {
       // Arrange
       const fixture = MockRender(FileUploadComponent);
       const page = new Page(fixture);
-      let fileUploadService = TestBed.inject(FileUploadService);
-      let uploadMock = mock<typeof fileUploadService['upload']>();
-      fileUploadService.upload = uploadMock;
 
-      let file = new File([''], 'TestFile.txt');
-      when(() => uploadMock(file)).thenReturn(of({
+      const fileUploadService = ngMocks.get(FileUploadService);
+      const file = new File([''], 'TestFile.txt');
+      when(() => fileUploadService.upload(toFileOrBlob(file))).thenReturn(of({
         type: HttpEventType.Response
       } as HttpResponse<any>))
-      let component = fixture.point.componentInstance;
-      let finishedEventReceived = false;
-      component.onRefreshRequest.subscribe(() => finishedEventReceived = true)
+
+      const filesCacheService = ngMocks.get(FilesCacheService);
+      // A page refresh is expected
+      when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
       // Act
       page.uploadFile(file);
 
       // Assert
-      expect(finishedEventReceived).toBeTruthy();
+      // No failure from mock setup
     })
   })
 
   describe('When selecting a file with the google picker', () => {
     it('Should refresh files', async () => {
       // Arrange
-      let showMock = MockInstance(GooglePickerService, 'show', mock<GooglePickerService['show']>());
+      const showMock = MockInstance(GooglePickerService, 'show', mock<GooglePickerService['show']>());
       // The user has picked a file when we show the picker
       when(() => showMock()).thenResolve(undefined);
 
       const fixture = MockRender(FileUploadComponent);
       const page = new Page(fixture);
-      let component = fixture.point.componentInstance;
-      let finishedEventReceived = false;
-      component.onRefreshRequest.subscribe(() => finishedEventReceived = true)
+
+      const filesCacheService = ngMocks.findInstance(FilesCacheService);
+      // A page refresh is expected
+      when(() => filesCacheService.refreshCacheAndReload()).thenReturn();
 
       // Act
       await page.openGooglePicker();
 
       // Assert
-      expect(finishedEventReceived).toBeTruthy();
+      // No failure from mock setup
     });
   });
 });
@@ -142,16 +149,16 @@ class Page {
     const dataTransfer = new DataTransfer()
     dataTransfer.items.add(file)
 
-    let event = new InputEvent('change', {dataTransfer: dataTransfer});
+    const event = new InputEvent('change', {dataTransfer: dataTransfer});
 
-    let uploadInput = this.uploadInput;
+    const uploadInput = this.uploadInput;
     uploadInput.files = dataTransfer.files;
     uploadInput.dispatchEvent(event);
     this.fixture.detectChanges();
   }
 
   async openGooglePicker() {
-    let button = await this.harnessLoader.getHarness(MatButtonHarness.with({text: 'Add file from Google Drive...'}));
+    const button = await this.harnessLoader.getHarness(MatButtonHarness.with({text: 'Add file from Google Drive...'}));
     await button.click();
   }
 

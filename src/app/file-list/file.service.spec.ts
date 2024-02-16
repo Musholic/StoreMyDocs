@@ -5,7 +5,10 @@ import {HttpClientModule} from "@angular/common/http";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {fakeAsync, TestBed, tick} from "@angular/core/testing";
 import {FileElement, FileOrFolderElement, FolderElement} from "./file-list.component";
-import {mock} from "strong-mock";
+import {mock, when} from "strong-mock";
+import {BehaviorSubject, of} from "rxjs";
+import {mockFileElement} from "./file-list.component.spec";
+import {Progress} from "../background-task/background-task.service";
 
 describe('FileService', () => {
   beforeEach(() => MockBuilder(FileService, AppModule)
@@ -20,7 +23,7 @@ describe('FileService', () => {
   it('findAll', fakeAsync(() => {
     // Arrange
     const service = MockRender(FileService).point.componentInstance;
-    let httpTestingController = TestBed.inject(HttpTestingController);
+    const httpTestingController = TestBed.inject(HttpTestingController);
 
     // Act
     let result: FileOrFolderElement[] = [];
@@ -32,7 +35,7 @@ describe('FileService', () => {
 
     const req = httpTestingController.expectOne("https://www.googleapis.com/drive/v3/files?" +
       "q=trashed%20=%20false" +
-      "&fields=files(id,name,createdTime,size,iconLink,webContentLink,mimeType,parents)");
+      "&fields=files(id,name,createdTime,modifiedTime,size,iconLink,webContentLink,mimeType,parents)");
     expect(req.request.method).toEqual('GET');
     req.flush({
       "files": [
@@ -40,7 +43,9 @@ describe('FileService', () => {
           id: "id1",
           "size": "1811088",
           "name": "data.bin",
+          "mimeType": "application/octet-stream",
           "createdTime": "2023-08-14T14:48:44.928Z",
+          "modifiedTime": "2023-08-14T14:49:44.928Z",
           iconLink: "link",
           webContentLink: "dlLink",
           parents: ['pId12']
@@ -49,7 +54,9 @@ describe('FileService', () => {
           id: "id2",
           "size": "215142",
           "name": "document.pdf",
+          "mimeType": "application/pdf",
           "createdTime": "2023-08-14T12:28:46.935Z",
+          "modifiedTime": "2023-08-14T12:28:46.935Z",
           iconLink: "link",
           webContentLink: "dlLink",
           parents: ['pId12']
@@ -58,7 +65,9 @@ describe('FileService', () => {
           id: "id3",
           "size": "23207",
           "name": "test-render.png",
+          "mimeType": "image/png",
           "createdTime": "2023-08-03T14:54:55.556Z",
+          "modifiedTime": "2023-08-03T14:54:55.556Z",
           iconLink: "link",
           webContentLink: "dlLink",
           parents: ['pId3']
@@ -69,6 +78,7 @@ describe('FileService', () => {
           "name": "image",
           iconLink: "link",
           "createdTime": "2023-10-13T08:47:32.059Z",
+          "modifiedTime": "2023-10-13T08:47:32.059Z",
           parents: ['pId4']
         },
         {
@@ -87,7 +97,9 @@ describe('FileService', () => {
         id: "id1",
         "size": 1811088,
         "name": "data.bin",
-        "date": "2023-08-14T14:48:44.928Z",
+        "mimeType": "application/octet-stream",
+        "createdTime": new Date("2023-08-14T14:48:44.928Z"),
+        "modifiedTime": new Date("2023-08-14T14:49:44.928Z"),
         iconLink: "link",
         dlLink: "dlLink",
         parentId: "pId12"
@@ -96,7 +108,9 @@ describe('FileService', () => {
         id: "id2",
         "size": 215142,
         "name": "document.pdf",
-        "date": "2023-08-14T12:28:46.935Z",
+        "mimeType": "application/pdf",
+        "createdTime": new Date("2023-08-14T12:28:46.935Z"),
+        "modifiedTime": new Date("2023-08-14T12:28:46.935Z"),
         iconLink: "link",
         dlLink: "dlLink",
         parentId: "pId12"
@@ -105,7 +119,9 @@ describe('FileService', () => {
         id: "id3",
         "size": 23207,
         "name": "test-render.png",
-        "date": "2023-08-03T14:54:55.556Z",
+        "mimeType": "image/png",
+        "createdTime": new Date("2023-08-03T14:54:55.556Z"),
+        "modifiedTime": new Date("2023-08-03T14:54:55.556Z"),
         iconLink: "link",
         dlLink: "dlLink",
         parentId: "pId3"
@@ -113,7 +129,8 @@ describe('FileService', () => {
       {
         "id": "id4",
         "name": "image",
-        "date": "2023-10-13T08:47:32.059Z",
+        "createdTime": new Date("2023-10-13T08:47:32.059Z"),
+        "modifiedTime": new Date("2023-10-13T08:47:32.059Z"),
         iconLink: "link",
         parentId: "pId4"
       } as FolderElement
@@ -126,7 +143,7 @@ describe('FileService', () => {
   it('should trash file', fakeAsync(() => {
     // Arrange
     const service = MockRender(FileService).point.componentInstance;
-    let httpTestingController = TestBed.inject(HttpTestingController);
+    const httpTestingController = TestBed.inject(HttpTestingController);
 
     // Act
     service.trash('id545').subscribe();
@@ -150,7 +167,7 @@ describe('FileService', () => {
       it('should create and return a new id', fakeAsync(() => {
         // Arrange
         const service = MockRender(FileService).point.componentInstance;
-        let httpTestingController = TestBed.inject(HttpTestingController);
+        const httpTestingController = TestBed.inject(HttpTestingController);
 
         // Act
         let result = '';
@@ -193,7 +210,7 @@ describe('FileService', () => {
       it('with no parent, should create root folder and return a new id', fakeAsync(() => {
         // Arrange
         const service = MockRender(FileService).point.componentInstance;
-        let httpTestingController = TestBed.inject(HttpTestingController);
+        const httpTestingController = TestBed.inject(HttpTestingController);
 
         // Act
         let result = '';
@@ -236,7 +253,7 @@ describe('FileService', () => {
       it('should return existing id', fakeAsync(() => {
         // Arrange
         const service = MockRender(FileService).point.componentInstance;
-        let httpTestingController = TestBed.inject(HttpTestingController);
+        const httpTestingController = TestBed.inject(HttpTestingController);
 
         // Act
         let result = '';
@@ -275,7 +292,7 @@ describe('FileService', () => {
         // Arrange
         const service = MockRender(FileService).point.componentInstance;
 
-        let httpTestingController = TestBed.inject(HttpTestingController);
+        const httpTestingController = TestBed.inject(HttpTestingController);
 
         // Act
         let result = false;
@@ -302,16 +319,66 @@ describe('FileService', () => {
       }))
     });
   })
+
+  describe('findOrCreateBaseFolder', function () {
+    it('should find or create base folder', fakeAsync(() => {
+      // Arrange
+      const fileServiceMock = mockFileService();
+
+      when(() => fileServiceMock.findOrCreateFolder('storemydocs.ovh'))
+        .thenReturn(of('folderId51'))
+      const service = MockRender(FileService).point.componentInstance;
+      service.findOrCreateFolder = fileServiceMock.findOrCreateFolder;
+
+      // Act
+      let result = '';
+      service.findOrCreateBaseFolder()
+        .subscribe(value => result = value);
+
+      // Assert
+      tick();
+      expect(result).toBe('folderId51');
+    }))
+  });
+
+  describe("downloadFile", () => {
+    it('should download a file', async () => {
+      // Arrange
+      const service = MockRender(FileService).point.componentInstance;
+
+      const fileElement = mockFileElement('file');
+
+      // Act
+      let result: Blob | undefined = undefined;
+      service.downloadFile(fileElement, mock<BehaviorSubject<Progress>>())
+        .subscribe(value => result = value);
+
+      // Assert
+      const httpTestingController = TestBed.inject(HttpTestingController);
+      const request = httpTestingController.expectOne('https://www.googleapis.com/drive/v3/files/' + fileElement.id + '?alt=media');
+      request.flush(new Blob(['testContent']));
+
+      let textResult = '';
+      if (result) {
+        textResult = await (result as Blob).text();
+      }
+      expect(textResult).toBe('testContent');
+
+      httpTestingController.verify();
+    })
+  })
 });
 
 export function mockFileService() {
-  let fileServiceMock: FileService = mock<FileService>();
+  const fileServiceMock: FileService = mock<FileService>();
   MockInstance(FileService, (instance, injector) => {
     return {
       findOrCreateFolder: fileServiceMock.findOrCreateFolder,
       findAll: fileServiceMock.findAll,
       trash: fileServiceMock.trash,
-      setCategory: fileServiceMock.setCategory
+      setCategory: fileServiceMock.setCategory,
+      findOrCreateBaseFolder: fileServiceMock.findOrCreateBaseFolder,
+      downloadFile: fileServiceMock.downloadFile
     }
   });
   return fileServiceMock;

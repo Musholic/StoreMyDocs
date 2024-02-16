@@ -12,13 +12,13 @@ describe('NavBarComponent', () => {
 
   it('should create', () => {
     // Arrange
-    let gIdMock = setupGoogleMocks();
+    const gIdMock = setupGoogleMocks();
     when(() => gIdMock.prompt()).thenReturn();
-    let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
+    const isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
     when(() => isAuthenticatedMock()).thenReturn(false).atLeast(1);
 
     // Act
-    let component = MockRender(NavBarComponent).point.componentInstance;
+    const component = MockRender(NavBarComponent).point.componentInstance;
 
     // Assert
     expect(component).toBeTruthy();
@@ -26,9 +26,9 @@ describe('NavBarComponent', () => {
   describe('When not authenticated', () => {
     it('should display login button', () => {
       // Arrange
-      let gIdMock = setupGoogleMocks();
+      const gIdMock = setupGoogleMocks();
       when(() => gIdMock.prompt()).thenReturn();
-      let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
+      const isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
       when(() => isAuthenticatedMock()).thenReturn(false).atLeast(1);
 
       // Act
@@ -43,7 +43,7 @@ describe('NavBarComponent', () => {
     it('should not display login button', () => {
       // Arrange
       setupGoogleMocks();
-      let isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
+      const isAuthenticatedMock = MockInstance(GoogleDriveAuthService, 'isAuthenticated', mock<GoogleDriveAuthService['isAuthenticated']>());
       when(() => isAuthenticatedMock()).thenReturn(true).atLeast(1);
 
       // Act
@@ -57,7 +57,7 @@ describe('NavBarComponent', () => {
 });
 
 function setupGoogleMocks() {
-  let gIdMock = mock<typeof google.accounts.id>();
+  const gIdMock = mock<typeof google.accounts.id>();
   window['google'] = {
     accounts: {
       id: gIdMock,

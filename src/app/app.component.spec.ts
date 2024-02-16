@@ -6,7 +6,7 @@ describe('AppComponent', () => {
   beforeEach(() => MockBuilder(AppComponent, AppModule))
 
   it('should create the app', () => {
-    let component = MockRender(AppComponent).point.componentInstance;
+    const component = MockRender(AppComponent).point.componentInstance;
     expect(component).toBeTruthy();
   });
 });

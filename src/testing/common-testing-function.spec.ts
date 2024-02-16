@@ -1,13 +1,10 @@
-import {mock, when} from "strong-mock";
-import {BaseFolderService} from "../app/file-upload/base-folder.service";
-import {Observable, of, Subscriber, TeardownLogic} from "rxjs";
-import {MockInstance} from "ng-mocks";
-
-export function mockFindOrCreateBaseFolder() {
-  let findOrCreateBaseFolderMock = MockInstance(BaseFolderService, 'findOrCreateBaseFolder',
-    mock<BaseFolderService['findOrCreateBaseFolder']>())
-  when(() => findOrCreateBaseFolderMock()).thenReturn(of('parentId7854'));
-}
+import {Observable, Subscriber, TeardownLogic} from "rxjs";
+import {db} from "../app/database/db";
+import {MockRender, ngMocks} from "ng-mocks";
+import {Router, RouterOutlet} from "@angular/router";
+import {Location} from "@angular/common";
+import {tick} from "@angular/core/testing";
+import {mock} from "strong-mock";
 
 export async function findAsyncSequential<T>(
   array: T[],
@@ -21,14 +18,14 @@ export async function findAsyncSequential<T>(
   return undefined;
 }
 
-let notConsumedObservables = new Set<Observable<any>>();
+const notConsumedObservables = new Set<Observable<any>>();
 
 /**
  * Return an asynchronous observable (the call is delayed until next flush or tick call),
  * and ensure the observable is ultimately consumed
  */
 export function mustBeConsumedAsyncObservable<T>(value: T, mustBeConsumedAfter: Observable<any> | undefined = undefined): Observable<T> {
-  let observable = new TestObservable<T>(subscriber => {
+  const observable = new TestObservable<T>(subscriber => {
     if (mustBeConsumedAfter) {
       expect(notConsumedObservables.has(mustBeConsumedAfter))
         .withContext("This observable must not be subscribed to until the other observable it depends on has been consumed")
@@ -69,4 +66,36 @@ class TestObservable<T> extends Observable<T> {
   getId() {
     return this.id;
   }
+}
+
+export async function dbCleanUp() {
+  await db.delete();
+  db.createSchema();
+  await db.open();
+}
+
+export function navigateTo(path: string) {
+  const fixture = MockRender(RouterOutlet, {});
+  const router = ngMocks.get(Router);
+  const location = ngMocks.get(Location);
+
+  // Let's switch to the route with the resolver.
+  location.go(path);
+
+  if (fixture.ngZone) {
+    fixture.ngZone.run(() => router.initialNavigation());
+    tick(); // is needed for rendering of the current route.
+    fixture.detectChanges();
+  }
+
+  // Checking that we are on the right page.
+  expect(location.path()).toEqual(path);
+}
+
+export function getLocalStorageMock() {
+  const localStorageMock = mock<Storage>();
+  Object.defineProperty(window, 'localStorage', {
+    value: localStorageMock
+  });
+  return localStorageMock;
 }
